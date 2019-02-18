@@ -25,7 +25,6 @@ return [
 		"PhanTypeMismatchReturn",
 		"PhanTypeMismatchProperty",
 		"PhanNonClassMethodCall",
-        "PhanTypeSuspiciousStringExpression",
 	],
 	"analyzed_file_extensions" => ["php", "inc"],
 	"directory_list" => [
