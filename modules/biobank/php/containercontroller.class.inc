@@ -71,7 +71,7 @@ class ContainerController
     public function getInstances() : array
     {
         $this->validatePermission('GET');
-        $containers  = [];
+        $containers  = array();
         $containerIt = $this->dao->execute($this->user);
         foreach ($containerIt as $id => $container) {
             $containers[$id] = $container;
@@ -171,7 +171,7 @@ class ContainerController
     /**
      * Checks User Permissions for creating or updating Container Objects.
      *
-     * @param string $action User requested action.
+     * @param string $method User requested method.
      *
      * @return void
      */
@@ -222,8 +222,7 @@ class ContainerController
      */
     private function validateBarcode(Container $container) : void
     {
-        $barcode = $container->getBarcode();
-        if (is_null($barcode)) {
+        if (is_null($container->getBarcode())) {
             throw new \BadRequest('Barcode value must be set');
         }
 

@@ -62,7 +62,7 @@ class Container implements \JsonSerializable, \LORIS\Data\DataInstance
     /**
      * Sets the container's ID
      *
-     * @param int $id the container's ID
+     * @param ?int $id the container's ID
      *
      * @return void
      */
@@ -74,7 +74,7 @@ class Container implements \JsonSerializable, \LORIS\Data\DataInstance
     /**
      * Gets the container's ID
      *
-     * @return int
+     * @return ?int
      */
     public function getId() : ?int
     {
@@ -238,7 +238,7 @@ class Container implements \JsonSerializable, \LORIS\Data\DataInstance
     /**
      * Sets the parent container's ID
      *
-     * @param int $parentContainerId the parent container's ID
+     * @param ?int $parentContainerId the parent container's ID
      *
      * @return void
      */
@@ -250,7 +250,7 @@ class Container implements \JsonSerializable, \LORIS\Data\DataInstance
     /**
      * Gets the parent container's ID
      *
-     * @return int or void
+     * @return int|null
      */
     public function getParentContainerId() : ?int
     {
@@ -260,7 +260,7 @@ class Container implements \JsonSerializable, \LORIS\Data\DataInstance
     /**
      * Sets the IDs of the children containers
      *
-     * @param array $childContainerIds array of IDs of children container
+     * @param ?array $childContainerIds array of IDs of children container
      *
      * @return void
      */
@@ -272,7 +272,7 @@ class Container implements \JsonSerializable, \LORIS\Data\DataInstance
     /**
      * Gets the IDs of the children containers
      *
-     * @return array
+     * @return ?array
      */
     public function getChildContainerIds() : ?array
     {
@@ -282,7 +282,7 @@ class Container implements \JsonSerializable, \LORIS\Data\DataInstance
     /**
      * Sets the container's current coordinate in storage
      *
-     * @param int $coordinate the container's current coordinate
+     * @param ?int $coordinate the container's current coordinate
      *
      * @return void
      */
@@ -294,7 +294,7 @@ class Container implements \JsonSerializable, \LORIS\Data\DataInstance
     /**
      * Gets the container's current coordinate in storage
      *
-     * @return int
+     * @return ?int
      */
     public function getCoordinate() : ?int
     {
