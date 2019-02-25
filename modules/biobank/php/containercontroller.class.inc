@@ -220,15 +220,14 @@ class ContainerController
      *
      * @return void
      */
-    private function validateBarcode($container) : void
+    private function validateBarcode(Container $container) : void
     {
         $barcode = $container->getBarcode();
         if (is_null($barcode)) {
             throw new \BadRequest('Barcode value must be set');
         }
 
-        $id = $container->getId();
-        if (!isset($id)) {
+        if (!isset($container->getId())) {
             $containerList = $this->dao->selectInstances();
             foreach ($containerList as $c) {
                 $b = $c->getBarcode();
@@ -259,7 +258,7 @@ class ContainerController
      *
      * @return void
      */
-    private function validateTypeId($container) : void
+    private function validateTypeId(Container $container) : void
     {
         if (is_null($container->getTypeId())) {
             throw new \BadRequest('Type value must be set');
@@ -275,7 +274,7 @@ class ContainerController
      *
      * @return void
      */
-    private function validateTemperature($container) : void
+    private function validateTemperature(Container $container) : void
     {
         $temperature = $container->getTemperature();
         if (is_null($temperature)) {
@@ -298,7 +297,7 @@ class ContainerController
      *
      * @return void
      */
-    private function validateStatusId($container) : void
+    private function validateStatusId(Container $container) : void
     {
         if (is_null($container->getStatusId())) {
             throw new \BadRequest("Status value must be set.");
@@ -314,7 +313,7 @@ class ContainerController
      *
      * @return void
      */
-    private function validateCenterId($container) : void
+    private function validateCenterId(Container $container) : void
     {
         if (is_null($container->getCenterId())) {
             throw new \BadRequest("Center value must be set.");
@@ -339,7 +338,7 @@ class ContainerController
      *
      * @return void
      */
-    private function validateParentContainerId($container) : void
+    private function validateParentContainerId(Container $container) : void
     {
         $this->validateParentContainers($container);
     }
@@ -354,7 +353,7 @@ class ContainerController
      *
      * @return void
      */
-    private function validateParentContainers($container) : void
+    private function validateParentContainers(Container $container) : void
     {
         $parentContainerId = $container->getParentContainerId();
         if (isset($parentContainerId)) {
@@ -382,7 +381,7 @@ class ContainerController
      *
      * @return void
      */
-    private function validateCoordinate($container)
+    private function validateCoordinate(Container $container)
     {
         $coordinate = $container->getCoordinate();
         if (isset($coordinate)) {
