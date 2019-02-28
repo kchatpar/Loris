@@ -3,6 +3,7 @@
     {if $dynamictabs neq "dynamictabs"}
     <head>
         <link rel="stylesheet" href="{$baseurl}/{$css}" type="text/css" />
+        <link rel="stylesheet" href="{$baseurl}/fontawesome/css/all.css" type="text/css" />
         <link type="image/x-icon" rel="icon" href="/images/favicon.ico">
 
         {*
@@ -11,7 +12,7 @@
            and can access them through the loris global (ie. loris.BaseURL) *}
         <script src="{$baseurl}/js/loris.js" type="text/javascript"></script>
         <script language="javascript" type="text/javascript">
-        var loris = new LorisHelper({$jsonParams}, {$userPerms|json_encode}, {$studyParams|json_encode});
+        let loris = new LorisHelper({$jsonParams}, {$userPerms|json_encode}, {$studyParams|json_encode});
         </script>
         {section name=jsfile loop=$jsfiles}
             <script src="{$jsfiles[jsfile]}" type="text/javascript"></script>
@@ -259,7 +260,7 @@
                                                             </th>
                                                         {/if}
                                                         <th>
-                                                            Gender
+                                                            Biological Sex
                                                         </th>
                                                         {if $candidate.ProjectTitle != ""}
                                                             <th>
@@ -317,7 +318,7 @@
                                                             </td>
                                                         {/if}
                                                         <td>
-                                                            {$candidate.Gender}
+                                                            {$candidate.Sex}
                                                         </td>
                                                         {if $candidate.ProjectTitle != ""}
                                                             <td>

@@ -31,12 +31,12 @@ class Conflict_Resolver extends \NDB_Menu_Filter_Form
      * Returns true if the user has permission to access
      * the conflict resolver module
      *
-     * @return true if user has permission
+     * @param \User $user The user whose access is being checked
+     *
+     * @return bool true if user has permission
      */
-    function _hasAccess()
+    function _hasAccess(\User $user) : bool
     {
-        // create user object
-        $user =& \User::singleton();
         return ($user->hasPermission('conflict_resolver'));
     }
 
@@ -242,7 +242,7 @@ class Conflict_Resolver extends \NDB_Menu_Filter_Form
         if (!$user->hasPermission('access_all_profiles')) {
             // restrict data to own site
             $site_arr     = implode(",", $user->getCenterIDs());
-            $this->query .= " AND candidate.CenterID IN (" . $site_arr . ")";
+            $this->query .= " AND session.CenterID IN (" . $site_arr . ")";
         }
 
         $this->group_by     = '';

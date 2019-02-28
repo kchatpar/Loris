@@ -13,8 +13,6 @@ DROP TABLE IF EXISTS `data_release`;
 DROP TABLE IF EXISTS `ExternalLinks`;
 DROP TABLE IF EXISTS `ExternalLinkTypes`;
 
-DROP TABLE IF EXISTS `reliability`;
-
 DROP TABLE IF EXISTS `feedback_mri_comments`;
 DROP TABLE IF EXISTS `feedback_mri_predefined_comments`;
 DROP TABLE IF EXISTS `feedback_mri_comment_types`;
@@ -114,6 +112,11 @@ DROP TABLE IF EXISTS `tarchive_files`;
 DROP TABLE IF EXISTS `tarchive_series`;
 DROP TABLE IF EXISTS `tarchive`;
 
+DROP TABLE IF EXISTS bids_mri_scan_type_rel;
+DROP TABLE IF EXISTS bids_category;
+DROP TABLE IF EXISTS bids_scan_type;
+DROP TABLE IF EXISTS bids_scan_type_subcategory;
+
 DROP TABLE IF EXISTS `history`;
 DROP TABLE IF EXISTS `Visit_Windows`;
 DROP TABLE IF EXISTS `test_battery`;
@@ -134,6 +137,8 @@ DROP TABLE IF EXISTS `psc`;
 DROP TABLE IF EXISTS `project_rel`;
 DROP TABLE IF EXISTS `subproject`;
 DROP TABLE IF EXISTS `Project`;
+DROP TABLE IF EXISTS `visit_project_subproject_rel`;
+DROP TABLE IF EXISTS `visit`;
 
 -- ********************************
 -- Core tables
@@ -266,8 +271,8 @@ CREATE TABLE `candidate` (
   `ExternalID` varchar(255) DEFAULT NULL,
   `DoB` date DEFAULT NULL,
   `EDC` date DEFAULT NULL,
-  `Gender` enum('Male','Female') DEFAULT NULL,
-  `CenterID` integer unsigned NOT NULL DEFAULT '0',
+  `Sex` enum('Male','Female') DEFAULT NULL,
+  `RegistrationCenterID` integer unsigned NOT NULL DEFAULT '0',
   `ProjectID` int(11) DEFAULT NULL,
   `Ethnicity` varchar(255) DEFAULT NULL,
   `Active` enum('Y','N') NOT NULL DEFAULT 'Y',
@@ -281,16 +286,16 @@ CREATE TABLE `candidate` (
   `flagged_other_status` enum('not_answered') DEFAULT NULL,
   `Testdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `Entity_type` enum('Human','Scanner') NOT NULL DEFAULT 'Human',
-  `ProbandGender` enum('Male','Female') DEFAULT NULL,
+  `ProbandSex` enum('Male','Female') DEFAULT NULL,
   `ProbandDoB` date DEFAULT NULL,
   PRIMARY KEY (`CandID`),
   UNIQUE KEY `ID` (`ID`),
   UNIQUE KEY `ExternalID` (`ExternalID`),
-  KEY `FK_candidate_1` (`CenterID`),
+  KEY `FK_candidate_1` (`RegistrationCenterID`),
   KEY `CandidateActive` (`Active`),
   KEY `FK_candidate_2_idx` (`flagged_reason`),
   KEY `PSCID` (`PSCID`),
-  CONSTRAINT `FK_candidate_1` FOREIGN KEY (`CenterID`) REFERENCES `psc` (`CenterID`),
+  CONSTRAINT `FK_candidate_1` FOREIGN KEY (`RegistrationCenterID`) REFERENCES `psc` (`CenterID`),
   CONSTRAINT `FK_candidate_2` FOREIGN KEY (`flagged_reason`) REFERENCES `caveat_options` (`ID`) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -461,7 +466,7 @@ CREATE TABLE `tarchive` (
   `PatientID` varchar(255) NOT NULL default '',
   `PatientName` varchar(255) NOT NULL default '',
   `PatientDoB` date default NULL,
-  `PatientGender` varchar(255) default NULL,
+  `PatientSex` varchar(255) default NULL,
   `neurodbCenterName` varchar(255) default NULL,
   `CenterName` varchar(255) NOT NULL default '',
   `LastUpdate` datetime default NULL,
@@ -626,7 +631,6 @@ CREATE TABLE `files` (
   `OutputType` varchar(255) NOT NULL default '',
   `AcquisitionProtocolID` int(10) unsigned default NULL,
   `FileType` varchar(12) default NULL,
-  `PendingStaging` tinyint(1) NOT NULL default '0',
   `InsertedByUserID` varchar(255) NOT NULL default '',
   `InsertTime` int(10) unsigned NOT NULL default '0',
   `SourcePipeline` varchar(255),
@@ -642,7 +646,6 @@ CREATE TABLE `files` (
   KEY `sessionid` (`SessionID`),
   KEY `outputtype` (`OutputType`),
   KEY `filetype_outputtype` (`FileType`,`OutputType`),
-  KEY `staging_filetype_outputtype` (`PendingStaging`,`FileType`,`OutputType`),
   KEY `AcquiIndex` (`AcquisitionProtocolID`,`SessionID`),
   KEY `scannerid` (`ScannerID`),
   KEY `tarchivesource` (`TarchiveSource`),
@@ -760,6 +763,98 @@ CREATE TABLE `mri_protocol_checks` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
+-- ********************************
+-- BIDS tables
+-- ********************************
+
+CREATE TABLE `bids_category` (
+ `BIDSCategoryID`   int(3)      UNSIGNED NOT NULL AUTO_INCREMENT,
+ `BIDSCategoryName` varchar(10)          NOT NULL UNIQUE,
+ PRIMARY KEY (`BIDSCategoryID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `bids_category` (BIDSCategoryName) VALUES
+      ('anat'),
+      ('func'),
+      ('dwi'),
+      ('fmap');
+
+CREATE TABLE `bids_scan_type_subcategory` (
+  `BIDSScanTypeSubCategoryID` int(3)       UNSIGNED NOT NULL AUTO_INCREMENT,
+  `BIDSScanTypeSubCategory`   varchar(100)          NOT NULL UNIQUE,
+  PRIMARY KEY (`BIDSScanTypeSubCategoryID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `bids_scan_type_subcategory` (BIDSScanTypeSubCategory) VALUES
+  ('task-rest');
+
+CREATE TABLE `bids_scan_type` (
+  `BIDSScanTypeID` int(3)       UNSIGNED NOT NULL AUTO_INCREMENT,
+  `BIDSScanType`   varchar(100)          NOT NULL UNIQUE,
+  PRIMARY KEY (`BIDSScanTypeID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `bids_scan_type` (BIDSScanType) VALUES
+  ('bold'),
+  ('FLAIR'),
+  ('T1w'),
+  ('T2w'),
+  ('dwi');
+
+CREATE TABLE `bids_mri_scan_type_rel` (
+  `MRIScanTypeID`             int(10) UNSIGNED NOT NULL,
+  `BIDSCategoryID`            int(3)  UNSIGNED DEFAULT NULL,
+  `BIDSScanTypeSubCategoryID` int(3)  UNSIGNED DEFAULT NULL,
+  `BIDSScanTypeID`            int(3)  UNSIGNED DEFAULT NULL,
+  `BIDSEchoNumber`            int(3)  UNSIGNED DEFAULT NULL,
+  PRIMARY KEY  (`MRIScanTypeID`),
+  KEY `FK_bids_mri_scan_type_rel` (`MRIScanTypeID`),
+  CONSTRAINT `FK_bids_mri_scan_type_rel`     FOREIGN KEY (`MRIScanTypeID`)             REFERENCES `mri_scan_type` (`ID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `FK_bids_category`              FOREIGN KEY (`BIDSCategoryID`)            REFERENCES `bids_category`(`BIDSCategoryID`),
+  CONSTRAINT `FK_bids_scan_type_subcategory` FOREIGN KEY (`BIDSScanTypeSubCategoryID`) REFERENCES `bids_scan_type_subcategory` (`BIDSScanTypeSubCategoryID`),
+  CONSTRAINT `FK_bids_scan_type`             FOREIGN KEY (`BIDSScanTypeID`)            REFERENCES `bids_scan_type` (`BIDSScanTypeID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+-- Default schema scan types; make some of them named in a BIDS compliant manner
+INSERT INTO bids_mri_scan_type_rel
+  (MRIScanTypeID, BIDSCategoryID, BIDSScanTypeSubCategoryID, BIDSScanTypeID, BIDSEchoNumber)
+  VALUES
+  (
+    (SELECT ID FROM mri_scan_type WHERE Scan_type = 'flair'),
+    (SELECT BIDSCategoryID FROM bids_category WHERE BIDSCategoryName='anat'),
+    NULL,
+    (SELECT BIDSScanTypeID FROM bids_scan_type WHERE BIDSSCanType='FLAIR'),
+    NULL
+  ),
+  (
+    (SELECT ID FROM mri_scan_type WHERE Scan_type = 'fMRI'),
+    (SELECT BIDSCategoryID FROM bids_category WHERE BIDSCategoryName='func'),
+    (SELECT BIDSScanTypeSubCategoryID FROM bids_scan_type_subcategory WHERE BIDSScanTypeSubCategory='task-rest'),
+    (SELECT BIDSScanTypeID FROM bids_scan_type WHERE BIDSSCanType='bold'),
+    NULL
+  ),
+  (
+    (SELECT ID FROM mri_scan_type WHERE Scan_type = 't1'),
+    (SELECT BIDSCategoryID FROM bids_category WHERE BIDSCategoryName='anat'),
+    NULL,
+    (SELECT BIDSScanTypeID FROM bids_scan_type WHERE BIDSSCanType='T1w'),
+    NULL
+  ),
+  (
+    (SELECT ID FROM mri_scan_type WHERE Scan_type = 't2'),
+    (SELECT BIDSCategoryID FROM bids_category WHERE BIDSCategoryName='anat'),
+    NULL,
+    (SELECT BIDSScanTypeID FROM bids_scan_type WHERE BIDSSCanType='T2w'),
+    NULL
+  ),
+  (
+    (SELECT ID FROM mri_scan_type WHERE Scan_type = 'dti'),
+    (SELECT BIDSCategoryID FROM bids_category WHERE BIDSCategoryName='dwi'),
+    NULL,
+    (SELECT BIDSScanTypeID FROM bids_scan_type WHERE BIDSSCanType='dwi'),
+    NULL
+  );
 
 -- ********************************
 -- MRI violations tables
@@ -1485,7 +1580,8 @@ CREATE TABLE `parameter_type_category` (
 
 INSERT INTO `parameter_type_category` (Name, Type) VALUES
   ('MRI Variables','Metavars'),
-  ('Identifiers', 'Metavars');
+  ('Identifiers', 'Metavars'),
+  ('Electrophysiology Variables', 'Metavars');
 
 CREATE TABLE `parameter_type_category_rel` (
   `ParameterTypeID` int(11) unsigned NOT NULL default '0',
@@ -1777,23 +1873,6 @@ CREATE TABLE `genomic_cpg` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ********************************
--- reliability
--- ********************************
-
-
-CREATE TABLE `reliability` (
-  `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `CommentID` varchar(255) DEFAULT NULL,
-  `reliability_center_id` int(11) NOT NULL DEFAULT '1',
-  `Instrument` varchar(255) DEFAULT NULL,
-  `Reliability_score` decimal(4,2) DEFAULT NULL,
-  `invalid` enum('no','yes') DEFAULT 'no',
-  `Manual_Swap` enum('no','yes') DEFAULT 'no',
-  `EARLI_Candidate` enum('no','yes') DEFAULT 'no',
-  PRIMARY KEY (`ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
--- ********************************
 -- External links
 -- ********************************
 
@@ -2044,3 +2123,24 @@ CREATE TABLE `candidate_consent_history` (
   `EntryStaff` varchar(255) DEFAULT NULL,
   CONSTRAINT `PK_candidate_consent_history` PRIMARY KEY (`CandidateConsentHistoryID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `visit` (
+  `VisitID` int(10) unsigned NOT NULL auto_increment,
+  `VisitName` varchar(100) NOT NULL,
+  CONSTRAINT `visit_PK` PRIMARY KEY (`VisitID`),
+  CONSTRAINT `visit_name_UK` UNIQUE KEY (`VisitName`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `visit_project_subproject_rel` (
+ `VisitID` int(10) unsigned NOT NULL,
+ `ProjectID` int(2) NOT NULL,
+ `SubprojectID` int(10) unsigned NOT NULL,
+  CONSTRAINT `visit_project_subproject_rel_PK` PRIMARY KEY (`VisitID`, `ProjectID`, `SubprojectID`),
+  CONSTRAINT `visit_project_subproject_rel_VisitID_visit_VisitID_FK` FOREIGN KEY (`VisitID`) 
+    REFERENCES `visit`(`VisitID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `visit_project_subproject_ProjectID_visit_ProjectID_FK` FOREIGN KEY (`ProjectID`)
+    REFERENCES `Project`(`ProjectID`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `visit_project_subproject_SubprojectID_visit_SubprojectID_FK` FOREIGN KEY (`SubprojectID`)
+    REFERENCES `subproject`(`SubprojectID`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+

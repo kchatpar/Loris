@@ -26,19 +26,21 @@ namespace LORIS\mri_violations;
 class Resolved_Violations extends \NDB_Menu_Filter_Form
 {
     var $AjaxModule = true;
+
     /**
      * Check if user should be allowed to see this page.
      *
-     * @return boolean true if the user is permitted to see violated scans
+     * @param \User $user The user whose access is being checked
+     *
+     * @return bool true if the user is permitted to see violated scans
      */
-    function _hasAccess()
+    function _hasAccess(\User $user) : bool
     {
-        // create user object
-        $user =& \User::singleton();
         $this->tpl_data['violated_scans_modifications']
             = $user->hasPermission('violated_scans_edit');
         return ($user->hasPermission('violated_scans_view_allsites'));
     }
+
     /**
      * Process function
      *
@@ -231,7 +233,7 @@ class Resolved_Violations extends \NDB_Menu_Filter_Form
             LEFT JOIN session s
             ON (mri_protocol_violated_scans.CandID = s.CandID)
             LEFT JOIN psc p
-            ON (p.CenterID = c.CenterID)
+            ON (p.CenterID = s.CenterID)
             WHERE Resolved <> '0'"
             . " UNION " .
             "SELECT PatientName,
@@ -258,7 +260,7 @@ class Resolved_Violations extends \NDB_Menu_Filter_Form
             LEFT JOIN session s
             ON (mri_violations_log.CandID = s.CandID)
             LEFT JOIN psc p
-            ON (p.CenterID = c.CenterID)
+            ON (p.CenterID = s.CenterID)
             WHERE Resolved <> '0'"
             . " UNION " .
             "SELECT PatientName,
@@ -283,7 +285,7 @@ class Resolved_Violations extends \NDB_Menu_Filter_Form
             LEFT JOIN session s
             ON (c.CandID = s.CandID)
             LEFT JOIN psc p
-            ON (p.CenterID = c.CenterID)
+            ON (p.CenterID = s.CenterID)
             WHERE Resolved <> '0')
             as v LEFT JOIN psc site ON (site.CenterID = v.Site) 
             LEFT JOIN Project as pjct ON (v.Project = pjct.ProjectID)
@@ -420,4 +422,4 @@ class Resolved_Violations extends \NDB_Menu_Filter_Form
         );
     }
 }
-?>
+

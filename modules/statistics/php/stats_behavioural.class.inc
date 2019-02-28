@@ -28,11 +28,12 @@ class Stats_Behavioural extends \NDB_Form
     /**
      * Checking user's permission
      *
+     * @param \User $user The user whose access is being checked
+     *
      * @return bool
      */
-    function _hasAccess()
+    function _hasAccess(\User $user) : bool
     {
-        $user =& \User::singleton();
         return $user->hasPermission('data_entry');
     }
     /**
@@ -113,27 +114,24 @@ class Stats_Behavioural extends \NDB_Form
             $currentProject = '';
             $Param_Project  = '';
         }
-
-        $subprojects = \Utility::getSubprojectsForProject($currentProject);
-
-        $this->tpl_data['Subprojects'] = $subprojects;
-        foreach ($subprojects as $key=>$val) {
-            $subprojList .= $key.",";
+        //
+        //SUBPROJECTS
+        $suproject_query = '';
+        // Only search for subprojects if $currentProject is a positive int.
+        if (is_numeric($currentProject) && intval($currentProject) >= 0) {
+            $subprojList ="";
+            $subprojects = \Utility::getSubprojectsForProject($currentProject);
+            foreach ($subprojects as $key=>$val) {
+                $subprojList .= $key.",";
+            }
+            $subprojList = substr($subprojList, 0, -1);
+            if (!empty($subprojList)) {
+                $suproject_query ="AND s.SubprojectID IN ($subprojList)";
+            }
+            $Visits = \Utility::getExistingVisitLabels($currentProject);
         }
-        $subprojList = substr($subprojList, 0, -1);
-        if (!empty($subprojList)) {
-            $suproject_query ="AND s.SubprojectID IN ($subprojList)";
-        } else {
-            $suproject_query ='';
-        }
 
-        $Visits = \Utility::getExistingVisitLabels($currentProject);
-        $this->tpl_data['Visits'] = $Visits;
-
-        // PREVENT Undefined property Console Output
-        if (!isset($this->params)) {
-            $this->params = null;
-        }
+        $this->tpl_data['Visits'] = $Visits ?? '';
 
         //---- BEHAVIORAL STATS -----
         $result = $DB->pselect(
@@ -151,7 +149,7 @@ class Stats_Behavioural extends \NDB_Form
                     $suproject_query
                     $Param_Project
                 GROUP by s.ID, s.CenterID, VLabel, f.Data_Entry",
-            $this->params
+            $this->params ?? array()
         );
 
         foreach ($result as $row) {
@@ -218,7 +216,7 @@ class Stats_Behavioural extends \NDB_Form
                 $suproject_query
                 $Param_Project
                 GROUP BY s.CenterID, VLabel, f.Data_Entry",
-            $this->params
+            $this->params ?? array()
         );
 
         foreach ($result as $row) {

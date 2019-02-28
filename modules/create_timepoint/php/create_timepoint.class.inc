@@ -40,20 +40,22 @@ class Create_Timepoint extends \NDB_Form
     /**
      * Check user permissions
      *
+     * @param \User $user The user whose access is being checked
+     *
      * @return bool
-     * @throws \ConfigurationException
      */
-    function _hasAccess()
+    function _hasAccess(\User $user) : bool
     {
-        // create user object
-        $user =& \User::singleton();
-
         $candidate =& \Candidate::singleton($this->identifier);
 
         // check user permissions
         return (
             $user->hasPermission('data_entry') &&
-            (in_array($candidate->getData('CenterID'), $user->getData('CenterIDs')))
+            (in_array(
+                $candidate->getData('RegistrationCenterID'),
+                $user->getData('CenterIDs')
+            )
+            )
         );
     }
 
@@ -156,7 +158,10 @@ class Create_Timepoint extends \NDB_Form
         $visitLabelSettings = $config->getSetting('visitLabel');
         $visitLabelAdded    = false;
 
-        foreach (\Utility::toArray($visitLabelSettings) as $visitLabel) {
+        foreach (
+            \Utility::associativeToNumericArray($visitLabelSettings)
+            as $visitLabel
+        ) {
             if ($visitLabel['@']['subprojectID'] == $this->subprojectID) {
                 if (isset($visitLabel['generation'])
                     && $visitLabel['generation'] !== 'sequence'
@@ -167,7 +172,7 @@ class Create_Timepoint extends \NDB_Form
                     );
                 }
                 $labelOptions[''] = null;
-                $items            = \Utility::toArray(
+                $items            = \Utility::associativeToNumericArray(
                     $visitLabel['labelSet']['item']
                 );
                 foreach ($items as $item) {
@@ -267,4 +272,4 @@ class Create_Timepoint extends \NDB_Form
         );
     }
 }
-?>
+

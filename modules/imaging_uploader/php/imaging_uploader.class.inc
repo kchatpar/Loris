@@ -39,15 +39,15 @@ class Imaging_Uploader extends \NDB_Menu_Filter_Form
      */
     var $uploaded_file_path;
     /**
-     * The _has_access returns true
-     * if the user has the specific permission
+     * The hasAccess function ensures that the user has the imaging_uploader
+     * permission.
      *
-     * @return boolean
+     * @param \User $user The user whose access is being checked
+     *
+     * @return bool
      */
-    function _hasAccess()
+    function _hasAccess(\User $user) : bool
     {
-        // create user object
-        $user = \User::singleton();
         return $user->hasPermission('imaging_uploader');
     }
     /**
@@ -121,7 +121,7 @@ class Imaging_Uploader extends \NDB_Menu_Filter_Form
         if (empty($_FILES) && empty($_POST)
             && ($_SERVER['REQUEST_METHOD']=='POST')
         ) { //catch file overload error...
-            $upload_max_size = \Utility::getMaxUploadSize();
+            $upload_max_size = ini_get('upload_max_filesize');
             $error_message   = "Please make sure files are not larger than " .
                                 $upload_max_size;
             http_response_code(400);
@@ -721,4 +721,4 @@ class Imaging_Uploader extends \NDB_Menu_Filter_Form
         return json_encode($result);
     }
 }
-?>
+

@@ -32,12 +32,12 @@ class Resolved_Conflicts extends \NDB_Menu_Filter
     /**
      * Determine whether the user should have access to this submodule
      *
-     * @return boolean true if the user has access
+     * @param \User $user The user whose access is being checked
+     *
+     * @return bool true if the user has access
      */
-    function _hasAccess()
+    function _hasAccess(\User $user) : bool
     {
-        // create user object
-        $user =& \User::singleton();
         return ($user->hasPermission('conflict_resolver'));
     }
 
@@ -90,7 +90,7 @@ class Resolved_Conflicts extends \NDB_Menu_Filter
         if (!$user->hasPermission('access_all_profiles')) {
             // restrict data to own site
             $site_arr     = implode(",", $user->getCenterIDs());
-            $this->query .= " AND candidate.CenterID IN (" . $site_arr . ")";
+            $this->query .= " AND session.CenterID IN (" . $site_arr . ")";
         }
 
         $this->group_by     = '';

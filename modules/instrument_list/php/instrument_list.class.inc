@@ -74,12 +74,12 @@ class Instrument_List extends \NDB_Menu_Filter
     /**
     * Checking permissions
     *
+    * @param \User $user The user whose access is being checked
+    *
     * @return bool
     */
-    function _hasAccess()
+    function _hasAccess(\User $user) : bool
     {
-        // create user object
-        $user      =& \User::singleton();
         $timePoint = $this->timePoint;
         if ($timePoint === null) {
             throw new \NotFound("Page requires a timepoint to load");
@@ -293,9 +293,9 @@ class Instrument_List extends \NDB_Menu_Filter
      * @param string $candID    the value of candID
      * @param string $sessionID the value of sessionID
      *
-     * @return void
+     * @return string
      */
-    function getFeedbackPanel($candID, $sessionID)
+    function getFeedbackPanel($candID, $sessionID): string
     {
         $feedbackPanel = new \BVL_Feedback_Panel($candID, $sessionID);
         $html          =  $feedbackPanel->display();

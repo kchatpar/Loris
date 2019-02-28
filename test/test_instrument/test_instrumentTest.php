@@ -30,12 +30,12 @@ class TestInstrumentTestIntegrationTest extends LorisIntegrationTest
     {
         parent::setUp();
         $this->DB->insert("candidate", array(
-            'CandID' => '900000',
-            'PSCID'  => 'TST0001',
-            'CenterID' => 1,
-            'Active' => 'Y',
-            'UserID' => 1,
-            'Entity_type' => 'Human'
+            'CandID'               => '900000',
+            'PSCID'                => 'TST0001',
+            'RegistrationCenterID' => 1,
+            'Active'               => 'Y',
+            'UserID'               => 1,
+            'Entity_type'          => 'Human'
         ));
         $this->DB->insert('session', array(
             'ID' => '999999',
@@ -137,7 +137,6 @@ class TestInstrumentTestIntegrationTest extends LorisIntegrationTest
       $textElement = $this->webDriver->findElement(
              WebDriverBy::Name("testCheckbox")
       )->click();
-
       $this->webDriver->findElement(
              WebDriverBy::Name("fire_away")
       )->click();
