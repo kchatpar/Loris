@@ -411,6 +411,15 @@ CREATE TABLE `biobank_container_parent` (
 
 /*INSERTS*/
 
+<<<<<<< HEAD
+=======
+/*XXX: The following 4 lines are for testing. Delete before merging.*/
+DELETE FROM LorisMenu WHERE `Label`='Biobank';
+DELETE FROM LorisMenu WHERE `Label`='Specimens';
+DELETE FROM LorisMenu WHERE `Label`='Containers';
+DELETE FROM LorisMenu WHERE `Label`='Pools';
+
+>>>>>>> 93d69f10fc287693c209905f19d1d2b12ab11968
 /*Loris Menu*/
 UPDATE LorisMenu SET `OrderNumber`=5 WHERE `Label`='Reports';
 UPDATE LorisMenu SET `OrderNumber`=6 WHERE `Label`='Tools';
@@ -436,7 +445,11 @@ INSERT INTO permissions (code, description, categoryID) VALUES
     ('biobank_container_update', 'Biobank: Update Container Data', 2),
     ('biobank_pool_view', 'Biobank: View Pool Data', 2),
     ('biobank_pool_create', 'Biobank: Create Pool Data', 2),
+<<<<<<< HEAD
     ('biobank_pool_update', 'Biobank: Update Pool Data', 2),
+=======
+    ('biobank_pool_update', 'Biobank: Update Pool Data', 2)
+>>>>>>> 93d69f10fc287693c209905f19d1d2b12ab11968
 ;
 
 /*Config*/
