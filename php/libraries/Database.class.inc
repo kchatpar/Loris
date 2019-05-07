@@ -110,7 +110,7 @@ class Database
             // name the connection.
             if ($trackChanges) {
                 $connection = md5($database.$host.$username.$password.'yep');
-            } else  {
+            } else {
                 $connection = md5($database.$host.$username.$password.'nope');
             }
 
