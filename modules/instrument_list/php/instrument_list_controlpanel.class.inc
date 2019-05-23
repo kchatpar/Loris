@@ -742,7 +742,7 @@ class Instrument_List_ControlPanel extends \TimePoint
                 $this->getData('CenterID'),
                 $user->getData('CenterIDs')
             )
-            && $this->getData('Submitted')=='N'
+            && $this->getData('Submitted')=='Y'
             && in_array(
                 $this->getData('Current_stage'),
                 array(
