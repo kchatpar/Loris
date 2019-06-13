@@ -26,7 +26,6 @@
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://github.com/aces/Loris-Trunk
  */
-
 require_once "Email.class.inc";
 
 //TODO: or split it into two files... :P
@@ -70,8 +69,11 @@ function editIssue()
                              );
 
     foreach ($fields as $field) {
-        $value = $_POST[$field];
-        if ($_POST[$field] === "null") {
+        // The default is a string "null" because if the front end submits
+        // null, it comes through as a string, so the default is to behave
+        // the same way
+        $value = $_POST[$field] ?? "null";
+        if ($value === "null") {
             $value = null;
         }
         if (isset($field)) {
@@ -98,7 +100,7 @@ function editIssue()
     // Get changed values to save in history
     $historyValues = getChangedValues($issueValues, $issueID);
 
-    if (!empty($issueID) || $issueID != 0) {
+    if (!empty($issueID)) {
         $db->update('issues', $issueValues, ['issueID' => $issueID]);
     } else {
         $issueValues['reporter']    = $user->getData('UserID');
@@ -510,13 +512,16 @@ function emailUser($issueID, $changed_assignee)
              'currentUser' => $user->getUserName(),
             )
         );
-        $msg_data['firstname']     = $issueChangeEmailsAssignee[0]['firstname'];
 
-        Email::send(
-            $issueChangeEmailsAssignee[0]['Email'],
-            'issue_assigned.tpl',
-            $msg_data
-        );
+        if (isset($issueChangeEmailsAssignee[0])) {
+            $msg_data['firstname'] = $issueChangeEmailsAssignee[0]['firstname'];
+
+            Email::send(
+                $issueChangeEmailsAssignee[0]['Email'],
+                'issue_assigned.tpl',
+                $msg_data
+            );
+        }
     } else {
         $changed_assignee = $user->getUsername(); // so query below doesn't break..
     }
@@ -656,7 +661,9 @@ WHERE Parent IS NOT NULL ORDER BY Label ",
 
     //Now get issue values
     $issueData = getIssueData();
-    if (!empty($_GET['issueID'])) { //if an existing issue
+    if (!empty($_GET['issueID'])
+        && $_GET['issueID'] != "new"
+    ) { //if an existing issue
         $issueID    = $_GET['issueID'];
         $issueData  = getIssueData($issueID);
         $desc       = $db->pselect(

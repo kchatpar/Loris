@@ -50,10 +50,12 @@ class IssueWatcherMapper implements Mapper
         }
 
         $newrow = json_decode($resource->toJSON(), true);
-        if ($newrow['userID'] === $user->getUsername()) {
-            $newrow['userID'] = true;
+        if (isset($newrow['userId'])
+            && $newrow['userId'] === $user->getUsername()
+        ) {
+            $newrow['userId'] = true;
         } else {
-            $newrow['userID'] = false;
+            $newrow['userId'] = false;
         }
 
         return new IssueRow($newrow, $resource->getCenterID());
