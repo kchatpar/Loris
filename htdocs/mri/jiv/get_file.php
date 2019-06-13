@@ -145,6 +145,9 @@ default:
 // Make sure file exists.
 if (!file_exists($FullPath)) {
     error_log("ERROR: Requested file $FullPath does not exist");
+    header('Content-Type: application/json; charset=UTF-8');
+    $errors = "File not found please try another one";
+    exit(json_encode($errors));
     http_response_code(404);
     return;
 }
