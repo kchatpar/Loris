@@ -46,8 +46,20 @@ class DicomArchive extends Component {
       .then((resp) => resp.json())
       .then((data) => this.setState({data}))
       .catch((error) => {
-        this.setState({error: true});
-        console.error(error);
+         swal({
+           title: 'Filename does not match other fields!',
+           text: 'Filename and values in the PSCID, CandID ',
+           type: 'error',
+           confirmButtonText: 'OK',
+         });
+	//swal({
+	//  title: 'File unavailible',
+	//  text: 'File is not found',
+	//  type: 'error',
+	//  confirmButtonText: 'OK',
+ 	//})
+        //this.setState({error: true});
+        //console.error(error);
       });
   }
 
