@@ -35,7 +35,6 @@ class DicomArchive extends Component {
         this.fetchData()
         .then(() => this.setState({isLoaded: true}));
     }
-
     /**
    * Retrieve data from the provided URL and save it in state
    *
@@ -44,26 +43,22 @@ class DicomArchive extends Component {
     fetchData() {
         return fetch(this.props.dataURL, {credentials: 'same-origin'})
         .then((resp) => resp.json())
-        .then((data) => this.setState({data}))
+        .then((data) => this.setState({data}));
         this.setState({error: true});
         console.error(error);
     }
-   
-    handleDownload(){
-        if(resp.text().then(message) => {
+   /* handleDownload(){
+        if(resp.text().then(message)) {
             swal('Error!',message,'error');
         } else {
-            swal('Success!','Download Successful', 'success').then((result) => {
+           swal('Success!','Download Successful', 'success').then((result) => {
                 if (result.value) {
                     this.fetchData();
-                } 
-            }   
+                }
+            }
         }
-    }
+    }*/
 
-
-
-    
       /*
       .catch((error) => {
          swal({
@@ -82,8 +77,6 @@ class DicomArchive extends Component {
         console.error(error);
       });
     */
-  
-
     /**
    * Modify behaviour of specified column cells in the Data Table component
    *
@@ -108,6 +101,8 @@ class DicomArchive extends Component {
             </a>
             </td>;
             }
+            this.handleDownload;
+            echo('Hello');
           break;
         case 'Metadata': {
             const metadataURL = loris.BaseURL +
@@ -137,7 +132,7 @@ class DicomArchive extends Component {
         // If error occurs, return a message.
         // XXX: Replace this with a UI component for 500 errors.
         if (this.state.error) {
-            return <h3>An error occured while { loading the page.</h3>; }
+            return <h3>An error occured while loading the page.</h3>;
         }
 
         // Waiting for async data to load
