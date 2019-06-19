@@ -28,7 +28,6 @@ class DicomArchive extends Component {
 
         this.fetchData = this.fetchData.bind(this);
         this.formatColumn = this.formatColumn.bind(this);
-        this.handleDownload = this.handleDownload(this);
     }
 
     componentDidMount() {
@@ -104,8 +103,6 @@ class DicomArchive extends Component {
             </a>
             </td>;
             }
-            this.handleDownload;
-            echo('Hello');
           break;
         case 'Metadata': {
             const metadataURL = loris.BaseURL +
