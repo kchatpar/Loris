@@ -61,6 +61,7 @@ class DicomArchive extends Component {
 
       /*
       .catch((error) => {
+<<<<<<< HEAD
          swal({
            title: 'Filename does not match other fields!',
            text: 'Filename and values in the PSCID, CandID ',
@@ -73,6 +74,8 @@ class DicomArchive extends Component {
     type: 'error',
     confirmButtonText: 'OK',
     })
+=======
+>>>>>>> parent of 943369f... added swal but not working
         this.setState({error: true});
         console.error(error);
       });
