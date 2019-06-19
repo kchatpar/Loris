@@ -45,6 +45,10 @@ class DicomArchive extends Component {
     return fetch(this.props.dataURL, {credentials: 'same-origin'})
       .then((resp) => resp.json())
       .then((data) => this.setState({data}))
+      this.setState({error: true});
+      console.error(error);
+  }	
+      /*
       .catch((error) => {
          swal({
            title: 'Filename does not match other fields!',
@@ -52,16 +56,17 @@ class DicomArchive extends Component {
            type: 'error',
            confirmButtonText: 'OK',
          });
-	//swal({
-	//  title: 'File unavailible',
-	//  text: 'File is not found',
-	//  type: 'error',
-	//  confirmButtonText: 'OK',
- 	//})
-        //this.setState({error: true});
-        //console.error(error);
+	swal({
+	  title: 'File unavailible',
+	  text: 'File is not found',
+	  type: 'error',
+	  confirmButtonText: 'OK',
+ 	})
+        this.setState({error: true});
+        console.error(error);
       });
-  }
+	*/
+  
 
   /**
    * Modify behaviour of specified column cells in the Data Table component
