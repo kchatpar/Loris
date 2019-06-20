@@ -1,0 +1,13 @@
+SET FOREIGN_KEY_CHECKS=0;
+TRUNCATE TABLE `biobank_specimen_preparation`;
+LOCK TABLES `biobank_specimen_preparation` WRITE;
+INSERT INTO `biobank_specimen_preparation` (`SpecimenID`, `SpecimenProtocolID`, `CenterID`, `ExaminerID`, `Date`, `Time`, `Comments`, `Data`) VALUES (4,8,2,7,'2019-05-30','10:50:00',NULL,'{\"1\": true, \"3\": \"09:45\", \"4\": \"09:50\", \"5\": \"10:19\", \"6\": \"10:25\", \"7\": \"10:10\", \"8\": \"11:10\"}');
+INSERT INTO `biobank_specimen_preparation` (`SpecimenID`, `SpecimenProtocolID`, `CenterID`, `ExaminerID`, `Date`, `Time`, `Comments`, `Data`) VALUES (8,8,2,7,'2019-05-30','10:50:00',NULL,'{\"1\": true, \"3\": \"09:45\", \"4\": \"09:50\", \"5\": \"10:19\", \"6\": \"10:25\", \"7\": \"10:10\", \"8\": \"11:10\"}');
+INSERT INTO `biobank_specimen_preparation` (`SpecimenID`, `SpecimenProtocolID`, `CenterID`, `ExaminerID`, `Date`, `Time`, `Comments`, `Data`) VALUES (9,8,2,7,'2019-05-30','10:50:00',NULL,'{\"1\": true, \"3\": \"09:45\", \"4\": \"09:50\", \"5\": \"10:19\", \"6\": \"10:25\", \"7\": \"10:10\", \"8\": \"11:10\"}');
+INSERT INTO `biobank_specimen_preparation` (`SpecimenID`, `SpecimenProtocolID`, `CenterID`, `ExaminerID`, `Date`, `Time`, `Comments`, `Data`) VALUES (10,8,2,7,'2019-05-30','10:50:00',NULL,'{\"1\": true, \"3\": \"09:45\", \"4\": \"09:50\", \"5\": \"10:19\", \"6\": \"10:25\", \"7\": \"10:10\", \"8\": \"11:10\"}');
+INSERT INTO `biobank_specimen_preparation` (`SpecimenID`, `SpecimenProtocolID`, `CenterID`, `ExaminerID`, `Date`, `Time`, `Comments`, `Data`) VALUES (11,8,2,7,'2019-05-30','10:50:00',NULL,'{\"1\": true, \"3\": \"09:45\", \"4\": \"09:50\", \"5\": \"10:19\", \"6\": \"10:25\", \"7\": \"10:10\", \"8\": \"11:10\"}');
+INSERT INTO `biobank_specimen_preparation` (`SpecimenID`, `SpecimenProtocolID`, `CenterID`, `ExaminerID`, `Date`, `Time`, `Comments`, `Data`) VALUES (12,8,2,7,'2019-05-30','10:50:00',NULL,'{\"1\": true, \"3\": \"09:45\", \"4\": \"09:50\", \"5\": \"10:19\", \"6\": \"10:25\", \"7\": \"10:10\", \"8\": \"11:10\"}');
+INSERT INTO `biobank_specimen_preparation` (`SpecimenID`, `SpecimenProtocolID`, `CenterID`, `ExaminerID`, `Date`, `Time`, `Comments`, `Data`) VALUES (13,8,2,7,'2019-05-30','10:50:00',NULL,'{\"1\": true, \"3\": \"09:45\", \"4\": \"09:50\", \"5\": \"10:19\", \"6\": \"10:25\", \"7\": \"10:10\", \"8\": \"11:10\"}');
+INSERT INTO `biobank_specimen_preparation` (`SpecimenID`, `SpecimenProtocolID`, `CenterID`, `ExaminerID`, `Date`, `Time`, `Comments`, `Data`) VALUES (14,8,2,7,'2019-05-30','10:50:00',NULL,'{\"1\": true, \"3\": \"09:45\", \"4\": \"09:50\", \"5\": \"10:19\", \"6\": \"10:25\", \"7\": \"10:10\", \"8\": \"11:10\"}');
+UNLOCK TABLES;
+SET FOREIGN_KEY_CHECKS=1;

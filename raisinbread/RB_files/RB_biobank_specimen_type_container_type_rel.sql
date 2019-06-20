@@ -1,0 +1,12 @@
+SET FOREIGN_KEY_CHECKS=0;
+TRUNCATE TABLE `biobank_specimen_type_container_type_rel`;
+LOCK TABLES `biobank_specimen_type_container_type_rel` WRITE;
+INSERT INTO `biobank_specimen_type_container_type_rel` (`SpecimenTypeID`, `ContainerTypeID`) VALUES (1,8);
+INSERT INTO `biobank_specimen_type_container_type_rel` (`SpecimenTypeID`, `ContainerTypeID`) VALUES (1,9);
+INSERT INTO `biobank_specimen_type_container_type_rel` (`SpecimenTypeID`, `ContainerTypeID`) VALUES (1,10);
+INSERT INTO `biobank_specimen_type_container_type_rel` (`SpecimenTypeID`, `ContainerTypeID`) VALUES (4,11);
+INSERT INTO `biobank_specimen_type_container_type_rel` (`SpecimenTypeID`, `ContainerTypeID`) VALUES (5,11);
+INSERT INTO `biobank_specimen_type_container_type_rel` (`SpecimenTypeID`, `ContainerTypeID`) VALUES (6,11);
+INSERT INTO `biobank_specimen_type_container_type_rel` (`SpecimenTypeID`, `ContainerTypeID`) VALUES (7,11);
+UNLOCK TABLES;
+SET FOREIGN_KEY_CHECKS=1;

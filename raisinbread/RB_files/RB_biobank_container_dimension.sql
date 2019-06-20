@@ -1,0 +1,12 @@
+SET FOREIGN_KEY_CHECKS=0;
+TRUNCATE TABLE `biobank_container_dimension`;
+LOCK TABLES `biobank_container_dimension` WRITE;
+INSERT INTO `biobank_container_dimension` (`ContainerDimensionID`, `X`, `XNumerical`, `Y`, `YNumerical`, `Z`, `ZNumerical`) VALUES (1,1,_binary '',5,_binary '',1,_binary '');
+INSERT INTO `biobank_container_dimension` (`ContainerDimensionID`, `X`, `XNumerical`, `Y`, `YNumerical`, `Z`, `ZNumerical`) VALUES (2,6,_binary '',1,_binary '',1,_binary '');
+INSERT INTO `biobank_container_dimension` (`ContainerDimensionID`, `X`, `XNumerical`, `Y`, `YNumerical`, `Z`, `ZNumerical`) VALUES (3,4,_binary '',4,_binary '',1,_binary '');
+INSERT INTO `biobank_container_dimension` (`ContainerDimensionID`, `X`, `XNumerical`, `Y`, `YNumerical`, `Z`, `ZNumerical`) VALUES (4,1,_binary '',3,_binary '',1,_binary '');
+INSERT INTO `biobank_container_dimension` (`ContainerDimensionID`, `X`, `XNumerical`, `Y`, `YNumerical`, `Z`, `ZNumerical`) VALUES (5,4,_binary '',1,_binary '',1,_binary '');
+INSERT INTO `biobank_container_dimension` (`ContainerDimensionID`, `X`, `XNumerical`, `Y`, `YNumerical`, `Z`, `ZNumerical`) VALUES (6,6,_binary '',4,_binary '',1,_binary '');
+INSERT INTO `biobank_container_dimension` (`ContainerDimensionID`, `X`, `XNumerical`, `Y`, `YNumerical`, `Z`, `ZNumerical`) VALUES (7,10,_binary '\0',10,_binary '',1,_binary '');
+UNLOCK TABLES;
+SET FOREIGN_KEY_CHECKS=1;

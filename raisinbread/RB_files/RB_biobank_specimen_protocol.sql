@@ -1,0 +1,16 @@
+SET FOREIGN_KEY_CHECKS=0;
+TRUNCATE TABLE `biobank_specimen_protocol`;
+LOCK TABLES `biobank_specimen_protocol` WRITE;
+INSERT INTO `biobank_specimen_protocol` (`SpecimenProtocolID`, `Label`, `SpecimenProcessID`, `SpecimenTypeID`) VALUES (1,'Blood Collection',1,1);
+INSERT INTO `biobank_specimen_protocol` (`SpecimenProtocolID`, `Label`, `SpecimenProcessID`, `SpecimenTypeID`) VALUES (2,'Saliva Collection',1,3);
+INSERT INTO `biobank_specimen_protocol` (`SpecimenProtocolID`, `Label`, `SpecimenProcessID`, `SpecimenTypeID`) VALUES (3,'DNA Collection From Blood',1,6);
+INSERT INTO `biobank_specimen_protocol` (`SpecimenProtocolID`, `Label`, `SpecimenProcessID`, `SpecimenTypeID`) VALUES (4,'DNA Collection From Saliva',1,6);
+INSERT INTO `biobank_specimen_protocol` (`SpecimenProtocolID`, `Label`, `SpecimenProcessID`, `SpecimenTypeID`) VALUES (5,'CSF Collection',1,8);
+INSERT INTO `biobank_specimen_protocol` (`SpecimenProtocolID`, `Label`, `SpecimenProcessID`, `SpecimenTypeID`) VALUES (6,'PBMC Collection',1,7);
+INSERT INTO `biobank_specimen_protocol` (`SpecimenProtocolID`, `Label`, `SpecimenProcessID`, `SpecimenTypeID`) VALUES (7,'Serum Collection',1,4);
+INSERT INTO `biobank_specimen_protocol` (`SpecimenProtocolID`, `Label`, `SpecimenProcessID`, `SpecimenTypeID`) VALUES (8,'PBMC Processing',3,1);
+INSERT INTO `biobank_specimen_protocol` (`SpecimenProtocolID`, `Label`, `SpecimenProcessID`, `SpecimenTypeID`) VALUES (9,'Serum Processing',3,1);
+INSERT INTO `biobank_specimen_protocol` (`SpecimenProtocolID`, `Label`, `SpecimenProcessID`, `SpecimenTypeID`) VALUES (10,'DNA Processing',3,1);
+INSERT INTO `biobank_specimen_protocol` (`SpecimenProtocolID`, `Label`, `SpecimenProcessID`, `SpecimenTypeID`) VALUES (11,'CSF Processing',3,8);
+UNLOCK TABLES;
+SET FOREIGN_KEY_CHECKS=1;

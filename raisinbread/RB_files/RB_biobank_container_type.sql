@@ -1,0 +1,16 @@
+SET FOREIGN_KEY_CHECKS=0;
+TRUNCATE TABLE `biobank_container_type`;
+LOCK TABLES `biobank_container_type` WRITE;
+INSERT INTO `biobank_container_type` (`ContainerTypeID`, `Brand`, `ProductNumber`, `Label`, `Primary`, `ContainerCapacityID`, `ContainerDimensionID`) VALUES (1,'FreezerCo.','##1','Freezer - 5 Shelf',_binary '\0',NULL,1);
+INSERT INTO `biobank_container_type` (`ContainerTypeID`, `Brand`, `ProductNumber`, `Label`, `Primary`, `ContainerCapacityID`, `ContainerDimensionID`) VALUES (2,'ShelfCo.','##1','Shelf - 6 Rack',_binary '\0',NULL,2);
+INSERT INTO `biobank_container_type` (`ContainerTypeID`, `Brand`, `ProductNumber`, `Label`, `Primary`, `ContainerCapacityID`, `ContainerDimensionID`) VALUES (3,'RackCo.','##1','Rack - 16 Box',_binary '\0',NULL,3);
+INSERT INTO `biobank_container_type` (`ContainerTypeID`, `Brand`, `ProductNumber`, `Label`, `Primary`, `ContainerCapacityID`, `ContainerDimensionID`) VALUES (4,'FreezerCo.','##2','Freezer - 3 Shelf',_binary '\0',NULL,4);
+INSERT INTO `biobank_container_type` (`ContainerTypeID`, `Brand`, `ProductNumber`, `Label`, `Primary`, `ContainerCapacityID`, `ContainerDimensionID`) VALUES (5,'ShelfCo.','##2','Shelf - 4 Rack',_binary '\0',NULL,5);
+INSERT INTO `biobank_container_type` (`ContainerTypeID`, `Brand`, `ProductNumber`, `Label`, `Primary`, `ContainerCapacityID`, `ContainerDimensionID`) VALUES (6,'RackCo.','##2','Rack - 28 Box',_binary '\0',NULL,6);
+INSERT INTO `biobank_container_type` (`ContainerTypeID`, `Brand`, `ProductNumber`, `Label`, `Primary`, `ContainerCapacityID`, `ContainerDimensionID`) VALUES (7,'MatrixCo.','##1','Matrix Box - 10x10',_binary '\0',NULL,7);
+INSERT INTO `biobank_container_type` (`ContainerTypeID`, `Brand`, `ProductNumber`, `Label`, `Primary`, `ContainerCapacityID`, `ContainerDimensionID`) VALUES (8,'Vacutainer','366430','Red Top Tube (RTT)',_binary '',1,NULL);
+INSERT INTO `biobank_container_type` (`ContainerTypeID`, `Brand`, `ProductNumber`, `Label`, `Primary`, `ContainerCapacityID`, `ContainerDimensionID`) VALUES (9,'Vacutainer','366480','Green Top Tube (GTT)',_binary '',1,NULL);
+INSERT INTO `biobank_container_type` (`ContainerTypeID`, `Brand`, `ProductNumber`, `Label`, `Primary`, `ContainerCapacityID`, `ContainerDimensionID`) VALUES (10,'Vacutainer','366643','Purple Top Tube (PTT)',_binary '',1,NULL);
+INSERT INTO `biobank_container_type` (`ContainerTypeID`, `Brand`, `ProductNumber`, `Label`, `Primary`, `ContainerCapacityID`, `ContainerDimensionID`) VALUES (11,'Vacutainer','###','Cryotube Vial',_binary '',2,NULL);
+UNLOCK TABLES;
+SET FOREIGN_KEY_CHECKS=1;

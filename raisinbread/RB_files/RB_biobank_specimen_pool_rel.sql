@@ -1,0 +1,13 @@
+SET FOREIGN_KEY_CHECKS=0;
+TRUNCATE TABLE `biobank_specimen_pool_rel`;
+LOCK TABLES `biobank_specimen_pool_rel` WRITE;
+INSERT INTO `biobank_specimen_pool_rel` (`SpecimenID`, `PoolID`) VALUES (4,1);
+INSERT INTO `biobank_specimen_pool_rel` (`SpecimenID`, `PoolID`) VALUES (8,1);
+INSERT INTO `biobank_specimen_pool_rel` (`SpecimenID`, `PoolID`) VALUES (9,1);
+INSERT INTO `biobank_specimen_pool_rel` (`SpecimenID`, `PoolID`) VALUES (10,1);
+INSERT INTO `biobank_specimen_pool_rel` (`SpecimenID`, `PoolID`) VALUES (11,1);
+INSERT INTO `biobank_specimen_pool_rel` (`SpecimenID`, `PoolID`) VALUES (12,1);
+INSERT INTO `biobank_specimen_pool_rel` (`SpecimenID`, `PoolID`) VALUES (13,1);
+INSERT INTO `biobank_specimen_pool_rel` (`SpecimenID`, `PoolID`) VALUES (14,1);
+UNLOCK TABLES;
+SET FOREIGN_KEY_CHECKS=1;

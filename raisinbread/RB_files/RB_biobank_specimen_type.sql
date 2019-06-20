@@ -1,0 +1,16 @@
+SET FOREIGN_KEY_CHECKS=0;
+TRUNCATE TABLE `biobank_specimen_type`;
+LOCK TABLES `biobank_specimen_type` WRITE;
+INSERT INTO `biobank_specimen_type` (`SpecimenTypeID`, `Label`, `FreezeThaw`) VALUES (1,'Blood',_binary '\0');
+INSERT INTO `biobank_specimen_type` (`SpecimenTypeID`, `Label`, `FreezeThaw`) VALUES (2,'Urine',_binary '\0');
+INSERT INTO `biobank_specimen_type` (`SpecimenTypeID`, `Label`, `FreezeThaw`) VALUES (3,'Saliva',_binary '\0');
+INSERT INTO `biobank_specimen_type` (`SpecimenTypeID`, `Label`, `FreezeThaw`) VALUES (4,'Serum',_binary '');
+INSERT INTO `biobank_specimen_type` (`SpecimenTypeID`, `Label`, `FreezeThaw`) VALUES (5,'Plasma',_binary '');
+INSERT INTO `biobank_specimen_type` (`SpecimenTypeID`, `Label`, `FreezeThaw`) VALUES (6,'DNA',_binary '');
+INSERT INTO `biobank_specimen_type` (`SpecimenTypeID`, `Label`, `FreezeThaw`) VALUES (7,'PBMC',_binary '\0');
+INSERT INTO `biobank_specimen_type` (`SpecimenTypeID`, `Label`, `FreezeThaw`) VALUES (8,'CSF',_binary '');
+INSERT INTO `biobank_specimen_type` (`SpecimenTypeID`, `Label`, `FreezeThaw`) VALUES (9,'Muscle Biopsy',_binary '\0');
+INSERT INTO `biobank_specimen_type` (`SpecimenTypeID`, `Label`, `FreezeThaw`) VALUES (10,'Skin Biopsy',_binary '\0');
+INSERT INTO `biobank_specimen_type` (`SpecimenTypeID`, `Label`, `FreezeThaw`) VALUES (11,'Buccal Swab',_binary '\0');
+UNLOCK TABLES;
+SET FOREIGN_KEY_CHECKS=1;

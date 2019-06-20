@@ -1,0 +1,10 @@
+SET FOREIGN_KEY_CHECKS=0;
+TRUNCATE TABLE `biobank_specimen_type_parent`;
+LOCK TABLES `biobank_specimen_type_parent` WRITE;
+INSERT INTO `biobank_specimen_type_parent` (`SpecimenTypeID`, `ParentSpecimenTypeID`) VALUES (4,1);
+INSERT INTO `biobank_specimen_type_parent` (`SpecimenTypeID`, `ParentSpecimenTypeID`) VALUES (5,1);
+INSERT INTO `biobank_specimen_type_parent` (`SpecimenTypeID`, `ParentSpecimenTypeID`) VALUES (6,1);
+INSERT INTO `biobank_specimen_type_parent` (`SpecimenTypeID`, `ParentSpecimenTypeID`) VALUES (7,1);
+INSERT INTO `biobank_specimen_type_parent` (`SpecimenTypeID`, `ParentSpecimenTypeID`) VALUES (6,11);
+UNLOCK TABLES;
+SET FOREIGN_KEY_CHECKS=1;
