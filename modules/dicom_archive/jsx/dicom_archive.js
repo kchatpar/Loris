@@ -57,8 +57,66 @@ class DicomArchive extends Component {
       });
   }
   handleSubmit() {
-   swal('hello');
+   fetch(this.props.submitURL, {
+     method: 'POST',
+     cache: 'no-cache',
+     credentials: 'same-origin',
+     body: formObject,
+   })
+   .then((resp) => {
+    if (resp.ok && resp.status === 200) {
+      swal('Success!', 'Examiner added.', 'success').then((result) => {
+        if (result.value) {
+          // this.closeModal();
+          // this.fetchData();
+        }
+      });
+    } else {
+      resp.text().then((message) => {
+        swal('Error!', message, 'error');
+      });
+    }
+  })
+  .catch((error) => {
+    console.error(error);
+  });
+ }
+
+   /*
+   fetch(this.props.submitURL, {
+      method: 'POST',
+      cache: 'no-cache',
+      credentials: 'same-origin',
+      body: formObject,
+    })
+   .then((resp)=>{
+
+   if (resp.text && resp.status === 404) {
+        swal('Success!', 'Examiner added.', 'success');
+     }
+   }
   }
+
+  .catch((error) {
+      console.error(error);
+   } */
+
+   /* .then((result) => {
+          if (result.value) {
+            // this.closeModal();
+            // this.fetchData();
+          }
+        });
+      } else {
+        resp.text().then((message) => {
+          swal('Error!', message, 'error');
+        });
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+  */
 
   /**
    * Modify behaviour of specified column cells in the Data Table component
@@ -184,7 +242,10 @@ DicomArchive.propTypes = {
 
 window.addEventListener('load', () => {
   ReactDOM.render(
-    <DicomArchive dataURL={loris.BaseURL + '/dicom_archive/?format=json'}/>,
+    <DicomArchive
+      dataURL={loris.BaseURL + '/dicom_archive/?format=json'}
+      submitURL={downloadURL}
+    />,
     document.getElementById('lorisworkspace')
   );
 });
