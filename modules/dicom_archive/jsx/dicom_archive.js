@@ -4,6 +4,9 @@ import PropTypes from 'prop-types';
 import Loader from 'Loader';
 import FilterableDataTable from 'FilterableDataTable';
 
+// import swal from 'sweetalert2';
+// import Modal from 'Modal';
+
 /**
  * DICOM Archive Page.
  *
@@ -29,6 +32,9 @@ class DicomArchive extends Component {
 
     this.fetchData = this.fetchData.bind(this);
     this.formatColumn = this.formatColumn.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    // this.openModal = this.openModal.bind(this);
+    // this.closeModal = this.closeModal.bind(this);
   }
 
   componentDidMount() {
@@ -50,6 +56,9 @@ class DicomArchive extends Component {
         console.error(error);
       });
   }
+  handleSubmit() {
+   swal('hello');
+  }
 
   /**
    * Modify behaviour of specified column cells in the Data Table component
@@ -68,7 +77,7 @@ class DicomArchive extends Component {
             + '&patientName=' + row['Patient Name'];
         result =
           <td>
-            <a href={downloadURL}>
+            <a href={downloadURL} onClick={this.handleSubmit}>
               <span className="glyphicon glyphicon-cloud-download"/>
               &nbsp;
               {cell}
