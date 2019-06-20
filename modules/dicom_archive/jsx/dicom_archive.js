@@ -28,12 +28,13 @@ class DicomArchive extends Component {
       data: {},
       error: false,
       isLoaded: false,
+      downloadLink: '',
     };
 
     this.fetchData = this.fetchData.bind(this);
     this.formatColumn = this.formatColumn.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
-    // this.openModal = this.openModal.bind(this);
+    this.getURL = this.getURL.bind(this);
     // this.closeModal = this.closeModal.bind(this);
   }
 
@@ -127,6 +128,16 @@ class DicomArchive extends Component {
    *
    * @return {*} a formated table cell for a given column
    */
+
+  /**
+  @param {string} url - download url
+  @return {string}
+  */
+  getURL(url) {
+   return url;
+  }
+
+
   formatColumn(column, cell, row) {
     let result = <td>{cell}</td>;
     switch (column) {
@@ -142,6 +153,7 @@ class DicomArchive extends Component {
             </a>
           </td>;
       }
+      this.getURL(downloadURL);
       break;
       case 'Metadata': {
         const metadataURL = loris.BaseURL +
@@ -244,7 +256,7 @@ window.addEventListener('load', () => {
   ReactDOM.render(
     <DicomArchive
       dataURL={loris.BaseURL + '/dicom_archive/?format=json'}
-      submitURL={downloadURL}
+      submitURL={this.getURL}
     />,
     document.getElementById('lorisworkspace')
   );
