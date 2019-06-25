@@ -57,10 +57,14 @@ class SpecificHeader extends \Loris\API\Candidates\Candidate\Visit\Imaging\Image
     /**
      * Handles a GET request
      *
-     * @return void (but populates $this->JSON)
+     * @return none, but populates $this->JSON
      */
     public function handleGET()
     {
+
+        foreach ($headersDB as $row) {
+            $headers[$row['Header']] = $row['Value'];
+        }
         $this->JSON = [
                        'Meta'  => [
                                    'CandID'   => $this->CandID,
@@ -93,4 +97,4 @@ if (isset($_REQUEST['PrintSpecificHeader'])) {
     );
     print $obj->toJSONString();
 }
-
+?>

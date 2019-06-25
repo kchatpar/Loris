@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * PHP Version 7
  *
@@ -35,10 +35,10 @@ class NDB_Notifier extends NDB_Notifier_Abstract
      *                        by the notifier.
      */
     public function __construct(
-        string $module_name,
-        string $operation_type,
-        array $extra_tpl_data = array(),
-        bool $asAdmin = false
+        $module_name,
+        $operation_type,
+        $extra_tpl_data=null,
+        $asAdmin=null
     ) {
         parent::__construct(
             $module_name,
@@ -51,16 +51,15 @@ class NDB_Notifier extends NDB_Notifier_Abstract
     /**
      * Function to be overridden by module using the notification system
      *
-     * @param array   $extra_tpl_data additional variables to be sent to the
-     *                              template.
-     * @param ?string $custom_message message overriding module-defined message
+     * @param array  $extra_tpl_data additional variables to be sent to the template.
+     * @param string $custom_message message overriding module-defined message
      *
      * @return void
      */
     public function notify(
-        array $extra_tpl_data=array(),
-        ?string $custom_message=null
-    ): void {
+        $extra_tpl_data=array(),
+        $custom_message=null
+    ) {
         $this->tpl_data = $this->tpl_data + $extra_tpl_data;
 
         if (!empty($custom_message)) {
@@ -82,25 +81,48 @@ class NDB_Notifier extends NDB_Notifier_Abstract
      *
      * TODO add validation for email sent/failed
      */
-    private function _sendEmails(): void
+    private function _sendEmails()
     {
         foreach ($this->notified['email_text'] as $name=>$uid) {
-            $notifierID  = $this->notifier->getData('ID');
-            $senderEmail = $this->notifier->getData('Email');
             $this->tpl_data['notified_user'] = $name;
-            $this->tpl_data['notifier_user'] = "$notifierID <$senderEmail>";
-            $recipientEmail = $this->getEmail((int)$uid);
+            $this->tpl_data['notifier_user']
+                = $this->notifier['name'].' <'.$this->notifier['email'].'>';
+            $email =$this->getEmail($uid);
 
-            if ($notifierID === $uid) {
+            if ($this->notifier['ID'] === $uid) {
                 // TODO send confirmation email instead
             } else {
                 Email::send(
-                    $recipientEmail,
+                    $email,
                     $this->template,
                     $this->tpl_data
                 );
-                $this->log((int)$notifierID, (int)$uid, 'email_text');
+                $this->log($this->notifier['ID'], $uid, 'email_text');
             }
         }
+    }
+
+    /**
+     * Send sms to concerned users.
+     *
+     * @return void
+     *
+     * TODO add validation
+     */
+    private function _sendSMS()
+    {
+
+    }
+
+    /**
+     * Send phone call to concerned users.
+     *
+     * @return void
+     *
+     * TODO add validation
+     */
+    private function _sendPhone()
+    {
+
     }
 }

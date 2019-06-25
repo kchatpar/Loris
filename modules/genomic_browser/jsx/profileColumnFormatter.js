@@ -2,8 +2,8 @@
  * Modify behaviour of specified column cells in the Data Table component
  * @param {string} column - column name
  * @param {string} cell - cell content
- * @param {array} rowData - array of cell contents for a specific row
- * @param {array} rowHeaders - array of table headers (column names)
+ * @param {arrray} rowData - array of cell contents for a specific row
+ * @param {arrray} rowHeaders - array of table headers (column names)
  * @return {*} a formated table cell for a given column
  */
 function formatColumn(column, cell, rowData, rowHeaders) {
@@ -13,7 +13,7 @@ function formatColumn(column, cell, rowData, rowHeaders) {
   }
 
   // Create the mapping between rowHeaders and rowData in a row object.
-  let row = {};
+  var row = {};
   rowHeaders.forEach(function(header, index) {
     row[header] = rowData[index];
   }, this);
@@ -21,7 +21,7 @@ function formatColumn(column, cell, rowData, rowHeaders) {
   let reactElement = null;
   switch (column) {
     case 'PSCID': {
-      const url = loris.BaseURL + '/' + rowData[1] + '/';
+      const url = loris.BaseURL + "/" + rowData[1] + "/";
       reactElement = (
         <td><a href={url}>{cell}</a></td>
       );
@@ -37,7 +37,7 @@ function formatColumn(column, cell, rowData, rowHeaders) {
         reactElement = (
           <td>
             <a href="#" onClick={loris.loadFilteredMenuClickHandler(
-              'genomic_browser/viewGenomicFile/',
+              'genomic_browser/?submenu=viewGenomicFile',
               {candID: rowData[1]}
             )}>{cell}</a>
           </td>
@@ -57,7 +57,7 @@ function formatColumn(column, cell, rowData, rowHeaders) {
             <span
               style={{cursor: 'pointer'}}
               onClick={loris.loadFilteredMenuClickHandler(
-                'genomic_browser/' + column.toLowerCase() + '_browser/', {DCCID: rowData[1]}
+                'genomic_browser/?submenu=' + column.toLowerCase() + '_browser', {DCCID: rowData[1]}
               )}
             >
               {cell}

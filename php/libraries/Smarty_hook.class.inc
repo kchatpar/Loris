@@ -1,8 +1,8 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * This provides the implementation of the Smarty_neurodb class
  *
- * PHP Version 7
+ * PHP Version 5
  *
  * @category Main
  * @package  Main
@@ -34,9 +34,9 @@ class Smarty_NeuroDB extends Smarty
      * Constructor for the NeuroDB Smarty hook class.
      *                           the templates directory for.
      *
-     * @param ?string $moduleName The name of the module to search through
+     * @param string $moduleName The name of the module to search through
      */
-    function __construct(?string $moduleName = null)
+    function __construct($moduleName = null)
     {
         parent::__construct();
 
@@ -108,3 +108,4 @@ class Smarty_NeuroDB extends Smarty
     }
 }
 
+?>

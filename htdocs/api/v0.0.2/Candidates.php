@@ -67,17 +67,14 @@ class Candidates extends APIBase
     /**
      * Handles a candidates GET request
      *
-     * @return void (but populates $this->JSON)
+     * @return none, but populates $this->JSON
      */
     public function handleGET()
     {
-        // The inaccurately titled "Gender" column was renamed to "Sex"
-        // in the backend, but the v0.0.2 version of the API is immutable
-        // and still needs to refer to it as Gender, even if it's wrong.
         $candidates = $this->DB->pselect(
             "SELECT CandID, ProjectID, PSCID, s.Alias as Site,
-                    EDC, DoB, Sex as Gender
-                FROM candidate c JOIN psc s on (s.CenterID=c.RegistrationCenterID)
+                    EDC, DoB, Gender
+                FROM candidate c JOIN psc s on (s.CenterID=c.CenterID)
              WHERE Active='Y'
                 ",
             []
@@ -102,7 +99,7 @@ class Candidates extends APIBase
      * Handles a candidates POST request to validate data and if everything
      * is valid, create the candidate
      *
-     * @return void (but populates $this->JSON and writes to DB)
+     * @return none, but populates $this->JSON and writes to DB
      */
     public function handlePOST()
     {
@@ -186,7 +183,7 @@ class Candidates extends APIBase
      *                       the field, or a string representing the format
      *                       expected of the data.
      *
-     * @return void (but will generate an error and exit if the value is invalid.)
+     * @return none, but will generate an error and exit if the value is invalid.
      */
     protected function verifyField($data, $field, $values)
     {
@@ -247,4 +244,4 @@ if (isset($_REQUEST['PrintCandidates'])) {
     }
     print $obj->toJSONString();
 }
-
+?>

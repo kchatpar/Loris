@@ -87,7 +87,7 @@ class Visit extends \Loris\API\Candidates\Candidate
     /**
      * Handles a GET request
      *
-     * @return void (but populates $this->JSON)
+     * @return none, but populates $this->JSON
      */
     public function handleGET()
     {
@@ -136,7 +136,7 @@ class Visit extends \Loris\API\Candidates\Candidate
     /**
      * Handles a PUT request for a visit
      *
-     * @return void
+     * @return none
      */
     public function handlePUT()
     {
@@ -196,12 +196,7 @@ class Visit extends \Loris\API\Candidates\Candidate
                 $this->safeExit(0);
             }
             // need to extract subprojectID
-            $this->createNew(
-                $this->CandID,
-                $subprojectID,
-                $this->VisitLabel,
-                $centerID
-            );
+            $this->createNew($this->CandID, $subprojectID, $this->VisitLabel);
             $this->header("HTTP/1.1 201 Created");
         }
     }
@@ -216,11 +211,10 @@ class Visit extends \Loris\API\Candidates\Candidate
      * @param integer $subprojectID The subproject for the new visit
      * @param string  $VL           The visit label of the visit to
      *                              be created
-     * @param integer $CID          The CenterID for this timepoint
      *
-     * @return void
+     * @return none
      */
-    function createNew($CandID, $subprojectID, $VL, $CID)
+    function createNew($CandID, $subprojectID, $VL)
     {
         try {
             \TimePoint::isValidVisitLabel($CandID, $subprojectID, $VL);
@@ -230,10 +224,7 @@ class Visit extends \Loris\API\Candidates\Candidate
             $this->safeExit(0);
         }
 
-        $cand        = \Candidate::singleton($candID);
-        $sessionSite = \Site::singleton($CID);
-
-        \TimePoint::createNew($cand, $subprojectID, $VL, $sessionSite);
+        \TimePoint::createNew($CandID, $subprojectID, $VL);
     }
 }
 
@@ -256,4 +247,4 @@ if (isset($_REQUEST['PrintVisit'])) {
     }
     print $obj->toJSONString();
 }
-
+?>

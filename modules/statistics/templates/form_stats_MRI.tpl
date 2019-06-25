@@ -4,9 +4,11 @@
     <div class="col-sm-2">
         {html_options id="MRIsite" options=$Sites name="MRIsite" selected=$CurrentSite.ID class="form-control"}
     </div>
+    {if $useProjects == "true"}
         <div class="col-sm-2">
             {html_options id="MRIProject" options=$Projects name="MRIProject" selected=$CurrentProject.ID class="form-control"}
         </div>
+    {/if}
     <br><br>
     <div id="scancheckbox">
         <input type="checkbox" id="selectall"/> Select All
@@ -20,6 +22,7 @@
     <br><br>
     <button onClick="updateMRITab()" class="btn btn-primary btn-small">Submit Query</button>
     <br><br>
+    <div class="table-responsive">
         <table id="scandata" class="table table-primary table-bordered dynamictable">
             <thead>
             <tr class="info">
@@ -83,8 +86,9 @@
             {/foreach}
             </tbody>
         </table>
+    </div>
     {if $mri_table_exists}
-      {$MRI_Done_Table}
+        {$MRI_Done_Table}
     {else}
         <br><br>
         <h2>Oops</h2>

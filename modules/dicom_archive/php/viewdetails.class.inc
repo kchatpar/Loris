@@ -26,11 +26,6 @@ namespace LORIS\dicom_archive;
 class ViewDetails extends \NDB_Form
 {
     /**
-     * ID of the tarchive for which the details should be displayed.
-     */
-    public $tarchiveID;
-
-    /**
      * Keeps array of protocols from mri_protocol
      */
     var $protocols;
@@ -38,39 +33,37 @@ class ViewDetails extends \NDB_Form
     /**
      * Determine whether the user has permission to view this page
      *
-     * @param \User $user The user whose access is being checked
-     *
      * @return bool whether the user has access
      */
-    function _hasAccess(\User $user) : bool
+    function _hasAccess()
     {
+        $user = \User::singleton();
         return $user->hasPermission('dicom_archive_view_allsites');
     }
 
     /**
     * Sets up main parameters
     *
-    * @return void
+    * @return NULL
     */
-    function setup()
+    function __construct()
     {
         $this->DB = \Database::singleton();
 
-        $user = \User::singleton();
-        if ((!empty($_REQUEST['tarchiveID'])) && ($this->_hasAccess($user))) {
-            $this->tarchiveID          = $_REQUEST['tarchiveID'];
-            $this->tpl_data['archive'] = $this->_getTarchiveData(
-                $this->tarchiveID,
+        if ((!empty($_REQUEST['tarchiveID'])) && ($this->_hasAccess())) {
+            $tarchiveID = $_REQUEST['tarchiveID'];
+            $this->tpl_data['archive']        = $this->_getTarchiveData(
+                $tarchiveID,
                 'tarchive',
                 'LastUpdate'
             );
             $this->tpl_data['archive_series'] = $this->_getTarchiveData(
-                $this->tarchiveID,
+                $tarchiveID,
                 'tarchive_series',
                 'TarchiveSeriesID'
             );
             $this->tpl_data['archive_files']  = $this->_getTarchiveData(
-                $this->tarchiveID,
+                $tarchiveID,
                 'tarchive_files',
                 'TarchiveFileID'
             );
@@ -95,7 +88,7 @@ class ViewDetails extends \NDB_Form
             $array = $this->DB->pselectRow($query, array('ID' => $tarchiveID));
             break;
         case "tarchive_series":
-            $query = "SELECT * FROM $table WHERE TarchiveID =:ID
+            $query = "SELECT * FROM $table WHERE TarchiveID =:ID 
                 ORDER BY :OField";
             $array = $this->DB->pselect(
                 $query,
@@ -147,83 +140,28 @@ class ViewDetails extends \NDB_Form
     function _validateNamesIds()
     {
         $config =& \NDB_Config::singleton();
-        $db     = \Database::singleton();
         $dicomArchiveSettings = $config->getSetting('imaging_modules');
 
-        // escape any forward slashes
-        $pNameRegex      = preg_replace(
-            '/\//',
-            '\/',
-            $dicomArchiveSettings['patientNameRegex']
-        );
-        $legoPhanRegex   = preg_replace(
-            '/\//',
-            '\/',
-            $dicomArchiveSettings['LegoPhantomRegex']
-        );
-        $livingPhanRegex = preg_replace(
-            '/\//',
-            '\/',
-            $dicomArchiveSettings['LivingPhantomRegex']
-        );
-        $pIDRegex        = preg_replace(
-            '/\//',
-            '\/',
-            $dicomArchiveSettings['patientIDRegex']
-        );
-
-        $query     = "SELECT IsPhantom "
-                   . "FROM mri_upload m "
-                   . "JOIN tarchive t USING(TarchiveID) "
-                   . "WHERE t.TarchiveID =:tid "
-                   . "AND t.archivelocation LIKE CONCAT("
-                   .     "'%', "
-                   .     "substring_index(m.decompressedlocation, '/', -1), "
-                   .     " '.tar'"
-                   . ")";
-        $isPhantom = $db->pselectRow(
-            $query,
-            array('tid' => $this->tpl_data['archive']['TarchiveID'])
-        )['IsPhantom'] ?? null;
-
-        if ($isPhantom === 'Y') {
-             $isValid = preg_match(
-                 "/$legoPhanRegex/",
-                 $this->tpl_data['archive']['PatientName']
-             ) || preg_match(
-                 "/$livingPhanRegex/",
-                 $this->tpl_data['archive']['PatientName']
-             );
-        } else if ($isPhantom === 'N') {
-            $isValid = preg_match(
-                "/$pNameRegex/",
-                $this->tpl_data['archive']['PatientName']
-            );
+        if ((preg_match(
+            $dicomArchiveSettings['patientNameRegex'],
+            $this->tpl_data['archive']['PatientName']
+        )) || (preg_match(
+            $dicomArchiveSettings['LegoPhantomRegex'],
+            $this->tpl_data['archive']['PatientName']
+        )) || (preg_match(
+            $dicomArchiveSettings['LivingPhantomRegex'],
+            $this->tpl_data['archive']['PatientName']
+        ))) {
+            $this->tpl_data['archive']['patientNameValid'] = 1;
         } else {
-            // if scan was uploaded via non-imaging uploader method
-            // run patient name through all regex validations
-            $isValid = (preg_match(
-                "/$pNameRegex/",
-                $this->tpl_data['archive']['PatientName']
-            )) || (preg_match(
-                "/$legoPhanRegex/",
-                $this->tpl_data['archive']['PatientName']
-            )) || (preg_match(
-                "/$livingPhanRegex/",
-                $this->tpl_data['archive']['PatientName']
-            ));
-        }
-
-        $this->tpl_data['archive']['patientNameValid'] = $isValid ? 1 : 0;
-        if (!$isValid) {
-            $this->tpl_data['archive']['PatientName'] = "INVALID - HIDDEN";
+            $this->tpl_data['archive']['patientNameValid'] = 0;
+            $this->tpl_data['archive']['PatientName']      = "INVALID - HIDDEN";
         }
 
         if (preg_match(
-            "/$pIDRegex/",
+            $dicomArchiveSettings['patientIDRegex'],
             $this->tpl_data['archive']['PatientID']
-        )
-        ) {
+        )) {
             $this->tpl_data['archive']['patientIDValid'] = 1;
         } else {
             $this->tpl_data['archive']['patientIDValid'] = 0;
@@ -240,12 +178,11 @@ class ViewDetails extends \NDB_Form
     function _setProtocols()
     {
         try {
-            $query           = "SELECT Scan_type, TR_min, TR_max, TE_min, TE_max,
-                TI_min, TI_max, slice_thickness_min, slice_thickness_max FROM
-                mri_protocol";
+            $query           = "SELECT Scan_type, TR_range, TE_range, TI_range, 
+                slice_thickness_range FROM mri_protocol";
             $this->protocols = $this->DB->pselect($query, array());
             return true;
-        } catch(\LorisException $e) {
+        } catch(LorisException $e) {
             return false;
         }
     }
@@ -265,15 +202,17 @@ class ViewDetails extends \NDB_Form
         $sliceThickness = $series['SliceThickness'];
 
         foreach ($this->protocols as $protocol) {
-            if (($this->_inRange($tr, $protocol['TR_min'], $protocol['TR_max']))
-                && ($this->_inRange($te, $protocol['TE_min'], $protocol['TE_max']))
-                && ($this->_inRange($ti, $protocol['TI_min'], $protocol['TI_max']))
-                && ($this->_inRange(
+            if ((! $protocol['TR_range']
+                || $this->_inRange($tr, $protocol['TR_range']))
+                && (! $protocol['TE_range']
+                || $this->_inRange($te, $protocol['TE_range']))
+                && (! $protocol['TI_range']
+                || $this->_inRange($ti, $protocol['TI_range']))
+                && (! $protocol['slice_thickness_range']
+                || $this->_inRange(
                     $sliceThickness,
-                    $protocol['slice_thickness_min'],
-                    $protocol['slice_thickness_max']
-                ))
-            ) {
+                    $protocol['slice_thickness_range']
+                ))) {
                 return $this->_getProtocolNameFromID($protocol['Scan_type']);
             }
         }
@@ -283,28 +222,41 @@ class ViewDetails extends \NDB_Form
     /**
      * Compares parameters of a series and of the protocols
      *
-     * @param string $seriesRange series parameter to be compared
-     * @param string $protocolMin minimum value of protocol's parameter
+     * @param string $seriesRange   series parameter to be compared
+     * @param string $protocolRange protocol's parameter
      *        to be compared with
-     * @param string $protocolMax maximum value of protocol's parameter
-     *         to be compared with
      *
      * @return bool true if series parameter is in range with
      *         the protocol's one, false otherwise
      */
-    function _inRange($seriesRange, $protocolMin, $protocolMax)
+    function _inRange($seriesRange, $protocolRange)
     {
-        if (!isset($seriesRange)) {
-            return true;
-        }
-        if (!isset($protocolMin) && !isset($protocolMax)) {
-            return true;
-        } elseif (isset($protocolMin) && $protocolMax == null) {
-            return $protocolMin <= $seriesRange;
-        } elseif (isset($protocolMax) && $protocolMin == null) {
-            return $seriesRange <= $protocolMax;
+        if (! isset($seriesRange)) {
+            return false;
+        } else if (! isset($protocolRange)) {
+            return false;
         } else {
-            return $protocolMin <= $seriesRange && $seriesRange <= $protocolMax;
+            $seriesRangeTrimmed = (float)trim($seriesRange);
+            $protocolRanges     = explode(",", $protocolRange);
+
+            foreach ($protocolRanges as $range) {
+                $rangeTrimmed = trim($range);
+                if (strpos($rangeTrimmed, "-")) { // range X-Y
+                    $array = explode("-", $rangeTrimmed);
+                    $left  = (float)trim($array[0]);
+                    $right = (float)trim($array[1]);
+                    if ($left <= $seriesRangeTrimmed
+                        && $seriesRangeTrimmed <= $right
+                    ) {
+                        return true;
+                    }
+                } else { // single value element
+                    if ($seriesRangeTrimmed === (float)$rangeTrimmed) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
     /**
@@ -322,7 +274,7 @@ class ViewDetails extends \NDB_Form
             $query = "SELECT Scan_type FROM mri_scan_type WHERE ID=:ID";
             $array = $this->DB->pselectRow($query, array('ID' => $id));
             return $array['Scan_type'];
-        } catch (\LorisException $e) {
+        } catch (LorisException $e) {
             return "Unknown";
         }
     }
@@ -346,7 +298,7 @@ class ViewDetails extends \NDB_Form
     /**
      * Overrides base getJSDependencies() to add additional JS files
      *
-     * @return array of extra JS files that this page depends on
+     * @return an array of extra JS files that this page depends on
      */
     function getJSDependencies()
     {
@@ -360,22 +312,5 @@ class ViewDetails extends \NDB_Form
             )
         );
     }
-
-    /**
-      * Generate a breadcrumb trail for this page.
-      *
-      * @return \LORIS\BreadcrumbTrail
-      */
-    public function getBreadcrumbs(): \LORIS\BreadcrumbTrail
-    {
-        $label = ucwords(str_replace('_', ' ', $this->name));
-        return new \LORIS\BreadcrumbTrail(
-            new \LORIS\Breadcrumb($label, "/$this->name"),
-            new \LORIS\Breadcrumb(
-                'View Details',
-                "/dicom_archive/viewDetails?tarchiveID=$this->tarchiveID"
-            )
-        );
-    }
 }
-
+?>

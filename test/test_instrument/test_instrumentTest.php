@@ -30,12 +30,12 @@ class TestInstrumentTestIntegrationTest extends LorisIntegrationTest
     {
         parent::setUp();
         $this->DB->insert("candidate", array(
-            'CandID'               => '900000',
-            'PSCID'                => 'TST0001',
-            'RegistrationCenterID' => 1,
-            'Active'               => 'Y',
-            'UserID'               => 1,
-            'Entity_type'          => 'Human'
+            'CandID' => '900000',
+            'PSCID'  => 'TST0001',
+            'CenterID' => 1,
+            'Active' => 'Y',
+            'UserID' => 1,
+            'Entity_type' => 'Human'
         ));
         $this->DB->insert('session', array(
             'ID' => '999999',
@@ -43,12 +43,6 @@ class TestInstrumentTestIntegrationTest extends LorisIntegrationTest
             'Visit_label' => 'V1',
             'CenterID' => 1,
             'Current_stage'   => 'Not Started',
-        ));
-	$this->DB->insert('test_names', array(
-	    'ID' => '999999',
-            'Test_name' => 'testtest',
-            'Full_name' => 'Test Test',
-            'Sub_group' => 1,
         ));
         $this->DB->insert('flag', array(
             'ID' => '999999',
@@ -68,7 +62,6 @@ class TestInstrumentTestIntegrationTest extends LorisIntegrationTest
         $this->DB->delete("session", array('CandID' => '900000'));
         $this->DB->delete("candidate", array('CandID' => '900000'));
         $this->DB->delete("flag", array('ID' => '999999'));
-        $this->DB->delete("test_names", array('ID' => '999999'));
         parent::tearDown();
     }
     /**
@@ -144,6 +137,7 @@ class TestInstrumentTestIntegrationTest extends LorisIntegrationTest
       $textElement = $this->webDriver->findElement(
              WebDriverBy::Name("testCheckbox")
       )->click();
+
       $this->webDriver->findElement(
              WebDriverBy::Name("fire_away")
       )->click();
@@ -189,7 +183,7 @@ class TestInstrumentTestIntegrationTest extends LorisIntegrationTest
 
     private function _landing(){
       $this->safeGet($this->url .
-        "/instruments/testtest/?commentID=11111111111111111&sessionID=999999&candID=900000"
+        "/testtest/?commentID=11111111111111111&sessionID=999999&candID=900000"
       );
     } 
 }

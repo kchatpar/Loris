@@ -20,19 +20,11 @@ $client = new NDB_Client();
 $client->makeCommandLine();
 $client->initialize(__DIR__ . "/../../../project/config.xml");
 
-$config      = \NDB_Config::singleton();
-$couchConfig = $config->getSetting('CouchDB');
-$cdb         = \NDB_Factory::singleton()->couchDB(
-    $couchConfig['dbName'],
-    $couchConfig['hostname'],
-    intval($couchConfig['port']),
-    $couchConfig['admin'],
-    $couchConfig['adminpass']
-);
-$category    = $_REQUEST['category'];
-$fieldName   = $_REQUEST['field'];
-$value       = $_REQUEST['value'];
-$value       = is_numeric($value) ? $value : "\"$value\"";
+$cdb       = CouchDB::singleton();
+$category  = $_REQUEST['category'];
+$fieldName = $_REQUEST['field'];
+$value     = $_REQUEST['value'];
+$value     = is_numeric($value) ? $value : "\"$value\"";
 
 $results = $cdb->queryView(
     "DQG-2.0",
@@ -52,4 +44,4 @@ $sessionResults = array_map(
 );
 
 print json_encode($sessionResults);
-
+?>

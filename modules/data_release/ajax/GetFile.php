@@ -14,7 +14,13 @@
 
 $user =& User::singleton();
 
-$File = $_GET['File'];
+// Ensures the user is logged in, and parses the config file.
+require_once "NDB_Client.class.inc";
+$client = new NDB_Client();
+$client->initialize("../project/config.xml");
+// Checks that config settings are set
+$config =& NDB_Config::singleton();
+$File   = $_GET['File'];
 // Make sure that the user isn't trying to break out of the $path by
 // using a relative filename.
 // No need to check for '/' since all downloads are relative to $basePath
@@ -41,9 +47,8 @@ $uid        = $db->pselectOne(
     array('userid' => $user->getUsername())
 );
 $permission = $db->pselectOne(
-    "SELECT 'X' 
-          FROM data_release_permissions 
-          WHERE userid=:uid AND data_release_id=:fileID",
+    "SELECT 'X' FROM data_release_permissions WHERE "
+    . "userid=:uid AND data_release_id=:fileID",
     array(
      'uid'    => $uid,
      'fileID' => $fileID,
@@ -59,3 +64,5 @@ header('Content-Description: File Transfer');
 header("Content-Transfer-Encoding: Binary");
 header("Content-disposition: attachment; filename=\"" . basename($FullPath) . "\"");
 readfile($FullPath);
+
+?>

@@ -1,67 +1,11 @@
-<!-- table with candidate profile info -->
-<table cellpadding="2" class="table table-info table-bordered dynamictable" style="max-width:auto">
-  <!-- column headings -->
-  <thead>
-  <tr class="info">
-    <th>
-      DOB
-    </th>
-    {if $candidate.EDC!=""}
-      <th>
-        EDC
-      </th>
-    {/if}
-    <th>
-      Biological Sex
-    </th>
-    {if $candidate.ProjectTitle != ""}
-      <th>
-        Project
-      </th>
-    {/if}
-    {foreach from=$candidate.DisplayParameters item=value key=name}
-      <th>
-        {$name}
-      </th>
-    {/foreach}
-  </tr>
-  </thead>
-  <!-- candidate data -->
-  <tbody>
-  <tr>
-    <td>
-      {$candidate.DoB}
-    </td>
-    {if $candidate.EDC!=""}
-      <td>
-        {$candidate.EDC}
-      </td>
-    {/if}
-    <td>
-      {$candidate.Sex}
-    </td>
-    {if $candidate.ProjectTitle != ""}
-      <td>
-        {$candidate.ProjectTitle}
-      </td>
-    {/if}
-    {foreach from=$candidate.DisplayParameters item=value key=name}
-      <td>
-        {$value}
-      </td>
-    {/foreach}
-  </tr>
-  </tbody>
-</table>
-
 <div class="col-xs-12 row">
     <!-- <div class="col-xs-1"> -->
         <h3>Actions:&nbsp&nbsp</h3> 
     <!-- </div> -->
     <!-- <div class="col-xs-4"> -->
         {$actions}
-           <a class="btn btn-default" role="button" href="{$baseurl}/imaging_browser/?DCCID={$candID}">
-              View Imaging datasets</a>
+           <button class="btn btn-primary timepoint_imaging_datasets" data-pscid="{$PSCID}">
+              View Imaging datasets</button>
 
     <!-- </div> -->
 </div>
@@ -121,7 +65,9 @@
             {if $timePoints[timepoint].Scan_done != ""}
                     {if $timePoints[timepoint].Scan_done == 'Y'}
                         {assign var="scan_done" value="Yes"}
-                        <a href="{$baseurl}/imaging_browser/viewSession/?sessionID={$timePoints[timepoint].SessionID}" class="timepoint_list">
+                        <a href="#" class="timepoint_list"
+                           data-visitlabel="{$timePoints[timepoint].Visit_label}"
+                           data-pscid="{$PSCID}">
                         {$scan_done}</a>
                     {else}
                         {assign var="scan_done" value="No"}

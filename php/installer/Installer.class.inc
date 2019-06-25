@@ -4,7 +4,7 @@
  * script under htdocs. It's put in a class for testability (even if there
  * aren't currently any tests for it.) and to keep installdb.php neat.
  *
- * PHP Version 7
+ * PHP Version 5.5+
  *
  * @category Installer
  * @package  Installer
@@ -12,7 +12,7 @@
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
-namespace LORIS\Installer;
+
 /**
  * The Installer class handles all the logic used by the installdb.php
  * script under htdocs. It's put in a class for testability (even if there
@@ -30,7 +30,7 @@ class Installer
     private $_lastErr;
 
     /**
-     * Get the last error that occurred in this install process.
+     * Get the last error that occured in this install process.
      *
      * @return string
      */
@@ -122,32 +122,34 @@ class Installer
     public function checkSystemDependenciesValid()
     {
         // Check PHP version is supported.
-        if (PHP_MAJOR_VERSION < 7) {
-            $this->_lastErr = 'PHP version 7 or higher is required to run '
-            . 'LORIS. ' . PHP_RELEASE_VERSION . ' is not supported.';
+        if (PHP_MAJOR_VERSION <= 4
+            || (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 6)
+        ) {
+            $this->_lastErr = "PHP version 5.6 or higher is required to run "
+            . "LORIS. $PHP_RELEASE_VERSION is not supported.";
             return false;
         }
 
         // Check that some standard PHP packages which are removed in Debian
         // without a special package installed are available.
         if (function_exists('json_encode') == false) {
-            $this->_lastErr = "JSON functions do not appear to be accessible "
-                . "in your PHP installation. If you're running on Debian or "
-                . "Ubuntu, please install the php-json package.";
+            $this->_lastErr = "json functions do not appear to be accessible in your"
+            . " PHP installation. If you're running on Debian or Ubuntu, please"
+            . " ensure you've installed the php-json package.";
             return false;
         }
 
         // Check that the PDO is able to connect to MySQL.
         try {
             // and check that the MySQL driver is available.
-            $drivers = \PDO::getAvailableDrivers();
+            $drivers = PDO::getAvailableDrivers();
             if (in_array("mysql", $drivers) == false) {
                 $this->_lastErr = "You do not appear to have MySQL support"
                 . " available in PHP. Aborting.\n"
                 . " Please check your system dependencies and try again.";
                 return false;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->_lastErr = "You do not appear to have PDO support in your "
             . "version of PHP, which is required to access the database.";
             return false;
@@ -157,8 +159,8 @@ class Installer
         if (is_writable(__DIR__ . "/../../smarty/templates_c") == false) {
             $this->_lastErr = "Web server can not write to template cache "
             . "directory.\n"
-            . "Please ensure the LORIS/smarty/templaces_c directory is writable"
-            . "by your web server and try again.";
+            . "Please ensure the LORIS/smarty/templaces_c directory is writable by"
+            . " your web server and try again.";
             return false;
         }
         return true;
@@ -185,21 +187,21 @@ class Installer
             return false;
         }
         $DB = Database::singleton();
-        try {
-            $DB->connectAndCreate(
-                $values['dbname'],
-                $values['dbadminuser'],
-                $values['dbadminpassword'],
-                $values['dbhost']
-            );
-        } catch (\Exception $e) {
+        if ($DB->connectAndCreate(
+            $values['dbname'],
+            $values['dbadminuser'],
+            $values['dbadminpassword'],
+            $values['dbhost']
+        ) == false
+        ) {
             if (!empty($DB->lastErr)) {
                 $this->_lastErr = $DB->lastErr;
             } else {
                 $this->_lastErr = "Could not connect to MySQL server "
-                    . "and create database with credentials provided.";
+                . "and create database with credentials provided.";
             }
             return false;
+
         }
         return true;
     }
@@ -214,22 +216,21 @@ class Installer
     function sourceSchema($values)
     {
         $DB = Database::singleton();
-
-        try {
-            $DB->connect(
-                $values['dbname'],
-                $values['dbadminuser'],
-                $values['dbadminpassword'],
-                $values['dbhost']
-            );
-        } catch (\Exception $e) {
+        if ($DB->connect(
+            $values['dbname'],
+            $values['dbadminuser'],
+            $values['dbadminpassword'],
+            $values['dbhost']
+        ) == false
+        ) {
             if (!empty($DB->lastErr)) {
                 $this->_lastErr = $DB->lastErr;
             } else {
                 $this->_lastErr = "Could not connect to MySQL server "
-                    ."with credentials provided.";
+                ."with credentials provided.";
             }
             return false;
+
         }
 
         if ($this->_sourceSchemaFile($DB, "00-schema.sql") == false) {
@@ -272,19 +273,11 @@ class Installer
         // This is apparently the most reliable way to figure out if
         // the requery is over http or https.. $_SERVER[REQUEST_SCHEME]
         // is not reliable.
-        $RequestScheme = 'http';
-        if ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
-            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])
-            && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
-        ) {
-               $RequestScheme = 'https';
-        }
-        if (isset($_SERVER['HTTP_HOST']) && isset($_SERVER['REQUEST_URI'])) {
-            return $RequestScheme . '://' . $_SERVER['HTTP_HOST']
+        $RequestScheme = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on'
+                            ? 'https' : 'http';
+
+        return $RequestScheme . '://' . $_SERVER['HTTP_HOST']
             . preg_replace("#/installdb.php#", "", $_SERVER['REQUEST_URI']);
-        } else {
-            return null;
-        }
 
     }
     /**
@@ -297,21 +290,21 @@ class Installer
     function updateBaseConfig($values)
     {
         $DB = Database::singleton();
-        try {
-            $DB->connect(
-                $values['dbname'],
-                $values['dbadminuser'],
-                $values['dbadminpassword'],
-                $values['dbhost']
-            );
-        } catch (\Exception $e) {
+        if ($DB->connect(
+            $values['dbname'],
+            $values['dbadminuser'],
+            $values['dbadminpassword'],
+            $values['dbhost']
+        ) == false
+        ) {
             if (!empty($DB->lastErr)) {
                 $this->_lastErr = $DB->lastErr;
             } else {
                 $this->_lastErr = "Could not connect to MySQL server "
-                    . "with credentials provided.";
+                . "with credentials provided.";
             }
             return false;
+
         }
 
         // get the LORIS base path, based on what we know about where
@@ -326,6 +319,7 @@ class Installer
 
         $this->_updateConfig($DB, "imagePath", $datadir);
         $this->_updateConfig($DB, "data", $datadir);
+        $this->_updateConfig($DB, "mincPath", $datadir);
         $this->_updateConfig($DB, "MRICodePath", $datadir);
 
         // Update the host based and URL based on the location that
@@ -337,7 +331,7 @@ class Installer
         // what it is, as long as the server always uses the same one to
         // validate tokens. So we use the new user password code to generate a
         // really long password and use that as the key.
-        $this->_updateConfig($DB, "JWTKey", \User::newPassword(64));
+        $this->_updateConfig($DB, "JWTKey", User::newPassword(64));
     }
 
     /**
@@ -347,7 +341,7 @@ class Installer
      * @param string   $setting The setting name to be updated.
      * @param string   $value   The value to set $setting to.
      *
-     * @return void
+     * @return none
      */
     private function _updateConfig($DB, $setting, $value)
     {
@@ -409,13 +403,6 @@ class Installer
             return false;
         }
 
-        if (!$DB->hasPrivilege("mysql", "user", "SELECT")) {
-            $this->_lastErr = $values['dbadminuser'] . " does not have "
-                . "privileges to check if a mysql user exists. Please create "
-                . "that user manually then use the `Already created` checkbox "
-                . "below.";
-            return false;
-        }
         // This script is being run by the web server, so get the host
         // that the current user is connect from to be the host of the
         // new user, since the new user is also going to be used from
@@ -423,7 +410,7 @@ class Installer
         $connectHost = $DB->PDO->query(
             "SELECT host FROM `mysql`.`user`
 		WHERE CONCAT(user, '@', host)=CURRENT_USER"
-        )->fetch(\PDO::FETCH_ASSOC);
+        )->fetch(PDO::FETCH_ASSOC);
 
         if (!is_array($connectHost) || empty($connectHost['host'])) {
             // This should never happen. It would mean that the user
@@ -444,7 +431,7 @@ class Installer
              'q_host' => $connectHost,
             ]
         );
-        $results    = $userExistsQ->fetchAll(\PDO::FETCH_ASSOC);
+        $results    = $userExistsQ->fetchAll(PDO::FETCH_ASSOC);
         $userExists = false;
 
         $quotedUser = $DB->PDO->quote($values['lorismysqluser']) .
@@ -456,17 +443,17 @@ class Installer
             // (the MySQL Password() function has been deprecated,
             // so we can't rely on it to select a hash from the mysql.user
             // table and compare.)
-            if (Database::canLogIn(
-                $values["dbhost"],
-                $values["dbname"],
-                $values["lorismysqluser"],
-                $values["lorismysqlpassword"]
-            )
-            ) {
+            try {
+                $test = new PDO(
+                    "mysql:host=$values[dbhost];dbname=$values[dbname];charset=UTF8",
+                    $values['lorismysqluser'],
+                    $values['lorismysqlpassword']
+                );
+
                 // the user already exists and the password is valid.
                 // we don't need to go any further than this.
                 return true;
-            } else {
+            } catch(Exception $e) {
                 // the user already exists but we couldn't connect as it.
                 $this->_lastErr = "MySQL user $quotedUser already exists and "
                 . " password does not match or it does not"
@@ -476,11 +463,6 @@ class Installer
             }
         }
 
-        if (!$DB->hasPrivilege("*", "*", "CREATE USER")) {
-            $this->_lastErr = "User does not have privilege to create "
-                . "a mysql user.";
-            return false;
-        }
         // The user does not exist and needs to be created
         $DB->PDO->exec(
             "CREATE USER $quotedUser IDENTIFIED BY " .
@@ -533,13 +515,10 @@ class Installer
         }
 
         $stmt = $DB->prepare(
-            "UPDATE users
-             SET
-               UserID=:q_userID,
-               Password_hash=:q_password,
-               Active='Y',
-               Password_expiry=DATE_ADD(NOW(),INTERVAL 30 DAY)
-             WHERE ID=1"
+            "UPDATE users SET UserID=:q_userID, Password_hash=:q_password, "
+            . "   Password_expiry=DATE_FORMAT(DATE_ADD(CURRENT_TIMESTAMP, "
+            . "                     INTERVAL 30 DAY), '%Y-%m-%d')"
+            . " WHERE ID=1"
         );
         return $stmt->execute(
             [
@@ -571,18 +550,10 @@ class Installer
      * @param array $values An associative array with keys for dbhost,
      *                      lorismysqluser, lorismysqlpassword, and dbname
      *
-     * @return string|array The output of str_replace
+     * @return true on success, false if there were any problems.
      */
     function getConfigContent($values)
     {
-        // Value cleanup
-        $escapedValues = array_map(
-            function ($val) {
-                return htmlspecialchars($val, ENT_XML1, 'ISO-8859-1');
-            },
-            $values
-        );
-
         $contents = file_get_contents(__DIR__ . "/../../docs/config/config.xml");
         return str_replace(
             [
@@ -592,10 +563,10 @@ class Installer
              '%DATABASE%',
             ],
             [
-             $escapedValues['dbhost'],
-             $escapedValues['lorismysqluser'],
-             $escapedValues['lorismysqlpassword'],
-             $escapedValues['dbname'],
+             $values['dbhost'],
+             $values['lorismysqluser'],
+             $values['lorismysqlpassword'],
+             $values['dbname'],
             ],
             $contents
         );
@@ -613,7 +584,13 @@ class Installer
      */
     function writeConfig($values)
     {
-        $contents = $this->getConfigContent($values);
+        $escapedValues = array_map(
+            function ($val) {
+                return htmlspecialchars($val, ENT_XML1, 'ISO-8859-1');
+            },
+            $values
+        );
+        $contents = $this->getConfigContent($escapedValues);
         file_put_contents(__DIR__ . "/../../project/config.xml", $contents);
         return true;
     }

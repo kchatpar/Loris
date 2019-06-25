@@ -24,10 +24,7 @@ foreach ($list_of_sites as $siteID => $siteName) {
     $totalRecruitment = $DB->pselectOne(
         "SELECT COUNT(c.CandID)
          FROM candidate c
-         WHERE
-           c.RegistrationCenterID=:Site AND
-           c.Active='Y' AND
-           c.Entity_type='Human'",
+         WHERE c.CenterID=:Site AND c.Active='Y' AND c.Entity_type='Human'",
         array('Site' => $siteID)
     );
 
@@ -41,4 +38,4 @@ print json_encode($recruitmentBySiteData);
 
 return 0;
 
-
+?>

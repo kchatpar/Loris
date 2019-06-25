@@ -5,59 +5,38 @@
  For generic SelectDropdown, see Select in Form.js
  */
 
-import React, {Component} from 'react';
-
-class SelectField extends Component {
-  constructor(props) {
-    super(props);
-
-    this.toggleCheckbox = this.toggleCheckbox.bind(this);
-  }
-
-  toggleCheckbox() {
+var SelectField = React.createClass({
+  toggleCheckbox: function() {
     this.props.toggleCheckbox(this.props.label);
-  }
-
-  render() {
-    let checked = (this.props.checked) ? 'checked' : '';
-    let input;
+  },
+  render: function() {
+    var checked = (this.props.checked) ? "checked" : "";
+    var input;
     if (this.props.multi) {
       input = (
-        <input
-          type="checkbox"
-          value={this.props.label}
-          checked={checked}
-          onChange={this.toggleCheckbox}/>
+        <input type="checkbox" value={this.props.label} checked={checked}/>
       );
     }
     return (
       <li>
         <div className="col-xs-12">
-          <label>
+          <label onClick={this.toggleCheckbox}>
             {input} {this.props.label}
           </label>
         </div>
       </li>
     );
   }
-}
+});
 
-class SearchField extends Component {
-  constructor(props) {
-    super(props);
-
-    this.clearFilter = this.cleaFilter.bind(this);
-    this.updateFilter = this.updateFilter.bind(this);
-  }
-
-  clearFilter() {
-    this.props.updateFilter('');
-  }
-  updateFilter(event) {
+var SearchField = React.createClass({
+  clearFilter: function() {
+    this.props.updateFilter("");
+  },
+  updateFilter: function(event) {
     this.props.updateFilter(event.target.value);
-  }
-
-  render() {
+  },
+  render: function() {
     return (
       <li className="dropdownSearch">
         <div className="input-group col-xs-12">
@@ -77,73 +56,67 @@ class SearchField extends Component {
       </li>
     );
   }
-}
+});
 
-class SelectDropdown extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      filter: '',
+var SelectDropdown = React.createClass({
+  getInitialState: function() {
+    return {
+      filter: "",
       open: false,
       options: {
-        V01: 'false',
-        V02: 'true',
-      },
+        V01: "false",
+        V02: "true"
+      }
     };
-    this.toggleDropdown = this.toggleDropdown.bind(this);
-    this.toggleCheckbox = this.toggleCheckbox.bind(this);
-    this.selectAll = this.selectAll.bind(this);
-    this.deselectAll = this.deselectAll.bind(this);
-    this.updateFilter = this.updateFilter.bind(this);
-  }
-
-  toggleDropdown() {
-    let open = !this.state.open;
-    this.setState({open});
-  }
-
-  toggleCheckbox(key) {
+  },
+  toggleDropdown: function() {
+    this.setState(function(state) {
+      return {
+        open: !state.open
+      };
+    });
+  },
+  toggleCheckbox: function(key) {
     if (this.props.multi) {
-      let action = (this.props.options[key]) ? 'uncheck' : 'check';
+      var action = (this.props.options[key]) ? "uncheck" : "check";
       this.props.onFieldClick(key, action);
     } else {
       this.props.onFieldClick(key);
       this.toggleDropdown();
     }
-  }
-
-  selectAll() {
-    for (let option in this.props.options) {
+  },
+  selectAll: function() {
+    for (var option in this.props.options) {
       if (!this.props.options[option]) {
-        this.props.onFieldClick(option, 'check');
+        this.props.onFieldClick(option, "check");
       }
     }
-  }
-
-  deselectAll() {
-    for (let option in this.props.options) {
+  },
+  deselectAll: function() {
+    for (var option in this.props.options) {
       if (this.props.options[option]) {
-        this.props.onFieldClick(option, 'uncheck');
+        this.props.onFieldClick(option, "uncheck");
       }
     }
-  }
-
-  updateFilter(filter) {
-    this.setState({filter});
-  }
-
-  render() {
-    let parentDivClass = 'btn-group col-xs-12';
-    let selectLabel = 'None Selected';
-    let selectCount = 0;
-    let sizeCount = 0;
-    let options = [];
-    let key = '';
-    let filter = '';
+  },
+  updateFilter: function(filter) {
+    this.setState(function(state) {
+      return {
+        filter: filter
+      };
+    });
+  },
+  render: function() {
+    var parentDivClass = "btn-group col-xs-12";
+    var selectLabel = "None Selected";
+    var selectCount = 0;
+    var sizeCount = 0;
+    var options = [];
+    var key = "";
+    var filter = "";
 
     if (this.state.open) {
-      parentDivClass += ' open';
+      parentDivClass += " open";
     }
     if (this.props.multi) {
       for (key in this.props.options) {
@@ -153,7 +126,6 @@ class SelectDropdown extends Component {
           sizeCount++;
           options.push(
             <SelectField
-              key={key}
               label={key}
               checked={this.props.options[key]}
               toggleCheckbox={this.toggleCheckbox}
@@ -168,7 +140,6 @@ class SelectDropdown extends Component {
       if (selectCount === sizeCount) {
         options.unshift(
           <SelectField
-            key="selectAll"
             label="Select All"
             checked={true}
             toggleCheckbox={this.deselectAll}
@@ -178,7 +149,6 @@ class SelectDropdown extends Component {
       } else {
         options.unshift(
           <SelectField
-            key="selectAll"
             label="Select All"
             checked={false}
             toggleCheckbox={this.selectAll}
@@ -187,7 +157,7 @@ class SelectDropdown extends Component {
         );
       }
       if (selectCount > 0) {
-        selectLabel = selectCount + ' Selected';
+        selectLabel = selectCount + " Selected";
       }
     } else {
       for (key in this.props.options) {
@@ -201,7 +171,6 @@ class SelectDropdown extends Component {
           }
           options.push(
             <SelectField
-              key={key}
               label={this.props.options[key]}
               checked={this.props.options[key]}
               toggleCheckbox={this.toggleCheckbox}
@@ -216,8 +185,8 @@ class SelectDropdown extends Component {
           filter={this.state.filter}
         />
       );
-      if (this.props.selectedCategory === '') {
-        selectLabel = 'Select One';
+      if (this.props.selectedCategory === "") {
+        selectLabel = "Select One";
       } else {
         selectLabel = this.props.selectedCategory;
       }
@@ -242,7 +211,7 @@ class SelectDropdown extends Component {
       </div>
     );
   }
-}
+});
 
 window.SelectField = SelectField;
 window.SearchField = SearchField;
@@ -251,5 +220,5 @@ window.SelectDropdown = SelectDropdown;
 export default {
   SelectField,
   SearchField,
-  SelectDropdown,
+  SelectDropdown
 };

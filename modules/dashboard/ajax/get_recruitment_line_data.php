@@ -49,8 +49,8 @@ return 0;
 /**
  * Create chart labels (dates)
  *
- * @param string $startDate start date of recruitment
- * @param string $endDate   end date of recruitment
+ * @param date $startDate start date of recruitment
+ * @param date $endDate   end date of recruitment
  *
  * @return array
  */
@@ -94,7 +94,7 @@ function getRecruitmentData($siteID, $labels)
         $data[] = $DB->pselectOne(
             "SELECT COUNT(c.CandID)
              FROM candidate c
-             WHERE c.RegistrationCenterID=:Site
+             WHERE c.CenterID=:Site
              AND MONTH(c.Date_registered)=:Month
              AND YEAR(c.Date_registered)=:Year
              AND c.Entity_type='Human'",
@@ -108,4 +108,4 @@ function getRecruitmentData($siteID, $labels)
     return $data;
 }
 
-
+?>

@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * This file contains the Loris user class
  *
@@ -11,8 +11,6 @@
  * @link     https://www.github.com/aces/Loris-Trunk/
  */
 
-use \LORIS\Http\Client;
-use \LORIS\Http\Request;
 /**
  * User class. This deals with any User management except permissions,
  * which is contained in the UserPermissions base class.
@@ -31,19 +29,19 @@ class User extends UserPermissions
      * @var    array
      * @access private
      */
-    protected $userInfo = array();
+    var $userInfo = array();
 
     /**
      * Constructor
      *
      * Selects a user and its permissions
      *
-     * @param string|null $username Identifies the user
+     * @param string $username Identifies the user
      *
      * @return User
      * @access public
      */
-    public static function &factory(?string $username = null): \User
+    static function &factory($username)
     {
         $obj = new User;
 
@@ -51,17 +49,14 @@ class User extends UserPermissions
         $obj->userInfo['UserID'] = $username;
 
         // get the user's permissions
-        if ($obj->select($username) === false) {
-            $obj = new \LORIS\AnonymousUser();
-            return $obj;
-        };
+        $success = $obj->select($username);
 
         // create DB object
         $DB =& Database::singleton();
 
         // get user data from database
         $query = "SELECT users.*,
-            GROUP_CONCAT(psc.Name ORDER BY psc.Name SEPARATOR ';') AS Sites
+            GROUP_CONCAT(psc.Name SEPARATOR ';') AS Sites
             FROM users
             LEFT JOIN user_psc_rel ON (user_psc_rel.UserID=users.ID)
             LEFT JOIN psc ON (user_psc_rel.CenterID=psc.CenterID)
@@ -76,10 +71,9 @@ class User extends UserPermissions
                         WHERE upr.UserID= :UID",
             array('UID' => $row['ID'])
         );
-        $user_cid            = array();
+
         foreach ($user_centerID_query as $key=>$val) {
-            // Convert string representation of ID to int
-            $user_cid[$key] = intval($val['CenterID']);
+            $user_cid[$key] =$val['CenterID'];
         }
 
         // Get examiner information
@@ -102,7 +96,7 @@ class User extends UserPermissions
 
         $examiner_info =array();
         if (!empty($examiner_check) && !is_null($examiner_check)) {
-            foreach ($examiner_check as $val) {
+            foreach ($examiner_check as $rw=>$val) {
                 if ($val['active'] == 'Y') {
                     $examiner_info['pending'] = $val['pending_approval'];
                 }
@@ -113,9 +107,9 @@ class User extends UserPermissions
             }
         }
         // store user data in object property
-        $row['examiner']  = $examiner_info;
-        $row['CenterIDs'] = $user_cid;
-        $obj->userInfo    = $row;
+        $row['examiner']  =$examiner_info;
+        $row['CenterIDs'] =$user_cid;
+        $obj->userInfo    =$row;
         return $obj;
     }
 
@@ -124,13 +118,13 @@ class User extends UserPermissions
      * Singleton method. Retrieve the user passed as parameter, but only
      * 1 instance.
      *
-     * @param string|null $username Identifies the user
+     * @param string $username Identifies the user
      *
      * @return User
      * @access public
      * @static
      */
-    public static function &singleton(?string $username = null): \User
+    static function &singleton($username = null)
     {
         static $instance;
         if (is_null($instance)) {
@@ -145,16 +139,16 @@ class User extends UserPermissions
      *
      * @param array $set The array formatted for use in a Database call
      *
-     * @return bool True
+     * @return void
      * @access public
      * @static
      */
-    public function insert(array $set): bool
+    function insert($set)
     {
         // create DB object
         $DB =& Database::singleton();
 
-        $DB->insert('users', $set);
+        $success = $DB->insert('users', $set);
 
         return true;
     }
@@ -165,15 +159,15 @@ class User extends UserPermissions
      *
      * @param array $set The array formatted for use in a Database call
      *
-     * @return bool True
+     * @return void
      * @access public
      */
-    public function update(array $set): bool
+    function update($set)
     {
         // create DB object
         $DB =& Database::singleton();
 
-        $DB->update(
+        $success = $DB->update(
             'users',
             $set,
             array('UserID' => $this->userInfo['UserID'])
@@ -183,19 +177,17 @@ class User extends UserPermissions
     }
 
     /**
-     * Returns data from the userInfo array according to the key provided
-     * as argument.
+     * Gets user data
      *
      * @param string $var Name of variable to get
      *
-     * @note   Call without any arguments to get the entire user data array
+     * @note   Call without any parameters to get the entire user data array
      * @return mixed
      * @access public
-     * @throws LorisException
      */
-    public function getData(string $var = '')
+    function getData($var = null)
     {
-        if ($var === '') {
+        if (is_null($var)) {
             return $this->userInfo;
         } elseif ($var === 'CenterID') {
             throw new \LorisException(
@@ -219,7 +211,7 @@ class User extends UserPermissions
      *
      * @return string
      */
-    function getFullname(): string
+    function getFullname()
     {
         return $this->userInfo['Real_name'];
     }
@@ -229,9 +221,9 @@ class User extends UserPermissions
      *
      * @return int
      */
-    function getId(): int
+    function getId()
     {
-        return intval($this->userInfo['ID']);
+        return $this->userInfo['ID'];
     }
 
     /**
@@ -239,7 +231,7 @@ class User extends UserPermissions
      *
      * @return string
      */
-    function getUsername(): string
+    function getUsername()
     {
         return $this->userInfo['UserID'];
     }
@@ -249,7 +241,7 @@ class User extends UserPermissions
      *
      * @return string
      */
-    function getSiteName(): string
+    function getSiteName()
     {
         throw new \LorisException(
             "The function getSiteName
@@ -259,20 +251,17 @@ class User extends UserPermissions
     }
 
     /**
-     * Returns an array of sites a user belongs to.
+     * Get the user's sites' names, concatenated with
+     * a semi-colon if the User is at more than one site
      *
-     * @return array
+     * @return string
      */
-    function getSiteNames(): array
+    function getSiteNames()
     {
-        /* The original query to fetch userInfo in the factory() function CONCAT
-         * CONCATs the site names together in a string using semi-colons.
-         * Therefore this string must be split and returned as an array.
-         */
-        return explode(';', $this->userInfo['Sites']);
+        return $this->userInfo['Sites'];
     }
 
-     /**
+    /**
      * Get the user's site's ID number
      *
      * @return array
@@ -291,19 +280,9 @@ class User extends UserPermissions
      *
      * @return array
      */
-    function getCenterIDs(): array
+    function getCenterIDs()
     {
         return $this->userInfo['CenterIDs'];
-    }
-
-    /**
-     * Get the user's language preference
-     *
-     * @return int
-     */
-    function getLanguagePreference(): int
-    {
-        return $this->userInfo['language_preference'];
     }
 
 
@@ -312,11 +291,10 @@ class User extends UserPermissions
      *
      * @return array
      */
-    function getExaminerSites(): array
+    function getExaminerSites()
     {
         $site_list = $this->userInfo['examiner'];
         unset($site_list['pending']);
-        natcasesort($site_list);
         return $site_list;
     }
 
@@ -325,9 +303,9 @@ class User extends UserPermissions
      *
      * @return array
      */
-    function getStudySites(): array
+    function getStudySites()
     {
-        $site_arr         = $this->getCenterIDs();
+        $site_arr         = $this->userInfo['CenterIDs'];
         $user_study_sites = array();
         foreach ($site_arr as $key => $val) {
             $site[$key] = &Site::singleton($val);
@@ -335,25 +313,7 @@ class User extends UserPermissions
                 $user_study_sites[$val] = $site[$key]->getCenterName();
             }
         }
-        natcasesort($user_study_sites);
         return $user_study_sites;
-    }
-
-    /**
-     * Checks if the user is in at least one study site
-     *
-     * @return boolean
-     */
-    function hasStudySite(): bool
-    {
-        $site_arr = $this->getCenterIDs();
-        foreach ($site_arr as $sitename) {
-            $site = Site::singleton($sitename);
-            if ($site->isStudySite()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -362,7 +322,7 @@ class User extends UserPermissions
      * @return boolean
      * @access public
      */
-    public function isEmailValid(): bool
+    function isEmailValid()
     {
         if (!filter_var($this->userInfo['Email'], FILTER_VALIDATE_EMAIL)) {
             return false;
@@ -379,7 +339,7 @@ class User extends UserPermissions
      * @access public
      * @static
      */
-    public static function newPassword($length = 8): string
+    function newPassword($length = 8)
     {
         // start with a blank password
         $password = '';
@@ -407,11 +367,15 @@ class User extends UserPermissions
         }
 
         if (strpbrk($password, $numbers) === false) {
-            $password .= random_int(0, 9);
+            $password .= substr(
+                $numbers,
+                mt_rand(0, strlen($numbers)-1),
+                1
+            );
         }
 
         for ($i = strlen($password); $i < $length; $i++) {
-            $password .= substr($possible, random_int(0, $possible_cnt), 1);
+            $password .= substr($possible, mt_rand(0, $possible_cnt), 1);
         }
 
         return $password;
@@ -433,21 +397,13 @@ class User extends UserPermissions
      * @access public
      * @static
      */
-    public static function isPasswordStrong(
+    static function isPasswordStrong(
         $password,
         $values = array(),
         $operators = array()
-    ): bool {
-        // FIXME: This should be cleaned up to more cleanly separate
-        // concerns. The "values" and "operators" are the same at
-        // every call site, and some of them are only required because
-        // the function is static despite working with instance data.
-        // (ie the second value/operator pair is always the UserID of
-        // the user whose password is being checked, the third is their
-        // email, and the first is the "Confirm" password which has
-        // nothing to do with whether the password is strong or not..)
+    ) {
         $CharTypes = 0;
-        // less than 8 characters
+        // less than 6 characters
         if (strlen($password) < 8) {
             return false;
         }
@@ -472,36 +428,27 @@ class User extends UserPermissions
 
         // compare password to values
         foreach ($values as $key => $value) {
-            switch ($operators[$key]) {
-            case '==':
-                // They must be equal, so the whole thing is false
-                // if they're not.
-                if ($password != $value) {
-                    return false;
-                }
-                break;
-            case '!=':
-                if ($password == $value) {
-                    return false;
-                }
-                break;
-            default:
-                throw new \LorisException("Invalid operator in isPasswordStrong");
+            $function = create_function(
+                '$a, $b',
+                'return $a ' . $operators[$key] . ' $b;'
+            );
+            // if the comparison fails
+            if (!$function($password, $value)) {
+                return false;
             }
         }
 
         return true;
     }
-
     /**
      * Check if user belongs to DCC
      *
      * @return boolean
      */
-    function isUserDCC(): bool
+    function isUserDCC()
     {
         //DCC site = 1 by LORIS convention
-        return ($this->userInfo['CenterID'] == 1);
+        return ($this->userInfo['CenterID']== 1);
     }
 
     /**
@@ -514,13 +461,12 @@ class User extends UserPermissions
      *
      * @return void
      */
-    function updatePassword(string $password, string $expiry = ''): void
+    function updatePassword($password, $expiry = null)
     {
-        $password = htmlspecialchars_decode($password);
-        if ($expiry === '') {
+        if (is_null($expiry)) {
             $expiry = date(
                 'Y-m-d',
-                strtotime('+6 months')
+                mktime(0, 0, 0, date('n') + 6, date('j'), date('Y'))
             );
         }
 
@@ -535,75 +481,13 @@ class User extends UserPermissions
     }
 
     /**
-     * Use the Pwned Passwords API to determine whether a user is trying
-     * to use a password that has been revealed in public data breaches.
-     *
-     * @param string $password The password to check for pwnage.
-     *
-     * @return bool Whether the password is known to be pwned.
-     */
-    static function pwnedPassword(string $password): bool
-    {
-
-        // If the project is configured to disable the Pwned Password check,
-        // always return false (meanning that the password has not been pwned).
-        if ('true' !== \NDB_Factory::singleton()->config()->getSetting(
-            'usePwnedPasswordsAPI'
-        )
-        ) {
-            return false;
-        }
-
-        /* The pwned passwords API searches a range of password hashes to
-         * protect the actual SHA1 hash from being revealed.
-         * More here: <https://haveibeenpwned.com/API/v2#PwnedPasswords>
-         *
-         * NOTE your webserver will need to be configured to allow going
-         * connections to the link below. If you encounter errors please
-         * verify your firewall settings.
-         */
-        $hash       = sha1($password);
-        $hashPrefix = substr(sha1($password), 0, 5);
-        // $url        = "https://api.pwnedpasswords.com/range/$hashPrefix";
-
-        $client   = new Client('https://api.pwnedpasswords.com');
-        $response = $client->sendRequest(
-            new Request('GET', "/range/$hashPrefix")
-        );
-
-        /* We don't want password changes to fail in case there is a
-         * networking issue while making the request. If the API can't be
-         * reached for any reason, we will skip the pwned password check.
-         */
-        if (!$response->getStatusCode() === 200) {
-            return false;
-        }
-        $hashSuffixes = explode("\n", $response->getBody()->getContents());
-        /* The response will be one long string consisting of suffixes matching
-         * our hash prefix, followed by a colon and the number of times the
-         * password has occurred in data breaches.
-         * Here we iterate over all of the suffixes and check whether the prefix
-         * and the whole suffix line together contain $hash as a substring at
-         * the beginning of the line.
-         * Check the API documentation linked above if you want more info.
-         */
-        foreach ($hashSuffixes as $suffix) {
-            $line = strtolower($hashPrefix . $suffix);
-            if ($hash == substr($line, 0, strlen($hash))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Determines if the user has a center
      *
      * @param int $center_id The center id
      *
      * @return bool
      */
-    public function hasCenter(int $center_id) : bool
+    public function hasCenter($center_id)
     {
         return in_array(
             $center_id,
@@ -611,7 +495,6 @@ class User extends UserPermissions
             true
         );
     }
-
     /**
      * Determines if the user has a permission
      * for a center
@@ -621,7 +504,7 @@ class User extends UserPermissions
      *
      * @return bool
      */
-    public function hasCenterPermission(string $code, int $center_id): bool
+    public function hasCenterPermission($code, $center_id)
     {
         if ($this->hasPermission("superuser")) {
             return true;
@@ -629,25 +512,5 @@ class User extends UserPermissions
         return $this->hasPermission($code)
             && $this->hasCenter($center_id);
     }
-
-    /**
-     * Determines if the user has ever logged in successfully
-     *
-     * @return bool
-     */
-    public function hasLoggedIn(): bool
-    {
-        $count = (\NDB_Factory::singleton()->database())->pselectOne(
-            "SELECT
-               COUNT(1)
-             FROM user_login_history
-             WHERE
-               UserID = :v_userid AND
-               Success = 'Y'
-            ",
-            array('v_userid' => $this->userInfo['UserID'])
-        );
-        return $count > 0;
-    }
 }
-
+?>

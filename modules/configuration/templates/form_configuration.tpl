@@ -32,14 +32,6 @@
     </select>
 {/function}
 
-{function name=createLookUpCenterNameUsing}
-    <select class="form-control" name="{$k}" {if $d eq "Yes"}disabled{/if}>
-        {foreach from=$lookup_center key=name item=label}
-            <option {if $v eq $name}selected{/if} value="{$name}">{$label}</option>
-        {/foreach}
-    </select>
-{/function}
-
 {function name=createEmail}
     <input class="form-control" type="email" name="{$k}" value="{$v}" {if $d eq "Yes"}disabled{/if}>
 {/function}
@@ -88,8 +80,6 @@
             {call createEmail k=$k v=$v d=$node['Disabled']}
         {elseif $node['DataType'] eq 'textarea'}
             {call createTextArea k=$k v=$v d=$node['Disabled']}
-        {elseif $node['DataType'] eq 'lookup_center'}
-            {call createLookUpCenterNameUsing k=$k v=$v d=$node['Disabled']}
         {else}
             {call createText k=$k v=$v d=$node['Disabled']}
         {/if}
@@ -112,8 +102,6 @@
             {call createEmail k=$id d=$node['Disabled']}
         {elseif $node['DataType'] eq 'textarea'}
             {call createTextArea k=$id d=$node['Disabled']}
-        {elseif $node['DataType'] eq 'lookup_center'}
-            {call createLookUpCenterNameUsing k=$id d=$node['Disabled']}
         {else}
             {call createText k=$id d=$node['Disabled']}
         {/if}
@@ -131,7 +119,9 @@
 
 <p>Please enter the various configuration variables into the fields below. For information on how to configure LORIS, please refer to the Help section and/or the Developer's guide.</p>
 <p>To configure study subprojects <a href="{$baseurl}/configuration/subproject/">click here</a>.
+{if $useProjects == 'true'}
     To configure study projects <a href="{$baseurl}/configuration/project/">click here</a>.
+{/if}
 </p>
 <br>
 

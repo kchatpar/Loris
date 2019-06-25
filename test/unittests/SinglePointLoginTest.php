@@ -12,7 +12,7 @@
  */
 
 require_once __DIR__ . '/../../vendor/autoload.php';
-use PHPUnit\Framework\TestCase;
+
 
 /**
  * Unit test for SinglePointLogin class
@@ -23,7 +23,7 @@ use PHPUnit\Framework\TestCase;
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
-class SinglePointLoginTest extends TestCase
+class SinglePointLoginTest extends PHPUnit_Framework_TestCase
 {
     private $login;
 
@@ -47,12 +47,19 @@ class SinglePointLoginTest extends TestCase
         $Factory->setDatabase($mockdb);
 
         $method = array('JWTAuthenticate', 'PasswordAuthenticate', 'authenticate');
-        $AllMethods = get_class_methods('SinglePointLogin');
-        $exceptMethod = array_diff($AllMethods, $method);
-        $this->login = $this->getMockBuilder('SinglePointLogin')->setMethods($exceptMethod)->getMock();
+        $this->login = $this->getMock('SinglePointLogin', $this->_getAllMethodsExcept($method));
 
     }
 
+    /** 
+     * Helper function to use for creating stubs that stub out everything except
+     * the method being tested
+     */
+    function _getAllMethodsExcept($methods) {
+        $AllMethods = get_class_methods('SinglePointLogin');
+
+        return array_diff($AllMethods, $methods);
+    }   
     function testJWTAuthenticateReturnsTrueForValidToken() {
         // Encoded token for
         // {

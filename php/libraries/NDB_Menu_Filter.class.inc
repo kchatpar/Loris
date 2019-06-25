@@ -25,7 +25,7 @@
 class NDB_Menu_Filter extends NDB_Menu
 {
     var $AjaxModule = false;
-
+    var $TotalItems;
     /**
      * The columns to SELECT
      *
@@ -133,24 +133,19 @@ class NDB_Menu_Filter extends NDB_Menu
      */
     function setup()
     {
-        parent::setup();
-
         // setup the menu's variables
-        $this->_setupVariables();
+        $success = $this->_setupVariables();
 
         // set the headers if necessary
-        if ((!is_array($this->headers)
-            || count($this->headers) == 0)
-            && is_iterable($this->columns)
-        ) {
+        if (!is_array($this->headers) || count($this->headers) == 0) {
             foreach ($this->columns as $value) {
-                if (preg_match('/[0-9A-Za-z_]+$/', $value, $match)) {
-                    $this->headers[] = $match[0];
-                }
+                preg_match('/[0-9A-Za-z_]+$/', $value, $match);
+                $this->headers[] = $match[0];
             }
         }
 
         // start the filter form
+        $this->_setupPage($this->menu, null, null, null, 'filter');
         $this->registerDefaultFilter();
 
         // $this->form = new HTML_QuickForm('filter');
@@ -159,7 +154,7 @@ class NDB_Menu_Filter extends NDB_Menu
         $this->_setupFilters();
 
         // build the menu
-        $this->_build();
+        $success = $this->_build();
 
         return true;
     }
@@ -192,13 +187,14 @@ class NDB_Menu_Filter extends NDB_Menu
      */
     function _setupVariables()
     {
+        return true;
     }
 
     /**
      * This method will reset any saved filters that are associated with
      * the session back to its default state.
      *
-     * @return void
+     * @return none
      */
     function _resetFilters()
     {
@@ -220,11 +216,13 @@ class NDB_Menu_Filter extends NDB_Menu
      *                             ]
      *                      to retrieve the values from.
      *
-     * @return array of filters in the same form as the $values parameter
+     * @return An array of filters in the same form as the $values parameter
      *         that can be saved for future use.
      */
     function _setFilters($values)
     {
+        $filters = $this->formToFilter;
+
         $newFormFilters = array();
 
         // Go through the form's fields and set the valid ones.
@@ -260,8 +258,8 @@ class NDB_Menu_Filter extends NDB_Menu
      *                          'fieldOrder' => "ASC|DESC"
      *                      ]
      *
-     * @return void (modifies both $_SESSION and $this->filter as
-     *         a side-effect.)
+     * @return none, modifies both $_SESSION and $this->filter as
+     *         a side-effect.
      */
     function _setFilterSortOrder($order)
     {
@@ -286,7 +284,7 @@ class NDB_Menu_Filter extends NDB_Menu
      *
      * @param string $keyword The keyword to search through columns for.
      *
-     * @return void (but side-effect modifies $this->searchKey)
+     * @return none, but side-effect modifies $this->searchKey
      */
     function _setSearchKeyword($keyword)
     {
@@ -307,14 +305,14 @@ class NDB_Menu_Filter extends NDB_Menu
      * The end result should be that $this->filter and $this->having are setup
      * properly so that the query can be constructed by $this->_getList()
      *
-     * @return void
+     * @return none
      */
     function _setupFilters()
     {
         // 1. Reset filters
         if (isset($_REQUEST['reset'])) {
             // erase filter data from the session
-            $this->_resetFilters();
+            $this->_resetFilters(true);
         }
 
         // 2. After resetting filters (if applicable), set the new
@@ -385,7 +383,7 @@ class NDB_Menu_Filter extends NDB_Menu
     function _build()
     {
         // show selection form table
-        $this->_setFilterForm();
+        $success = $this->_setFilterForm();
 
         if ($this->AjaxModule) {
             return;
@@ -394,7 +392,7 @@ class NDB_Menu_Filter extends NDB_Menu
         $this->list = $this->_getList();
 
         // show data table with user information and access URLs
-        $this->_setDataTable();
+        $success = $this->_setDataTable();
     }
 
     /**
@@ -411,7 +409,7 @@ class NDB_Menu_Filter extends NDB_Menu
     /**
     * Gets the base query
     *
-    * @return string ($query)
+    * @return $query
     */
     function _getBaseQuery()
     {
@@ -432,7 +430,7 @@ class NDB_Menu_Filter extends NDB_Menu
     * @param string $field        filter field
     * @param string $val          filter value
     *
-    * @return string ($query)
+    * @return $query
     */
     function _addValidFilters($prepared_key, $field, $val)
     {
@@ -443,7 +441,7 @@ class NDB_Menu_Filter extends NDB_Menu
                 $query .= " AND $field";
             } elseif (strtolower(substr($field, -8)) == 'centerid'
                 || strtolower(substr($field, -10)) == 'categoryid'
-                || strtolower(substr($field, -6)) == 'sex'
+                || strtolower(substr($field, -6)) == 'gender'
                 || (isset($this->EqualityFilters)
                 && in_array($field, $this->EqualityFilters))
             ) {
@@ -491,6 +489,8 @@ class NDB_Menu_Filter extends NDB_Menu
             $pageNum = $_REQUEST['pageID'];
         }
 
+        $this->_getNumberPages($query);
+
         $config         =& NDB_Config::singleton();
         $resultsPerPage = $config->getSetting('rowsPerPage');
         $limit          = " LIMIT $resultsPerPage"
@@ -515,7 +515,7 @@ class NDB_Menu_Filter extends NDB_Menu
         // add filters to query
         if (is_array($this->filter) && count($this->filter) > 0) {
             foreach ($this->filter as $field => $val) {
-                $prepared_key = $this->getCleanString($field);
+                $prepared_key = Utility::getCleanString($field);
                 $query_piece  = $this->_addValidFilters($prepared_key, $field, $val);
                 if (!empty($query_piece)) {
                     $WhereClause .= $query_piece;
@@ -559,7 +559,7 @@ class NDB_Menu_Filter extends NDB_Menu
             $first = true;
             foreach ($this->having as $key => $val) {
                 if ($val !== '' and $val != null) {
-                    $prepared_key = $this->getCleanString($key);
+                    $prepared_key = Utility::getCleanString($key);
                     if ($first == false) {
                         $WhereClause .= ' AND ';
                     } else {
@@ -577,6 +577,27 @@ class NDB_Menu_Filter extends NDB_Menu
                 'clause' => $WhereClause,
                 'params' => $qparams,
                );
+    }
+
+
+    /**
+     * Returns the number of pages that this menu has.
+     *
+     * @param string $query The query used to build the data in the table.
+     *
+     * @return integer The number of pages that the query returns
+     */
+    function _getNumberPages($query)
+    {
+        $wheredetails = $this->_getBaseFilter();
+        $db           = Database::singleton();
+        if (empty($this->group_by) && empty($this->having)) {
+            $query = "SELECT COUNT(*)" . $this->query . $wheredetails['clause'];
+        } else {
+            $query = "SELECT COUNT(*) FROM ($query) as tmptable";
+        }
+        $this->TotalItems = $db->pselectOne($query, $wheredetails['params']);
+
     }
 
     /**
@@ -605,6 +626,7 @@ class NDB_Menu_Filter extends NDB_Menu
             'filterfieldOrder',
             $_GET['filter']['order']['fieldOrder'] ?? ''
         );
+        $this->setTemplateVar('TotalItems', $this->TotalItems);
 
         // print out column headings
         $i = 0;
@@ -668,20 +690,22 @@ class NDB_Menu_Filter extends NDB_Menu
     /**
      * Displays the menu page
      *
-     * @return string
+     * @return void
      * @access public
      */
     function display()
     {
-        switch($this->format) {
-        case 'json':
-            return $this->toJSON();
+        if (isset($_REQUEST['format'])) {
+            switch($_REQUEST['format']) {
+            case 'json':
+                       header('Content-Type: application/json');
+                return $this->toJSON();
+            }
         }
         if ($this->skipTemplate) {
             return "";
         }
         // Set the csvFile links
-        /*
         $uri    = ltrim($_SERVER['REQUEST_URI'], "/");
         $suffix = strpos($uri, '?') ? '&format=csv' : '?&format=csv';
         $this->setTemplateVar('csvURL', $uri . $suffix);
@@ -691,10 +715,9 @@ class NDB_Menu_Filter extends NDB_Menu
             . ($_REQUEST['subtest'] ?? $_REQUEST['submenu'] ?? '')
             . date('-Y_m_d')
         );
-         */
 
         // dump the html for the menu
-        $smarty = new Smarty_neurodb($this->Module->getName());
+        $smarty = new Smarty_neurodb($this->Module);
         $smarty->assign('mode', $this->mode);
         $smarty->assign('form', $this->form->toArray());
         $smarty->assign($this->getTemplateData());
@@ -714,51 +737,7 @@ class NDB_Menu_Filter extends NDB_Menu
         $list['data']    = $this->_getFullList();
         $list['headers'] = $this->headers;
 
-        return $this->arrayToCSV($list);
-    }
-
-    /**
-     * Cleans a string to make it safe for variables and such
-     *
-     * @param string $string the string to clean
-     *
-     * @return string The string cleaned up enough to be used as a
-     *                variable name
-     */
-    function getCleanString(string $string): string
-    {
-        $string = trim($string);
-        $string = str_replace('  ', ' ', $string);
-        $string = str_replace(' ', '_', $string);
-        $string = str_replace("'", '', $string);
-        $string = str_replace('"', '', $string);
-        $string = preg_replace('/[^A-Za-z0-9_\/-]*/', '', $string);
-        $string = strtolower($string);
-        return $string;
-    }
-
-    /**
-    * Coverts array into CSV string
-    *
-    * @param array $array the array to be converted
-    *
-    * @return string CSV string of data
-    */
-    function arrayToCSV(array $array): string
-    {
-        $fp = fopen("php://temp", 'w+');
-
-        fputcsv($fp, $array['headers']);
-        foreach ($array['data'] as $item) {
-            fputcsv($fp, $item);
-        }
-
-        // Read what we have written.
-        rewind($fp);
-        $csv_string = stream_get_contents($fp);
-
-        fclose($fp);
-        return $csv_string;
+        return Utility::arrayToCSV($list);
     }
 
     /**
@@ -769,7 +748,7 @@ class NDB_Menu_Filter extends NDB_Menu
      *
      * Suitable for serializing to JSON, CSV, etc..
      *
-     * @return array
+     * @return associative array
      */
     function toArray()
     {
@@ -788,9 +767,8 @@ class NDB_Menu_Filter extends NDB_Menu
         }
 
         return array(
-                'Headers'      => $headers,
-                'Data'         => $MappedData,
-                'fieldOptions' => $this->fieldOptions,
+                'Headers' => $headers,
+                'Data'    => $MappedData,
                );
     }
 
@@ -798,7 +776,7 @@ class NDB_Menu_Filter extends NDB_Menu
      * Converts the results of this menu filter to a JSON format to be retrieved
      * with ?format=json
      *
-     * @return string a json encoded string of the headers and data from this table
+     * @return a json encoded string of the headers and data from this table
      */
     function toJSON()
     {
@@ -837,7 +815,11 @@ class NDB_Menu_Filter extends NDB_Menu
         }
 
         // get the list
-        $result = $DB->pselect($query, $qparams);
+        $this->_getNumberPages($query);
+
+        $config         =& NDB_Config::singleton();
+        $resultsPerPage = $config->getSetting('rowsPerPage');
+        $result         = $DB->pselect($query, $qparams);
 
         return $result;
     }
@@ -851,7 +833,7 @@ class NDB_Menu_Filter extends NDB_Menu
     function _getFilterValues()
     {
         $FilterValues = array();
-        foreach (array_keys($this->formToFilter) as $formName) {
+        foreach ($this->formToFilter as $formName => $field) {
             if (isset($_REQUEST[$formName])) {
                 $FilterValues[$formName] = $_REQUEST[$formName];
             } else {
@@ -882,4 +864,4 @@ class NDB_Menu_Filter extends NDB_Menu
         );
     }
 }
-
+?>

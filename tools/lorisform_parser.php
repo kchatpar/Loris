@@ -42,24 +42,29 @@ foreach ($files AS $file) {
     $fp   =fopen($file, "r");
     $data =fread($fp, filesize($file));
     fclose($fp);
-    preg_match("/class (.+) extends NDB_BVL_Instrument/", $data, $matches);
+    
+    echo "Reading file $file\n";
+    preg_match("/class (.+) extends /", $data, $matches);
     if (empty($matches[1])) {
-        echo "File '$file' does not contain an instrument.\n";
+        echo "File '$file' does not contain a class.\n";
         continue;
     }
-    echo "Reading file $file\n";
     $className =$matches[1];
     echo "Instrument found: $matches[1]\n";
     echo "Requiring file...\n";
     include_once $file;
     echo "Instantiating new object...\n";
-    $obj =new $className(new Module("", ""), "", "", "", "");
+    $obj =new $className;
+    if (!is_subclass_of($obj, 'NDB_BVL_Instrument')) {
+        echo "File '$filename' does not contain an instrument.  Must be a (possibly-indirect) subclass of NDB_BVL_Instrument\n";
+        continue;
+    }
     echo "Initializing instrument object...\n";
     $obj->setup(null, null);
 
-    //Some instruments ought not be parsed with the lorisform_parser
+    //Some instruments ought not be parsed with the quickform_parser
     if ((in_array($obj->testName, $instrumentsToSkip))) {
-        echo "lorisform_parser will    skip file {$file}\n";
+        echo "quickform_parser will    skip file {$file}\n";
         continue;
     }
 
@@ -69,10 +74,9 @@ foreach ($files AS $file) {
         echo "Building instrument page '$subtest[Name]'...\n";
         $obj->_setupForm();
     }
-
+    
     if (is_array($obj->getFullName())) {
-        echo "Could not find row for $matches[1] in table test_names, 
-        please populate test_names, instrument_subtests\n";
+        echo "Could not find row for $matches[1] in table test_names, please populate test_names, instrument_subtests\n";
         continue;
     }
 
@@ -106,7 +110,7 @@ if (empty($output)) {
  * @param LorisFormElement $elements   The element to parse.
  * @param String           $groupLabel The group label
  *
- * @return string LINST formated element.
+ * @return LINST formated element.
  */
 function parseElements($elements, $groupLabel="")
 {
@@ -143,6 +147,7 @@ function parseElements($elements, $groupLabel="")
             break;
 
         case "text":
+        case "file":  //we'll just save the path here, but saving the actual file data requires special handling in instruments
             $output .="text{@}".$element['name']."{@}".$label."\n";
             break;
 
@@ -152,10 +157,7 @@ function parseElements($elements, $groupLabel="")
 
         case "date":
             $options = "{@}";
-            if (array_key_exists('options', $element)
-                && isset($el['options']['minYear'])
-                && isset($el['options']['maxYear'])
-            ) {
+            if (array_key_exists('options', $element)) {
                 $options = $element['options']['minYear']
                     ."{@}"
                     .$element['options']['maxYear'];
@@ -216,7 +218,6 @@ function parseElements($elements, $groupLabel="")
             $output .="time{@}".$element['name']."{@}".$label."\n";
             break;
         case "html":
-        case "file":
         case "hidden":
                 // skip because it's useless
                 echo "SKIP: skipping quickform element type: ".$element['type']."\n";

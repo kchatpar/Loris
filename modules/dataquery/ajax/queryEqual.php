@@ -19,18 +19,12 @@ require_once __DIR__ . '/../../../vendor/autoload.php';
 $client = new NDB_Client();
 $client->makeCommandLine();
 $client->initialize(__DIR__ . "/../../../project/config.xml");
-$config      = \NDB_Config::singleton();
-$couchConfig = $config->getSetting('CouchDB');
-$cdb         = \NDB_Factory::singleton()->couchDB(
-    $couchConfig['dbName'],
-    $couchConfig['hostname'],
-    intval($couchConfig['port']),
-    $couchConfig['admin'],
-    $couchConfig['adminpass']
-);
-$category    = $_REQUEST['category'];
-$fieldName   = $_REQUEST['field'];
-$value       = $_REQUEST['value'];
+
+
+$cdb       = CouchDB::singleton();
+$category  = $_REQUEST['category'];
+$fieldName = $_REQUEST['field'];
+$value     = $_REQUEST['value'];
 
 if (!is_numeric($value) && $value !== "null") {
     $value = "\"$value\"";
@@ -53,4 +47,4 @@ $sessionResults = array_map(
 );
 
 print json_encode($sessionResults);
-
+?>

@@ -13,7 +13,7 @@
  * @return {{}} - QueryString helper object
  *
  */
-let QueryString = {
+var QueryString = {
   /**
    * Build and return an object containig querystring key/value pairs
    * based on current values inside the browser's querystring.
@@ -21,13 +21,13 @@ let QueryString = {
    * @return {{}} - object with querystring key/value pairs
    */
   get: function() {
-    let queryString = window.location.search.substring(1).split('&');
-    let queryStringObj = {};
+    var queryString = window.location.search.substring(1).split("&");
+    var queryStringObj = {};
 
     queryString.forEach(function(param) {
-      let key = param.split('=')[0];
-      let value = param.split('=')[1];
-      if (key !== '' && value !== '') {
+      var key = param.split("=")[0];
+      var value = param.split("=")[1];
+      if (key !== "" && value !== "") {
         queryStringObj[key] = decodeURIComponent(value);
       }
     });
@@ -45,23 +45,22 @@ let QueryString = {
    */
   set: function(currentQuery, fieldName, fieldValue) {
     // Always start with '?'
-    let queryString = '?';
+    var queryString = "?";
 
     // Deep copy of object representation of query
-    let queryStringObj = JSON.parse(JSON.stringify(currentQuery));
+    var queryStringObj = JSON.parse(JSON.stringify(currentQuery));
 
-    // Make sure that key is of string type and value is of string or object type
-    if (typeof fieldName !== 'string' || (typeof fieldValue !== 'string' && typeof fieldValue !== 'object')) {
+    // Make sure that both key and value are of string type
+    if (typeof fieldName !== "string" || typeof fieldValue !== "string") {
       console.error(
-        'Error in QueryString.set(): \n' +
-        '\tfieldName must be of type string and' +
-        'fieldValue must be of type string or object!'
+        "Error in QueryString.set(): \n" +
+        "\tfieldName and fieldValue must be of type string!"
       );
       return queryStringObj;
     }
 
     // Add/Delete to/from query string object
-    if (fieldValue === '') {
+    if (fieldValue === "") {
       delete queryStringObj[fieldName];
     } else {
       queryStringObj[fieldName] = fieldValue;
@@ -69,13 +68,13 @@ let QueryString = {
 
     // Build query string
     Object.keys(queryStringObj).map(function(key, count) {
-      queryString += key + '=' + encodeURIComponent(queryStringObj[key]);
+      queryString += key + "=" + encodeURIComponent(queryStringObj[key]);
       if (count !== Object.keys(queryStringObj).length - 1) {
-        queryString += '&';
+        queryString += "&";
       }
     });
 
-    window.history.replaceState({}, '', queryString);
+    window.history.replaceState({}, "", queryString);
 
     return queryStringObj;
   },
@@ -87,11 +86,11 @@ let QueryString = {
    * @return {{}} - empty object
    */
   clear: function(moduleName) {
-    if (moduleName !== undefined && moduleName !== '') {
-      window.history.replaceState({}, '', '/' + moduleName + '/');
+    if (moduleName !== undefined && moduleName !== "") {
+      window.history.replaceState({}, "", "/" + moduleName + "/");
     } else {
       console.error('QueryString.clear() expects parameter `moduleName`!');
     }
     return {};
-  },
+  }
 };

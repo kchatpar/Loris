@@ -17,6 +17,13 @@ $('#showVL').click(
     }
 );
 
+$(document).ready(
+    function(){
+        $("#bigtable").DynamicTable({ "freezeColumn" : "tpcol" });
+    }
+);
+
+
 function updateDemographicInstrument() {
     var DemographicSite       = document.getElementById("DemographicSite");
     var DemographicInstrument = document.getElementById("DemographicInstrument");

@@ -7,17 +7,13 @@
  * Note: This component relies on Bootstrap 3 progress-bar classes
  * (http://getbootstrap.com/components/#progress)
  */
-
-import React, {Component} from 'react';
-import PropTypes from 'prop-types';
-
-class ProgressBar extends Component {
+class ProgressBar extends React.Component {
   render() {
     const progressStyle = {
       display: (this.props.value < 0 ? 'none' : 'block'),
       backgroundColor: '#d3d3d3',
       height: '30px',
-      position: 'relative',
+      position: 'relative'
     };
 
     const labelStyle = {
@@ -29,7 +25,7 @@ class ProgressBar extends Component {
       color: '#fff',
       textAlign: 'center',
       lineHeight: '30px',
-      fontWeight: '600',
+      fontWeight: '600'
     };
 
     return (
@@ -50,10 +46,10 @@ class ProgressBar extends Component {
 }
 
 ProgressBar.propTypes = {
-  value: PropTypes.number,
+  value: React.PropTypes.number
 };
 ProgressBar.defaultProps = {
-  value: 0,
+  value: 0
 };
 
 export default ProgressBar;

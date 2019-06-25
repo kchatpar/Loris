@@ -1,25 +1,25 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * This file contains a database wrapper around the CouchDB API for Loris.
  *
- * PHP Version 7
+ * PHP Version 5
  *
- * @category Main
- * @package  Main
- * @author   Dave MacFarlane <david.macfarlane2@mcgill.ca>
- * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
- * @link     https://www.github.com/aces/Loris-Trunk/
+ *  @category Main
+ *  @package  Main
+ *  @author   Dave MacFarlane <david.macfarlane2@mcgill.ca>
+ *  @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
+ *  @link     https://www.github.com/aces/Loris-Trunk/
  */
 
 /**
  * Wrapper around PHP IO functions (fopen/close/get/etc)
  * so that a mock can be used for testing HTTP requests
  *
- * @category Testing
- * @package  Test
- * @author   Dave MacFarlane <david.macfarlane2@mcgill.ca>
- * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
- * @link     https://www.github.com/aces/Loris-Trunk/
+ *  @category Testing
+ *  @package  Test
+ *  @author   Dave MacFarlane <david.macfarlane2@mcgill.ca>
+ *  @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
+ *  @link     https://www.github.com/aces/Loris-Trunk/
  */
 class SocketWrapper
 {
@@ -42,9 +42,9 @@ class SocketWrapper
      *
      * @param string $host The hostname
      *
-     * @return void
+     * @return none
      */
-    function setHost(string $host): void
+    function setHost($host)
     {
         $this->host = $host;
     }
@@ -55,9 +55,9 @@ class SocketWrapper
      *
      * @param integer $port The port number
      *
-     * @return void
+     * @return none
      */
-    function setPort(int $port): void
+    function setPort($port)
     {
         $this->port = $port;
     }
@@ -66,9 +66,9 @@ class SocketWrapper
      * Opens the socket and stores a reference to the socket handler for other
      * I/O functions. setHost and setPort must be called before this.
      *
-     * @return void
+     * @return none
      */
-    function open(): void
+    function open()
     {
         $this->socket = fsockopen($this->host, $this->port);
         if ($this->socket === false) {
@@ -81,9 +81,9 @@ class SocketWrapper
     /**
      * Closes the previously opened socket.
      *
-     * @return void
+     * @return none
      */
-    function close(): void
+    function close()
     {
         $status = fclose($this->socket);
         if ($status === false) {
@@ -96,7 +96,7 @@ class SocketWrapper
      *
      * @return boolean Directly pass return value of feof()
      */
-    function eof(): bool
+    function eof()
     {
         if ($this->socket) {
             return feof($this->socket);
@@ -129,9 +129,9 @@ class SocketWrapper
      *
      * @param string $str The string to write to the socket
      *
-     * @return void
+     * @return none
      */
-    function write(string $str): void
+    function write($str)
     {
         $status = fwrite($this->socket, $str);
         if ($status === false) {
@@ -144,44 +144,14 @@ class SocketWrapper
  * Implementation of a wrapper around CouchDB's APIs, so that Loris can access
  * a CouchDB database programmatically.
  *
- * @category Main
- * @package  Main
- * @author   Dave MacFarlane <david.macfarlane2@mcgill.ca>
- * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
- * @link     https://www.github.com/aces/Loris-Trunk/
+ *  @category Main
+ *  @package  Main
+ *  @author   Dave MacFarlane <david.macfarlane2@mcgill.ca>
+ *  @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
+ *  @link     https://www.github.com/aces/Loris-Trunk/
  */
 class CouchDB
 {
-
-    /**
-     * This array keep a reference for each instance of this class.
-     */
-    private static $_instances = array();
-
-    /**
-     * Keep the database name
-     */
-    private $_database = '';
-
-    /**
-     * Keep the host name
-     */
-    private $_host = '';
-
-    /**
-     * Keep the port number
-     */
-    private $_port = '';
-
-    /**
-     * Keep the user name
-     */
-    private $_user = '';
-
-    /**
-     * Keep the password value
-     */
-    private $_password = '';
 
     /**
      * Boolean true if we are currently doing a bulk transaction.
@@ -195,120 +165,22 @@ class CouchDB
     var $bulkDocuments = array();
 
     /**
-     * Private Constructor for CouchDB
-     *
-     * @param string $database The couchDB database name
-     * @param string $host     The couchDB host name
-     * @param int    $port     The couchDB port number
-     * @param string $user     The couchDB user name
-     * @param string $password The couchDB password
-     */
-    private function __construct(
-        string $database = '',
-        string $host = '',
-        int    $port = 5984,
-        string $user = '',
-        string $password = ''
-    ) {
-
-        $this->_database = $database;
-        $this->_host     = $host;
-        $this->_port     = $port;
-        $this->_user     = $user;
-        $this->_password = $password;
-    }
-
-    /**
-     * Returns one and only one CouchDB database wrapper object for a given
-     * database name.
-     *
+     * Returns one and only one CouchDB database wrapper object.
      * NOTE: You shouldn't call this directly, instead you should
      *       probably use the NDB_Factory->couchDB() factory method
      *       which calls this.
      *
-     * @param string $database The couchDB database name
-     * @param string $host     The couchDB host name
-     * @param int    $port     The couchDB port number
-     * @param string $user     The couchDB user name
-     * @param string $password The couchDB password
-     *
-     * @throws ConfigurationException When not all parameters are passed and it
-     *                                is not a backwards support deprecated case
-     *
      * @return CouchDB A Loris CouchDB wrapper object
      */
-    static function &getInstance(
-        string $database = "",
-        string $host = "",
-        int    $port = 0,
-        string $user = "",
-        string $password = ""
-    ):  \CouchDB {
-
-        if (empty(self::$_instances[$database])) {
-            if (empty($database)
-                && empty($host)
-                && ($port === 0)
-                && empty($user)
-                && empty($password)
-            ) {
-                // check if no parameters are passed
-                // deprecated behaviour, backwards compatible until next major
-                // Default to DQT
-                $config      = \NDB_Config::singleton();
-                $couchConfig = $config->getSetting("CouchDB");
-
-                $database = $couchConfig['dbName'];
-                $host     = $couchConfig['hostname'];
-                $port     = intval($couchConfig['port']);
-                $user     = $couchConfig['admin'];
-                $password = $couchConfig['adminpass'];
-                error_log(
-                    "LORIS Deprecation Warning: CouchDB::getInstance() will no 
-                    longer auto-loading CouchDB credentials, make sure to specify 
-                    all necessary parameters in the function call."
-                );
-            } else if (!empty($database)
-                && empty($host)
-                && empty($port)
-                && empty($user)
-                && empty($password)
-            ) {
-                // check if only database name given (assume the rest same as dqt)
-                // deprecated behaviour, backwards compatible until next major
-                // Default to DQT
-                $config      = \NDB_Config::singleton();
-                $couchConfig = $config->getSetting("CouchDB");
-
-                $host     = $couchConfig['hostname'];
-                $port     = intval($couchConfig['port']);
-                $user     = $couchConfig['admin'];
-                $password = $couchConfig['adminpass'];
-                error_log(
-                    "LORIS Deprecation Warning: CouchDB::getInstance() will no 
-                    longer support accepting only a database name, make sure to 
-                    specify all necessary parameters in the function call."
-                );
-            } else if (empty($database)
-                || empty($host)
-                || empty($port)
-                || empty($user)
-                || empty($password)
-            ) {
-                // check if only some parameters given but not all AND does not
-                // enter any of the above IF statements. this behavior was never
-                // supported and should be an error.
-                throw new ConfigurationException(
-                    "CouchDB::getInstance() requires all parameters to be supplied."
-                );
-            }
-
-            $db = new CouchDB($database, $host, $port, $user, $password);
+    static function singleton()
+    {
+        static $db = null;
+        if ($db === null) {
+            $db = new CouchDB();
             $db->SocketHandler = new SocketWrapper();
-
-            self::$_instances[$database] = $db;
+            return $db;
         }
-        return self::$_instances[$database];
+        return $db;
     }
 
     /**
@@ -319,9 +191,12 @@ class CouchDB
      *
      * @return string The complete low level HTTP request to pass to CouchDB
      */
-    function _constructURL(string $op, string $doc): string
+    function _constructURL($op, $doc)
     {
-        return "$op /$this->_database/$doc";
+        $config = NDB_Config::singleton();
+        $db     = $config->getSetting('CouchDB');
+
+        return "$op /$db[dbName]/$doc";
     }
 
     /**
@@ -334,14 +209,14 @@ class CouchDB
      *
      * @return string A string representation of the JSON returned by CouchDB
      */
-    function _getURL(
-        string $url,
-        string $op = 'GET',
-        array $headers = array()
-    ): string {
+    function _getURL($url, $op = 'GET', $headers = array())
+    {
+        $config      = NDB_Config::singleton();
+        $couchconfig = $config->getSetting('CouchDB');
+
         $handler = $this->SocketHandler;
-        $handler->setHost($this->_host);
-        $handler->setPort($this->_port);
+        $handler->setHost($couchconfig['hostname']);
+        $handler->setPort($couchconfig['port']);
 
         $handler->open();
         $handler->write("$op $url HTTP/1.0\r\n");
@@ -369,20 +244,21 @@ class CouchDB
      *
      * @return string A string representation of the JSON returned by CouchDB
      */
-    function _getRelativeURL(string $url, string $op = 'GET'): string
+    function _getRelativeURL($url, $op = 'GET')
     {
-        $this->validHostAndPort();
+        $config      = NDB_Config::singleton();
+        $couchconfig = $config->getSetting('CouchDB');
 
         $handler = $this->SocketHandler;
-        $handler->setHost($this->_host);
-        $handler->setPort($this->_port);
+        $handler->setHost($couchconfig['hostname']);
+        $handler->setPort($couchconfig['port']);
 
         $handler->open();
         $handler->write($this->_constructURL($op, $url) . " HTTP/1.0\r\n");
         $handler->write(
             "Authorization: Basic "
             . base64_encode(
-                $this->_user . ":" . $this->_password
+                $couchconfig['admin'] . ":" . $couchconfig['adminpass']
             )
             . "\r\n"
         );
@@ -419,25 +295,24 @@ class CouchDB
      *
      * @param string  $url        The URL relative to the server to make a POST
      *                            request to.
-     * @param string  $data       String representing the response from the server
+     * @param array   $data       Associative array representing the JSON document
+     *                            to POST.
      * @param array   $headers    The extra HTTP headers to send with the request
      * @param boolean $printValue If true the return from CouchDB will be printed
      *                            instead of returned. This avoids the overhead of
      *                            having to parse it server-side if the request is
      *                            expected to be directly interpreted by javascript.
      *
-     * @return string|null A string representation of the JSON return value
-     *                      from CouchDB
+     * @return string A string representation of the JSON return value from CouchDB
      */
-    function _postURL(
-        string $url,
-        string $data,
-        array  $headers = array(),
-        bool   $printValue = false
-    ): ?string {
+    function _postURL($url, $data, $headers = array(), $printValue = false)
+    {
+        $config      = NDB_Config::singleton();
+        $couchconfig = $config->getSetting('CouchDB');
+
         $handler = $this->SocketHandler;
-        $handler->setHost($this->_host);
-        $handler->setPort($this->_port);
+        $handler->setHost($couchconfig['hostname']);
+        $handler->setPort($couchconfig['port']);
 
         $handler->open();
         $handler->write($url . " HTTP/1.0\r\n");
@@ -447,7 +322,9 @@ class CouchDB
         $handler->write(
             "Authorization: Basic "
             . base64_encode(
-                $this->_user . ":" . $this->_password
+                $couchconfig['admin']
+                . ":"
+                . $couchconfig['adminpass']
             )
             . "\r\n"
         );
@@ -492,15 +369,11 @@ class CouchDB
      *                            having to parse it server-side if the request is
      *                            expected to be directly interpreted by javascript.
      *
-     * @return string|null The page content (Without headers) returned by the
+     * @return The page content (Without headers) returned by the
      *         CouchDB web server.
      */
-    function _postRelativeURL(
-        string $url,
-        string $data,
-        string $op = 'POST',
-        bool $printValue = false
-    ): ?string {
+    function _postRelativeURL($url, $data, $op = 'POST', $printValue = false)
+    {
         return $this->_postURL(
             $this->_constructURL($op, $url),
             $data,
@@ -517,7 +390,7 @@ class CouchDB
      *
      * @return array An associative array representing the document
      */
-    function getDoc(string $id, array $options = array()): array
+    function getDoc($id, $options = array())
     {
         $json = $this->_getRelativeURL($id);
 
@@ -532,11 +405,6 @@ class CouchDB
         }
         $json = $this->_getRelativeURL($url);
         $data = json_decode($json, true);
-        if (is_null($data)) {
-            throw new \LorisException(
-                'Decoded JSON data returned null. Cannot continue.'
-            );
-        }
 
         if (isset($data['error']) && $data['error'] === 'not_found') {
             return array();
@@ -552,7 +420,7 @@ class CouchDB
      *
      * @return boolean True if delete was successful
      */
-    function deleteDoc(string $id): bool
+    function deleteDoc($id)
     {
         $getjson = $this->_getRelativeURL($id);
         $getdata = json_decode($getjson, true);
@@ -577,10 +445,10 @@ class CouchDB
      * @param string $id  The document name to PUT
      * @param array  $doc An array representing the JSON document
      *
-     * @return string|null The JSON string returned by the CouchDB server, or
+     * @return string The JSON string returned by the CouchDB server, or
      *                null if in bulk mode.
      */
-    function putDoc(string $id, array $doc): ?string
+    function putDoc($id, $doc)
     {
         $encoded = json_encode($doc);
 
@@ -603,7 +471,7 @@ class CouchDB
      *
      * @return string the JSON string returned by the CouchDB server
      */
-    function postDoc(array $doc): string
+    function postDoc($doc)
     {
         $json = $this->_postRelativeURL("", json_encode($doc), 'POST');
         return $json;
@@ -621,7 +489,7 @@ class CouchDB
      *
      * @return string|FALSE id of created document or FALSE if creation failed.
      */
-    function createDoc(array $doc)
+    function createDoc($doc)
     {
         $json = $this->postDoc($doc);
         $data = json_decode($json, true);
@@ -646,7 +514,7 @@ class CouchDB
      *
      * @return string The status of how the document was modified.
      */
-    function replaceDoc(string $id, array $doc): string
+    function replaceDoc($id, $doc)
     {
         $original_doc = $this->getDoc($id);
         if ($original_doc === array() ) {
@@ -681,15 +549,10 @@ class CouchDB
      * @param boolean $full_json If true will include the full json returned,
      *                           and not just the parsed rows.
      *
-     * @return array|string An array of the rows returned by the view, or a
-     *                          JSON string.
+     * @return array An array of the rows returned by the view
      */
-    function queryView(
-        string $designdoc,
-        string $viewname,
-        array $params,
-        bool $full_json = false
-    ) {
+    function queryView($designdoc, $viewname, $params, $full_json=false)
+    {
         $keys = null;
         if (isset($params['keys'])) {
 
@@ -715,12 +578,7 @@ class CouchDB
         if ($full_json) {
             return $query;
         }
-        $data = json_decode($query ?? '', true);
-        if (is_null($data)) {
-            throw new \LorisException(
-                'Decoded JSON data returned null. Cannot continue.'
-            );
-        }
+        $data = json_decode($query, true);
 
         if (isset($data['error']) && $data['error'] == 'not_found') {
             return array();
@@ -738,9 +596,9 @@ class CouchDB
      * current revision, but the PUT requests will be queued until commited
      * with commitBulkTransaction();
      *
-     * @return void
+     * @return none
      */
-    function beginBulkTransaction(): void
+    function beginBulkTransaction()
     {
         $this->bulk = true;
     }
@@ -751,10 +609,10 @@ class CouchDB
      *
      * @return string The string that was returned by CouchDB
      */
-    function commitBulkTransaction(): string
+    function commitBulkTransaction()
     {
         if ($this->bulk !== true) {
-            return '';
+            return false;
         }
         $docs = json_encode(array('docs' => $this->bulkDocuments));
 
@@ -763,27 +621,5 @@ class CouchDB
 
         return $this->_postRelativeURL('_bulk_docs', $docs);
     }
-
-    /**
-     * Validation of CouchDB Host and Port.
-     * Throws LorisException if (Host or Port) invalid.
-     *
-     * @throws LorisException
-     *
-     * @return void
-     */
-    function validHostAndPort(): void
-    {
-        $config       = NDB_Config::singleton();
-        $couch_config = $config->getSetting('CouchDB');
-        if (!filter_var(gethostbyname($couch_config['hostname']), FILTER_VALIDATE_IP)
-            || !is_numeric($couch_config['port'])
-        ) {
-            throw new \LorisException(
-                'Could not connect to CouchDB server at '
-                .$couch_config['hostname'].':'.$couch_config['port']
-            );
-        }
-    }
 }
-
+?>

@@ -10,37 +10,38 @@
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
 */
+set_include_path(get_include_path().":../project/libraries:../php/libraries:");
 require_once __DIR__ . "/../vendor/autoload.php";
+ini_set('default_charset', 'utf-8');
+ob_start('ob_gzhandler');
+require_once "NDB_Client.class.inc";
 $client = new NDB_Client;
 if ($client->initialize() == false) {
-    http_response_code(401);
-    echo "User not authenticated.";
-    return;
+    $login = $_SESSION['State']->getProperty('login');
+    $login->showLoginScreen();
+    return false;
 }
+
+require_once "FeedbackMRI.class.inc";
 
 // create DB object
-$DB = \Database::singleton();
+$DB =& Database::singleton();
 
 // user is logged in, let's continue with the show...
-$user = \User::singleton($_SESSION['State']->getUsername());
+$user =& User::singleton($_SESSION['State']->getUsername());
 
 // check permissions
-if (!$user->hasPermission('imaging_browser_qc')
-    && $_SERVER['REQUEST_METHOD'] !== 'GET'
-) {
-    http_response_code(403);
-    return;
+if ($user->hasPermission('imaging_browser_qc')) {
+    $tpl_data['has_permission'] = true;
 }
 
-$tpl_data['has_permission'] = $user->hasPermission('imaging_browser_qc');
-
 // instantiate feedback mri object
-$comments = new FeedbackMRI($_REQUEST['fileID'] ?? '', $_REQUEST['sessionID'] ?? '');
+$comments = new FeedbackMRI($_REQUEST['fileID'], $_REQUEST['sessionID']);
 
 /*
  * UPDATE SECTION
  */
-if (isset($_POST['fire_away']) && $_POST['fire_away']) {
+if ($_POST['fire_away'] && $user->hasPermission('imaging_browser_qc')) {
     // clear all predefined comments
     $comments->clearAllComments();
 
@@ -48,7 +49,7 @@ if (isset($_POST['fire_away']) && $_POST['fire_away']) {
     $comments->setPredefinedComments($_POST['savecomments']['predefined']);
 
     // save all textual comments but only if there is an entry [sebas]
-    foreach (\Utility::asArray($_POST['savecomments']['text'])
+    foreach ($_POST['savecomments']['text']
         as $comment_type_id => $comment_message
     ) {
         if (trim($comment_message)) {
@@ -122,15 +123,10 @@ foreach ($comment_types AS $comment_type_id => $comment_array) {
             $CommentTpl['select_name']        = $comment_array['field'];
             $CommentTpl['select_value_array'] = $comment_array['values'];
         }
-        $CommentTpl['selected'] = $comments
-            ->getMRIValue(
-                $comment_array['field']
-            );
+        $CommentTpl['selected'] = $comments->getMRIValue($comment_array['field']);
     }
 
-    if (is_array($comment_array)) {
-        $CommentTpl['name'] = $comment_array['name'];
-    }
+    $CommentTpl['name'] = $comment_array['name'];
 
     // get the list of predefined comments for the current type
     $predefined_comments = $comments->getAllPredefinedComments($comment_type_id);
@@ -146,8 +142,8 @@ foreach ($comment_types AS $comment_type_id => $comment_array) {
         $PredefinedTpl['predefined_text'] = $predefined_comment_text['Comment'];
 
         // print the comment text
-        $Saved = $saved_comments[$comment_type_id] ?? array();
-        if ($Saved['predefined'][$predefined_comment_id] ?? false) {
+        $Saved = $saved_comments[$comment_type_id];
+        if ($Saved['predefined'][$predefined_comment_id]) {
             $CommentTpl['predefined'][$j]['checked'] = true;
         }
         $j++;
@@ -155,16 +151,18 @@ foreach ($comment_types AS $comment_type_id => $comment_array) {
 
     // print a form element for a free-form comment
     $CommentTpl['type']       = $comment_type_id;
-    $CommentTpl['saved_text'] = $saved_comments[$comment_type_id]['text'] ?? '';
+    $CommentTpl['saved_text'] = $saved_comments[$comment_type_id]['text'];
     $i++;
 }
 
 //Output template using Smarty
-$config          = \NDB_Config::singleton();
-$tpl_data['css'] = $config->getSetting('css');
+$config          =& NDB_Config::singleton();
+$tpl_data['css'] =$config->getSetting('css');
 $smarty          = new Smarty_neurodb;
 $smarty->assign($tpl_data);
 $smarty->display('feedback_mri_popup.tpl');
 
 ob_end_flush();
 
+exit;
+?>

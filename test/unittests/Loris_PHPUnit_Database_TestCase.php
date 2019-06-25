@@ -12,8 +12,7 @@
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
-use PHPUnit\Framework\TestCase;
-use PHPUnit\DbUnit\TestCaseTrait;
+
 /**
  * Class Loris_PHPUnit_Databse_TestCase
  *
@@ -23,16 +22,16 @@ use PHPUnit\DbUnit\TestCaseTrait;
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
-abstract class Loris_PHPUnit_Database_TestCase extends TestCase
+abstract class Loris_PHPUnit_Database_TestCase extends
+    PHPUnit_Extensions_Database_TestCase
 {
-    use TestCaseTrait;
 
     /**
      * PDO connection
      *
      * Only instantiate _pdo once for test clean-up/fixture load
      *
-     * @var \PDO
+     * @var PDO
      */
     static private $_pdo = null;
 
@@ -40,7 +39,7 @@ abstract class Loris_PHPUnit_Database_TestCase extends TestCase
      * Note: only instantiate PHPUnit_Extensions_Database_DB_IDatabaseConnection
      * once per test
      *
-     * @var \PHPUnit\DbUnit\Database\Connection
+     * @var PHPUnit_Extensions_Database_DB_IDatabaseConnection
      */
     private $_conn = null;
 
@@ -87,7 +86,7 @@ abstract class Loris_PHPUnit_Database_TestCase extends TestCase
      * Get database connection which will be used by PHPUnit
      * for clean-up and fixture loading into the test DB.
      *
-     * @return \PHPUnit\DbUnit\Database\DefaultConnection
+     * @return PHPUnit_Extensions_Database_DB_DefaultDatabaseConnection
      */
     final public function getConnection()
     {
@@ -104,6 +103,7 @@ abstract class Loris_PHPUnit_Database_TestCase extends TestCase
             }
             $this->_conn = $this->createDefaultDBConnection(self::$_pdo);
         }
+
         return $this->_conn;
     }
 

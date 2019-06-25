@@ -4,7 +4,7 @@ class LorisLoginTest extends LorisIntegrationTest
 {
     function testLoginFailure()
     {
-       $this->webDriver->get($this->url . '/?logout=true');
+       $this->webDriver->get($this->url . '/main.php?logout=true');
 
        $username = $this->webDriver->findElement(WebDriverBy::Name("username"));
        $this->assertEquals('', $username->getAttribute("value"));
@@ -23,12 +23,12 @@ class LorisLoginTest extends LorisIntegrationTest
        $login->click();
 
        $bodyText = $this->webDriver->findElement(WebDriverBy::cssSelector("body"))->getText();
-       $this->assertContains("Incorrect username or password", $bodyText);
+       $this->assertContains("Incorrect email or password", $bodyText);
     }
 
     function testLoginSuccess()
     {
-       $this->webDriver->get($this->url . '/?logout=true');
+       $this->webDriver->get($this->url . '/main.php?logout=true');
        $username = $this->webDriver->findElement(WebDriverBy::Name("username"));
        $this->assertEquals('', $username->getAttribute("value"));
 

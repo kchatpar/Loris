@@ -44,16 +44,16 @@ echo "\n#################################################################\n\n".
 $database_name= $database['database'];
 
 $field_names = $db->pselect("
-                      SELECT
+                      SELECT 
                           TABLE_NAME,
                           COLUMN_NAME,
                           COLUMN_DEFAULT,
                           DATA_TYPE,
                           IS_NULLABLE,
                           COLUMN_TYPE,
-                          EXTRA
-                      FROM INFORMATION_SCHEMA.COLUMNS
-                      WHERE DATA_TYPE IN ('date','timestamp','datetime')
+                          EXTRA 
+                      FROM INFORMATION_SCHEMA.COLUMNS 
+                      WHERE DATA_TYPE IN ('date','timestamp','datetime') 
                           AND TABLE_SCHEMA=:dbn",
     array("dbn"=>$database['database'])
 );
@@ -90,10 +90,10 @@ foreach ($field_names as $key=>$field)
 
     if ($field['COLUMN_DEFAULT']=='0000-00-00') {
         echo "The script will modify the date schema for TABLE: `".$field['TABLE_NAME']."` FIELD: `".$field['COLUMN_NAME']."` to default to NULL\n";
-        $alters .= "ALTER TABLE ".$db->escape($field['TABLE_NAME'])." MODIFY ".$db->escape($field['COLUMN_NAME'])." ".$field['COLUMN_TYPE']." NULL DEFAULT NULL;\n";
+        $alters .= "ALTER TABLE ".$db->escape($field['TABLE_NAME'])." MODIFY ".$db->escape($field['COLUMN_NAME'])." ".$field['COLUMN_TYPE']." DEFAULT NULL;\n";
     } else if ($field['COLUMN_DEFAULT']=='0000-00-00 00:00:00') {
         echo "The script will modify the date schema for TABLE: `".$field['TABLE_NAME']."` FIELD: `".$field['COLUMN_NAME']."` to default to NULL\n";
-        $alters .= "ALTER TABLE ".$db->escape($field['TABLE_NAME'])." MODIFY ".$db->escape($field['COLUMN_NAME'])." ".$field['COLUMN_TYPE']." NULL DEFAULT NULL;\n";
+        $alters .= "ALTER TABLE ".$db->escape($field['TABLE_NAME'])." MODIFY ".$db->escape($field['COLUMN_NAME'])." ".$field['COLUMN_TYPE']." DEFAULT NULL;\n";
     }
 
 
@@ -106,25 +106,11 @@ foreach ($field_names as $key=>$field)
             " SET ".$db->escape($field['COLUMN_NAME'])."=NULL".$autoUpdateSQL.
             " WHERE CAST(".$db->escape($field['COLUMN_NAME'])." AS CHAR(20))='0000-00-00 00:00:00';\n";
     } else {
-        if ($field['DATA_TYPE'] == 'date') {
-            echo "COLUMN ".$field['COLUMN_NAME']." in TABLE ".$field['TABLE_NAME']." is NOT NULLABLE. ".
-                "A date '1000-01-01' will be entered instead of '0000-00-00' values.\n";
-            $nonNullUpdates .= "UPDATE ".$db->escape($database['database']).".".$db->escape($field['TABLE_NAME']).
-                " SET ".$db->escape($field['COLUMN_NAME'])."='1000-01-01'".$autoUpdateSQL.
-                " WHERE CAST(".$db->escape($field['COLUMN_NAME'])." AS CHAR(20))='0000-00-00';\n";
-        } else if ($field['DATA_TYPE'] == 'datetime') {
-            echo "COLUMN ".$field['COLUMN_NAME']." in TABLE ".$field['TABLE_NAME']." is NOT NULLABLE. ".
-                "A datetime '1000-01-01 00:00:00' will be entered instead of '0000-00-00' values.\n";
-            $nonNullUpdates .= "UPDATE ".$db->escape($database['database']).".".$db->escape($field['TABLE_NAME']).
-                " SET ".$db->escape($field['COLUMN_NAME'])."='1000-01-01 00:00:00'".$autoUpdateSQL.
-                " WHERE CAST(".$db->escape($field['COLUMN_NAME'])." AS CHAR(20))='0000-00-00 00:00:00';\n";
-        } else if ($field['DATA_TYPE'] == 'timestamp') {
-            echo "COLUMN ".$field['COLUMN_NAME']." in TABLE ".$field['TABLE_NAME']." is NOT NULLABLE. ".
-                "A timestamp '1970-01-01 00:00:01' will be entered instead of '0000-00-00' values.\n";
-            $nonNullUpdates .= "UPDATE ".$db->escape($database['database']).".".$db->escape($field['TABLE_NAME']).
-                " SET ".$db->escape($field['COLUMN_NAME'])."='1970-01-01 00:00:01'".$autoUpdateSQL.
-                " WHERE CAST(".$db->escape($field['COLUMN_NAME'])." AS CHAR(20))='0000-00-00 00:00:00';\n";
-        }
+	echo "COLUMN ".$field['COLUMN_NAME']." in TABLE ".$field['TABLE_NAME']." is NOT NULLABLE. ".
+	    "A date '1000-01-01' will be entered instead of '0000-00-00' values.\n"; 
+        $nonNullUpdates .= "UPDATE ".$db->escape($database['database']).".".$db->escape($field['TABLE_NAME']).
+            " SET ".$db->escape($field['COLUMN_NAME'])."='1000-01-01'".$autoUpdateSQL.
+            " WHERE CAST(".$db->escape($field['COLUMN_NAME'])." AS CHAR(20))='0000-00-00';\n";
     }
 
 }

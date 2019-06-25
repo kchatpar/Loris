@@ -4,8 +4,7 @@
  * Candidate Profile
  * Instrument List
  * Any instrument
-[Automation Test]
-2. Remove 'bvl_feedback' permission by unchecking 'Behavioural QC' in the User Accounts module. Behavioural feedback button should no longer appear.
+2. Remove 'bvl_feedback' permission. Behavioural feedback button should no longer appear.
 3. Click on the behavioural feedback button. A slide-out panel should appear on the right-hand side with the following:
  * Open Thread Summary
  * New profile level feedback
@@ -17,7 +16,7 @@
     * QC class should be what page the feedback was submitted on (i.e. profile, instrument)
     * Instrument should be populated if QC class is instrument
     * Visit should be populated if QC class is not profile
-    * "# Threads" should be the thread number
+    * # Threads should be the thread number
   * New visit level feedback
     * Should have "The new thread has been submitted" appear in the text box
   * Feedback threads

@@ -75,4 +75,6 @@ class DataTeamHelperTestIntegrationTest extends LorisIntegrationTest
           );
           $this->resetPermissions();
     }
+
 }
+?>

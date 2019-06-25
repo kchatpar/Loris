@@ -33,19 +33,65 @@ class DocumentRepositoryTestIntegrationTest extends LorisIntegrationTest
      * Does basic setting up of Loris variables for this test,after testing
      * a test data, remove the testing data from database.
      *
-     * @return void
+     * @return none
      */
     public function setUp()
     {
         parent::setUp();
+        $window = new WebDriverWindow($this->webDriver);
+        $size   = new WebDriverDimension(1024, 1768);
+        $window->setSize($size);
+        $this->DB->insert(
+            "document_repository_categories",
+            array(
+             'id'            => '9999999',
+             'category_name' => 'TESTTESTTESTTEST',
+             'parent_id'     => '0',
+             'comments'      => 'Test Comment',
+            )
+        );
+        $this->DB->insert(
+            "document_repository",
+            array(
+             'record_id'     => '9999999',
+             'Date_uploaded' => '2016-05-16 15:34:35',
+             'Data_dir'      => 'admin/README.md',
+             'File_name'     => 'README.md',
+             'File_type'     => 'NULL',
+             'File_size'     => '3305',
+             'uploaded_by'   => 'admin',
+             'For_site'      => '3',
+             'comments'      => 'tester',
+             'EARLI'         => '0',
+             'hide_video'    => '0',
+             'File_category' => '9999999',
+            )
+        );
+
     }
     /**
      * Deleting test data
      *
-     * @return void
+     * @return none
      */
     public function tearDown()
     {
+        $this->DB->delete(
+            "document_repository_categories",
+            array('category_name' => 'TestTestTest')
+        );
+        $this->DB->delete(
+            "document_repository_categories",
+            array('category_name' => 'test')
+        );
+        $this->DB->delete(
+            "document_repository",
+            array('record_id' => '9999999')
+        );
+        $this->DB->delete(
+            "document_repository_categories",
+            array('id' => '9999999')
+        );
         parent::tearDown();
     }
      /**
@@ -81,25 +127,54 @@ class DocumentRepositoryTestIntegrationTest extends LorisIntegrationTest
         $bodyText = $this->webDriver->findElement(
             WebDriverBy::cssSelector("body")
         )->getText();
-        $this->assertContains("test", $bodyText);
+        $this->assertContains("Document Repository", $bodyText);
     }
     /**
-     * Tests Upload page.
+     * Tests creating a category and a sub-category.
      *
      * @return void
      */
-    function testDocumentRepositoryUploadPage()
+    function testDocumentRepositoryCreateCategory()
     {
+        //insert a category TestTestTest
         $this->markTestSkipped("This method isn't working properly on travis.");
         $this->safeGet($this->url . "/document_repository/");
-        $this->webDriver->executescript(
-            "document.querySelector('#tab-upload').click()"
-        );sleep(300);
-        $text = $this->webDriver->executescript(
-            "return document.querySelector('#upload > div > div > form > div >".
-            "div:nth-child(1) > h3').textContent"
-        );
-        $this->assertContains("Upload a file", $text);
+        $this->safeFindElement(
+            WebDriverBy::Name("addCategory"),
+            3000
+        )->click();
+        sleep(10);
+        $this->safeFindElement(
+            WebDriverBy::Name(
+                "category_name"
+            )
+        )->sendKeys("TestTestTest");
+        $this->safeFindElement(WebDriverBy::Id("postCategory"))->click();
+        sleep(10);
+        $selectAll = $this->webDriver->findElement(
+            WebDriverBy::Id("dir-tree")
+        )->getText();
+        $this->assertContains("TestTestTest", $selectAll);
+
+        //insert a sub category test under TestTestTest
+        $this->safeGet($this->url . "/document_repository/");
+        $this->safeFindElement(WebDriverBy::Name("addCategory"), 2000)
+            ->click();
+        $this->safeFindElement(
+            WebDriverBy::Name("category_name")
+        )->sendKeys("test");
+        $select  = $this->safeFindElement(WebDriverBy::Id("parent_id"));
+        $element = new WebDriverSelect($select);
+        $element->selectByVisibleText("TestTestTest");
+        $this->safeFindElement(WebDriverBy::Id("postCategory"))->click();
+        sleep(10);
+        $this->safeFindElement(
+            WebDriverBy::Xpath("//*[@id='TestTestTesta']/td/span"),
+            3000
+        )->click();
+        $test = $this->safeFindElement(WebDriverBy::Id("testa"))
+            ->getText();
+        $this->assertContains("test", $test);
 
     }
     /**
@@ -148,7 +223,7 @@ class DocumentRepositoryTestIntegrationTest extends LorisIntegrationTest
          $this->safeFindElement(WebDriverBy::Id("commentsEdit"))
              ->sendKeys("This is a test comment!");
          $this->safeFindElement(WebDriverBy::Id("postEdit"))->click();
-         sleep(3);
+         sleep(5);
 
          $this->safeFindElement(
              WebDriverBy::Name("File_name")
@@ -177,7 +252,7 @@ class DocumentRepositoryTestIntegrationTest extends LorisIntegrationTest
          $this->safeFindElement(
              WebDriverBy::Name("filter")
          )->click();
-         sleep(3);
+         sleep(5);
          $text = $this->safeFindElement(WebDriverBy::cssSelector("tbody"), 3000)
              ->getText();
          $this->assertEquals('', $text);
@@ -185,4 +260,4 @@ class DocumentRepositoryTestIntegrationTest extends LorisIntegrationTest
     }
 }
 
-
+?>

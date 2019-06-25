@@ -10,8 +10,8 @@ var siteColours = [
     '#7f7f7f', '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5'
 ];
 
-// Colours for the recruitment bar chart: breakdown by sex
-var sexColours = ['#2FA4E7', '#1C70B6'];
+// Colours for the recruitment bar chart: breakdown by gender
+var genderColours = ['#2FA4E7', '#1C70B6'];
 
 $(document).ready(function () {
     "use strict";
@@ -59,7 +59,46 @@ $(document).ready(function () {
             scanLineChart.resize();
         }
     });
+
+    $(".new-scans").click(function(e) {
+        e.preventDefault();
+        applyFilter('imaging_browser', {"Pending" : "PN"});
+    });
+
+    $(".radiological-review").click(function(e) {
+        e.preventDefault();
+        applyFilter('final_radiological_review', {"Review_done" : "no"});
+    });
+
+    $(".pending-accounts").click(function(e) {
+        e.preventDefault();
+        applyFilter('user_accounts', {"pending" : "Y"});
+    });
 });
+
+function applyFilter(test_name, filters) {
+    var form = $('<form />', {
+        "action" : loris.BaseURL + "/" + test_name + "/",
+        "method" : "post"
+    });
+
+    var values = {
+        "reset" : "true",
+        "filter" : "Show Data"
+    }
+
+    $.extend(values, filters);
+
+    $.each(values, function(name, value) {
+        $("<input />", {
+            type: 'hidden',
+            name: name,
+            value: value
+        }).appendTo(form);
+    });
+
+    form.appendTo('body').submit();
+}
 
 function formatPieData(data) {
     "use strict";
@@ -73,12 +112,10 @@ function formatPieData(data) {
 function formatBarData(data) {
     "use strict";
     var processedData = new Array();
-    if (data.datasets) {
-      var females = ['Female'];
-      processedData.push(females.concat(data.datasets.female));
-      var males = ['Male'];
-      processedData.push(males.concat(data.datasets.male));
-    }
+    var females = ['Female'];
+    processedData.push(females.concat(data.datasets.female));
+    var males = ['Male'];
+    processedData.push(males.concat(data.datasets.male));
     return processedData;
 }
 function formatLineData(data) {
@@ -184,7 +221,7 @@ $.ajax({
                 }
             },
             color: {
-                pattern: sexColours
+                pattern: genderColours
             }
         });
     },

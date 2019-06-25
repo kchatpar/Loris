@@ -11,7 +11,7 @@
  * @link     https://github.com/aces/Loris
  */
 require_once __DIR__ .
-    "/../../../test/integrationtests/LorisIntegrationTest.class.inc";
+               "/../../../test/integrationtests/LorisIntegrationTest.class.inc";
 /**
  * New_profile automated integration tests
  *
@@ -25,20 +25,6 @@ require_once __DIR__ .
  */
 class NewProfileTestIntegrationTest extends LorisIntegrationTest
 {
-    public $dateTaken  = "#default-panel > div > form >".
-                         " div > div:nth-child(2) > div > div > input";
-    public $dtc        = "#default-panel > div > form >".
-                         " div > div:nth-child(3) > div > div > input";
-    public $edc        = "#default-panel > div > form >".
-                         " div > div:nth-child(4)>div>div:nth-child(1)>div>input";
-    public $edcConfirm = "#default-panel > div > form >".
-                         " div > div:nth-child(4)>div>div:nth-child(2)>div>input";
-    public $sex        = "#default-panel > div > form >".
-                         " div > div:nth-child(5) > div > div > select";
-    public $site       = "#default-panel > div > form >".
-                         " div > div:nth-child(6) > div > div > select";
-    public $btn        = "#default-panel > div > form >".
-                         " div > div:nth-child(9) > div > div > button";
     /**
      * Tests that, when loading the new_profile module with all settings
      * enabled, the correct fields all appear in the body.
@@ -48,40 +34,78 @@ class NewProfileTestIntegrationTest extends LorisIntegrationTest
     function testNewProfilePageLoads()
     {
         $this->setUpConfigSetting("useEDC", "true");
+        $this->setUpConfigSetting("useProjects", "true");
+
         $this->safeGet($this->url . "/new_profile/");
         $bodyText = $this->webDriver->findElement(
             WebDriverBy::cssSelector("body")
         )->getText();
         $this->assertContains("New Profile", $bodyText);
-        // check EDC shows on the page
-        $value = "#default-panel > div > form > div > div:nth-child(3) >".
-                 " div > div:nth-child(1) > label";
-        $EDC   = $this->webDriver->executescript(
-            "return document.querySelector('$value').textContent"
+
+        $dobField = $this->webDriver->findElement(WebDriverBy::Name("dob1"));
+        $this->assertEquals("input", $dobField->getTagName());
+        //$this->assertEquals("date", $dobField->getAttribute("type"));
+
+        $dob2Field = $this->webDriver->findElement(WebDriverBy::Name("dob2"));
+        $this->assertEquals("input", $dob2Field->getTagName());
+        //$this->assertEquals("date", $dob2Field->getAttribute("type"));
+
+        $edcField = $this->webDriver->findElement(WebDriverBy::Name("edc1"));
+        $this->assertEquals("input", $edcField->getTagName());
+        //$this->assertEquals("date", $edcField->getAttribute("type"));
+
+        $edc2Field = $this->webDriver->findElement(WebDriverBy::Name("edc2"));
+        $this->assertEquals("input", $edc2Field->getTagName());
+        //$this->assertEquals("date", $edc2Field->getAttribute("type"));
+
+        $genderField = $this->webDriver->findElement(WebDriverBy::Name("gender"));
+        $this->assertEquals("select", $genderField->getTagName());
+
+        $projectField = $this->webDriver->findElement(
+            WebDriverBy::Name("ProjectID")
         );
-        $this->assertContains("Expected Date of Confinement", $EDC);
-        // check Project shows on the page
-        $value   = "#default-panel > div > form > div > div:nth-child(7) >".
-                   " div > label";
-        $project = $this->webDriver->executescript(
-            "return document.querySelector('$value').textContent"
-        );
-        $this->assertContains("Project", $project);
+        $this->assertEquals("select", $projectField->getTagName());
 
         $this->restoreConfigSetting("useEDC");
+        $this->restoreConfigSetting("useProjects");
+    }
+
+    /**
+     * Tests that with useProjects turned off, project related fields do not
+     * appear on the page
+     *
+     * @return none
+     */
+    function testNewProfileLoadsWithoutProjects()
+    {
+        $this->setUpConfigSetting("useProjects", "false");
+
+        $this->safeGet($this->url . "/new_profile/");
+
+        try {
+            $projectField = $this->webDriver->findElement(
+                WebDriverBy::Name("ProjectID")
+            );
+        } catch(NoSuchElementException $e) {
+            $projectField = null;
+        }
+        $this->assertNull($projectField);
+
+        $this->restoreConfigSetting("useProjects");
     }
 
     /**
      * Tests that with useEDC turned off, edc related fields do not appear
      * on the page.
      *
-     * @return void
+     * @return none
      */
     function testNewProfileLoadsWithoutEDC()
     {
         $this->setUpConfigSetting("useEDC", "false");
 
         $this->safeGet($this->url . "/new_profile/");
+
         try {
             $edc1 = $this->webDriver->findElement(WebDriverBy::Name("edc1"));
         } catch(NoSuchElementException $e) {
@@ -100,42 +124,186 @@ class NewProfileTestIntegrationTest extends LorisIntegrationTest
     }
 
     /**
-     * Tests that candidate is created
+     * Tests that page returns error if EDC dates dont match
      *
-     * @return void
+     * @return none
      */
-    function testNewProfileCreateCandidate(): void
+    function testNewProfileEDCDateError()
     {
-        $this->markTestSkipped(
-            'Skipping tests until Travis and React get along better'
-        );
-        $this->setUpConfigSetting("useEDC", "false");
+        $this->setUpConfigSetting("useEDC", "true");
+
         $this->webDriver->get($this->url . "/new_profile/");
-        // send a key to sex
         $this->webDriver->executescript(
-            "document.querySelector('$this->sex').value='male'"
-        );
-        // send a key to site
-        $this->webDriver->executescript(
-            "document.querySelector('$this->site').value='1'"
+            "document.getElementsByClassName('input-date')[0].value='2000-05-05'"
         );
 
         $this->webDriver->executescript(
-            "document.querySelector('$this->dateTaken').value='2015-01-01'"
+            "document.getElementsByClassName('input-date')[1].value='2000-05-05'"
         );
+
         $this->webDriver->executescript(
-            "document.querySelector('$this->dtc').value='2015-01-01'"
+            "document.getElementsByClassName('input-date')[2].value='2000-05-30'"
         );
 
-        $startVisit =  $this->webDriver->executescript(
-            "document.querySelector('$this->btn').click()"
-        );
-        $bodyText   = $this->webDriver->executescript(
-            "return document.querySelector('#default-panel').textContent"
+        $this->webDriver->executescript(
+            "document.getElementsByClassName('input-date')[3].value='2000-05-05'"
         );
 
-        $this->assertContains("New candidate created.", $bodyText);
+        $gender = $this->safeFindElement(WebDriverBy::Name("gender"));
+        $gender->sendKeys("Male");
+
+        $startVisit = $this->safeFindElement(WebDriverBy::Name("fire_away"));
+        $startVisit->click();
+        sleep(3);
+        $bodyText = $this->safeFindElement(
+            WebDriverBy::cssSelector("body")
+        )->getText();
+        $this->assertContains("Estimated Due date fields must match.", $bodyText);
+
         $this->restoreConfigSetting("useEDC");
     }
 
+    /**
+     * Tests that page returns error if PSCID is not filled out
+     *
+     * @return none
+     */
+    function testNewProfilePSCIDError()
+    {
+
+        $this->markTestSkipped(
+            "Config not properly set up to test that PSCID is required"
+        );
+
+        // $this->webDriver->get($this->url . "/new_profile/");
+
+        // $dates = $this->webDriver->findElements(
+        // WebDriverBy::cssSelector(".input-date"));
+        // $dates[0]->sendKeys("01/01/2015");
+        // $dates[1]->sendKeys("01/01/2015");
+
+        // $gender = $this->webDriver->findElement(WebDriverBy::Name("gender"));
+        // $gender->sendKeys("Male");
+
+        // $startVisit = $this->webDriver->findElement(
+        // WebDriverBy::Name("fire_away"));
+        // $startVisit->click();
+
+        // $bodyText = $this->webDriver->findElement(
+        // WebDriverBy::cssSelector("body"))->getText();
+        // $this->assertContains("PSCID must be specified", $bodyText);
+    }
+
+    /**
+     * Tests that page returns error if DoB dates dont match
+     *
+     * @return none
+     */
+    function testNewProfileDoBDateError()
+    {
+        $this->webDriver->get($this->url . "/new_profile/");
+
+        $this->webDriver->executescript(
+            "document.getElementsByClassName('input-date')[0].value='2000-05-05'"
+        );
+
+        $this->webDriver->executescript(
+            "document.getElementsByClassName('input-date')[1].value='2000-05-01'"
+        );
+
+        $gender = $this->webDriver->findElement(WebDriverBy::Name("gender"));
+        $gender->sendKeys("Male");
+
+        $startVisit = $this->safeFindElement(WebDriverBy::Name("fire_away"));
+        $startVisit->click();
+        sleep(3);
+        $bodyText = $this->safeFindElement(
+            WebDriverBy::cssSelector("body")
+        )->getText();
+        $this->assertContains("Date of Birth fields must match.", $bodyText);
+    }
+
+    /**
+     * Tests that candidate is created
+     *
+     * @return none
+     */
+    function testNewProfileCreateCandidate()
+    {
+        $this->changeStudySite();
+        $this->webDriver->get($this->url . "/new_profile/");
+        $this->webDriver->executescript(
+            "document.getElementsByClassName('input-date')[0].value='2015-01-01'"
+        );
+        $this->webDriver->executescript(
+            "document.getElementsByClassName('input-date')[1].value='2015-01-01'"
+        );
+
+        $gender = $this->webDriver->findElement(WebDriverBy::Name("gender"));
+        $gender->sendKeys("Male");
+
+        $startVisit = $this->safeFindElement(WebDriverBy::Name("fire_away"));
+        $startVisit->click();
+        sleep(3);
+        $bodyText = $this->safeFindElement(
+            WebDriverBy::cssSelector("body")
+        )->getText();
+        $this->assertContains("PSCID: BBQ0000", $bodyText);
+
+        $this->deleteCandidate("BBQ0000");
+        $this->resetStudySite();
+    }
+
+    /**
+     * Tests that candidate is created
+     *
+     * @return none
+     */
+    function testNewProfilePSCIDSequential()
+    {
+        $this->changeStudySite();
+        $this->webDriver->get($this->url . "/new_profile/");
+
+        $this->webDriver->executescript(
+            "document.getElementsByClassName('input-date')[0].value='2015-01-01'"
+        );
+        $this->webDriver->executescript(
+            "document.getElementsByClassName('input-date')[1].value='2015-01-01'"
+        );
+
+        $gender = $this->webDriver->findElement(WebDriverBy::Name("gender"));
+        $gender->sendKeys("Male");
+
+        $startVisit = $this->safeFindElement(WebDriverBy::Name("fire_away"));
+        $startVisit->click();
+        sleep(3);
+        $bodyText = $this->safeFindElement(
+            WebDriverBy::cssSelector("body")
+        )->getText();
+        $this->assertContains("PSCID: BBQ0000", $bodyText);
+
+        $this->webDriver->get($this->url . "/new_profile/");
+
+        $this->webDriver->executescript(
+            "document.getElementsByClassName('input-date')[0].value='2015-01-01'"
+        );
+        $this->webDriver->executescript(
+            "document.getElementsByClassName('input-date')[1].value='2015-01-01'"
+        );
+        $gender = $this->safeFindElement(WebDriverBy::Name("gender"));
+        $gender->sendKeys("Male");
+
+        $startVisit = $this->safeFindElement(WebDriverBy::Name("fire_away"));
+        $startVisit->click();
+        sleep(3);
+        $bodyText = $this->safeFindElement(
+            WebDriverBy::cssSelector("body")
+        )->getText();
+        $this->assertContains("PSCID: BBQ0001", $bodyText);
+
+        $this->deleteCandidate("BBQ0000");
+        $this->deleteCandidate("BBQ0001");
+        $this->resetStudySite();
+    }
 }
+?>

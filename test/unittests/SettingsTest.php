@@ -12,7 +12,7 @@
  */
 
 
-use PHPUnit\Framework\TestCase;
+
 /**
  * Unit test for Setting class
  *
@@ -22,7 +22,7 @@ use PHPUnit\Framework\TestCase;
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
-class SettingsTest extends TestCase
+class SettingsTest extends PHPUnit_Framework_TestCase
 {
     /**
      * Test double for NDB_Config object
@@ -223,7 +223,7 @@ class SettingsTest extends TestCase
         unset($this->_databaseConfigValues['password']);
         $this->_setUpConfigDatabaseTestDouble();
 
-        $this->expectException('ConfigurationException');
+        $this->setExpectedException('ConfigurationException');
         $this->_settings->dbPassword();
     }
 

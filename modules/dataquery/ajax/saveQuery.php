@@ -10,9 +10,7 @@
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
-
-
-ini_set("max_input_vars", '4000');
+ini_set("max_input_vars", 4000);
 $user =& User::singleton();
 if (!$user->hasPermission('dataquery_view')) {
     header("HTTP/1.1 403 Forbidden");
@@ -23,17 +21,9 @@ $client = new NDB_Client();
 $client->makeCommandLine();
 $client->initialize(__DIR__ . "/../../../project/config.xml");
 
-$user        = User::singleton();
-$config      = \NDB_Config::singleton();
-$couchConfig = $config->getSetting('CouchDB');
-$cdb         = \NDB_Factory::singleton()->couchDB(
-    $couchConfig['dbName'],
-    $couchConfig['hostname'],
-    intval($couchConfig['port']),
-    $couchConfig['admin'],
-    $couchConfig['adminpass']
-);
-$qid         = $user->getUserName() . "_" . $_REQUEST['QueryName'];
+$user = User::singleton();
+$cdb  = CouchDB::singleton();
+$qid  = $user->getUserName() . "_" . $_REQUEST['QueryName'];
 
 if ($_REQUEST['SharedQuery'] === "true") {
     $qid = "global:" . $qid;
@@ -74,7 +64,6 @@ $cond   = $_REQUEST['Filters'];
 $baseDocument['Conditions'] = $cond;
 $baseDocument['Fields']     = $fields;
 
-$query = array();
 if ($_REQUEST['OverwriteQuery'] === "true") {
     unset($baseDocument['_id']);
     $cdb->replaceDoc($qid, $baseDocument);
@@ -84,3 +73,4 @@ if ($_REQUEST['OverwriteQuery'] === "true") {
     print $cdb->postDoc($baseDocument);
 }
 
+?>

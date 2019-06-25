@@ -2,7 +2,7 @@
 /**
  * A static class to encapsulate the notification spooling system
  *
- * PHP Version 7
+ * PHP Version 5
  *
  * @category Imaging
  * @package  Imaging
@@ -26,18 +26,16 @@ class Notify
      * Spools a new notification message for sending, unless the exact
      * same message (including type) is already in the spool.
      *
-     * @param string   $type     The name of the notification type
-     * @param string   $message  The message itself
-     * @param int|null $centerID CenterID of the target recipients
+     * @param string $type     The name of the notification type
+     * @param string $message  The message itself
+     * @param int    $centerID CenterID of the target recipients
      *                         (if null, goes to all users)
      *
      * @return void
      */
-    static function spool(
-        string $type,
-        string $message,
-        ?int $centerID=null
-    ): void {
+    static function spool($type, $message, $centerID=null)
+    {
+        $db =& Database::singleton();
 
         $typeID = Notify::getTypeID($type);
         if (empty($typeID)) {
@@ -52,7 +50,7 @@ class Notify
                      'Message'            => $message,
                      'CenterID'           => $centerID,
                     );
-        \Database::singleton()->insert('notification_spool', $setArray);
+        $db->insert('notification_spool', $setArray);
     }
 
     /**
@@ -62,9 +60,10 @@ class Notify
      *
      * @return int NotificationTypeID
      */
-    static function getTypeID(string $type): int
+    static function getTypeID($type)
     {
-        $typeID = \Database::singleton()->pselectOne(
+        $db     =& Database::singleton();
+        $typeID = $db->pselectOne(
             "SELECT NotificationTypeID FROM notification_types WHERE Type=:TP",
             array('TP' => $type)
         );

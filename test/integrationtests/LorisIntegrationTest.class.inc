@@ -14,7 +14,7 @@
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
-use PHPUnit\Framework\TestCase;
+
 /**
  * Implementation of LorisIntegrationTest helper class.
  *
@@ -24,7 +24,7 @@ use PHPUnit\Framework\TestCase;
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
-abstract class LorisIntegrationTest extends TestCase
+abstract class LorisIntegrationTest extends PHPUnit_Framework_TestCase
 {
     /**
      * A reference to the Selenium WebDriver object for the test
@@ -43,7 +43,7 @@ abstract class LorisIntegrationTest extends TestCase
      * instantiting the config and database objects, creating a user
      * to user for the tests, and logging in.
      *
-     * @return void
+     * @return none
      */
     public function setUp()
     {
@@ -111,7 +111,7 @@ abstract class LorisIntegrationTest extends TestCase
 
         $this->login("UnitTester", "4test4");
 
-        if (extension_loaded('xdebug') && function_exists("xdebug_start_code_coverage")) {
+        if (extension_loaded('xdebug')) {
             xdebug_start_code_coverage(XDEBUG_CC_UNUSED | XDEBUG_CC_DEAD_CODE);
         }
 
@@ -124,7 +124,7 @@ abstract class LorisIntegrationTest extends TestCase
      * @param string $username The username to log in as
      * @param string $password The (plain text) password to login as.
      *
-     * @return void but side-effect logs in active webDriver
+     * @return none, side-effect logs in active webDriver
      */
     protected function login($username, $password)
     {
@@ -160,7 +160,7 @@ abstract class LorisIntegrationTest extends TestCase
      * its permissions. user_login_history also must be purged as it contains a
      * foreign key to users
      *
-     * @return void
+     * @return none
      */
     public function tearDown()
     {
@@ -190,7 +190,7 @@ abstract class LorisIntegrationTest extends TestCase
      *
      * @throws LorisException
      *
-     * @return void
+     * @return none
      */
     function setupConfigSetting($configName, $value)
     {
@@ -235,7 +235,7 @@ abstract class LorisIntegrationTest extends TestCase
      *
      * @throws LorisException
      *
-     * @return void
+     * @return none
      */
     function restoreConfigSetting($configName)
     {
@@ -260,7 +260,7 @@ abstract class LorisIntegrationTest extends TestCase
      *
      * @param array $permissions List of permissions codes to add TestUser
      *
-     * @return void
+     * @return none
      */
     function setupPermissions($permissions)
     {
@@ -284,7 +284,7 @@ abstract class LorisIntegrationTest extends TestCase
      * Helper function to reset user permissions. The function works by adding
      * all permissions to the TestUser.
      *
-     * @return void
+     * @return none
      */
     function resetPermissions()
     {
@@ -296,7 +296,7 @@ abstract class LorisIntegrationTest extends TestCase
     /**
      * Helper function to change the users Study Site
      *
-     * @return void
+     * @return none
      */
     function changeStudySite()
     {
@@ -307,14 +307,12 @@ abstract class LorisIntegrationTest extends TestCase
     /**
      * Helper function to reset the users Study Site
      *
-     * @return void
+     * @return none
      */
     function resetStudySite()
     {
-        $this->DB->run('SET foreign_key_checks =0');
         $this->DB->update("user_psc_rel", array("CenterID" => 1), array("UserID" => 999990));
         $this->DB->delete("psc", array("CenterID" => 99));
-        $this->DB->run('SET foreign_key_checks =1');
     }
 
     /**
@@ -322,14 +320,13 @@ abstract class LorisIntegrationTest extends TestCase
      *
      * @param string $title Name of the subproject
      *
-     * @return void
+     * @return none
      */
-    function createSubproject($SubprojectID,$title)
+    function createSubproject($title)
     {
         $this->DB->insert(
             "subproject",
             array(
-             "SubprojectID"      => $SubprojectID,
              "title"             => $title,
              "WindowDifference"  => "optimal",
              "RecruitmentTarget" => "100",
@@ -342,7 +339,7 @@ abstract class LorisIntegrationTest extends TestCase
      *
      * @param string $title Name of the subproject
      *
-     * @return void
+     * @return none
      */
     function deleteSubproject($title)
     {
@@ -392,7 +389,7 @@ abstract class LorisIntegrationTest extends TestCase
      *
      * @param string $pscid The PSCID of teh candiate to delete
      *
-     * @return void
+     * @return none
      */
     function deleteCandidate($pscid)
     {
@@ -504,12 +501,12 @@ abstract class LorisIntegrationTest extends TestCase
      * @throws ElementNotVisibleException if $allowJavascriptClick is false and the
      *                                    element cannot be clicked on because it is
      *                                    not visible.
-     * @throws StaleElementReferenceException if $allowJavascriptClick is false and
+     * @throws StaleElementReferenceExceptoin if $allowJavascriptClick is false and
      *                                        the element cannot be clicked on
      *                                        because the DOM was updated since the
      *                                        element was found.
      *
-     * @return void
+     * @return void.
      */
     function safeClick(WebDriverBy $by, $waitPeriod=15, $allowJavascriptClick=true)
     {
@@ -520,7 +517,7 @@ abstract class LorisIntegrationTest extends TestCase
             $clickException = null;
         } catch(ElementNotVisibleException $e) {
             $clickException = $e;
-        } catch(StaleElementReferenceException $e) {
+        } catch(StaleElementReferenceExceptoin $e) {
             $clickException = $e;
         }
 

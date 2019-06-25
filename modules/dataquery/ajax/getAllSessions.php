@@ -19,15 +19,7 @@ require_once __DIR__ . '/../../../vendor/autoload.php';
 $client = new NDB_Client();
 $client->makeCommandLine();
 $client->initialize(__DIR__ . "/../../../project/config.xml");
-$config         = \NDB_Config::singleton();
-$couchConfig    = $config->getSetting('CouchDB');
-$cdb            = \NDB_Factory::singleton()->couchDB(
-    $couchConfig['dbName'],
-    $couchConfig['hostname'],
-    intval($couchConfig['port']),
-    $couchConfig['admin'],
-    $couchConfig['adminpass']
-);
+$cdb            = CouchDB::singleton();
 $results        = $cdb->queryView(
     "DQG-2.0",
     "sessions",
@@ -43,4 +35,4 @@ $sessionResults = array_map(
     $results
 );
 print json_encode($sessionResults);
-
+?>

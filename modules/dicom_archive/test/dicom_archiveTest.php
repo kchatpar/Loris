@@ -12,6 +12,7 @@
  */
 require_once __DIR__
     . "/../../../test/integrationtests/LorisIntegrationTest.class.inc";
+
 /**
  * Automated integration tests for the dicom_archive module.
  *
@@ -25,39 +26,76 @@ require_once __DIR__
  */
 class DicomArchiveTestIntegrationTest extends LorisIntegrationTest
 {
-    //$location: css selector for react items
-    static $patientID   = "#dicom_filter_filter".
-                            ">div>div>fieldset>div:nth-child(2)>div>div>input";
-    static $patientName = "#dicom_filter_filter".
-                            ">div>div>fieldset>div:nth-child(3)>div>div>input";
-    static $site        = "#dicom_filter_filter".
-                            ">div>div>fieldset>div:nth-child(9)>div>div>select";
-    static $sex         = "#dicom_filter_filter".
-                            ">div>div>fieldset>div:nth-child(4)>div>div>input";
-    static $dateOfBirth = "#dicom_filter_filter".
-                            ">div>div>fieldset>div:nth-child(5)>div>div>input";
-    static $clearFilter = ".col-sm-9 > .btn";
-    // first row of react table
-    static $table   = "#dynamictable > tbody > tr:nth-child(1)";
-    static $display = ".table-header > div > div > div:nth-child(1)";
     /**
      * Insert testing data into the database
      *
-     * @return void
+     * @return none
      */
     function setUp()
     {
         parent::setUp();
+        $window = new WebDriverWindow($this->webDriver);
+        $size   = new WebDriverDimension(1024, 1768);
+        $window->setSize($size);
+        $this->DB->insert(
+            "tarchive",
+            array(
+             'DicomArchiveID'         => '9999999999',
+             'PatientID'              => '9999999999',
+             'PatientName'            => 'TestTestTest',
+             'PatientDoB'             => '1900-01-01',
+             'PatientGender'          => 'M',
+             'neurodbCenterName'      => 'NULL',
+             'CenterName'             => 'Mc Gill University',
+             'LastUpdate'             => '2014-05-30 13:49:36',
+             'DateAcquired'           => '2010-11-25',
+             'DateFirstArchived'      => '2014-05-30 13:47:11',
+             'DateLastArchived'       => '2014-05-30 13:49:36',
+             'AcquisitionCount'       => '166',
+             'NonDicomFileCount'      => '0',
+             'DicomFileCount'         => '881',
+             'md5sumDicomOnly'        => '5.150346.tar',
+             'md5sumArchive'          => '5.150346.tar',
+             'CreatingUser'           => 'lorisadmin',
+             'sumTypeVersion'         => '1',
+             'tarTypeVersion'         => '1',
+             'SourceLocation'         => '/tmp/bEu0Q_egfA/5.150346',
+             'ArchiveLocation'        => '2010/DCM5.150346.tar',
+             'ScannerManufacturer'    => 'SIEMENS',
+             'ScannerModel'           => 'TrioTim',
+             'ScannerSerialNumber'    => '35056',
+             'ScannerSoftwareVersion' => 'syngo MR B15',
+             'SessionID'              => '44',
+             'uploadAttempt'          => '0',
+             'CreateInfo'             => 'NULL',
+             'AcquisitionMetadata'    => 'A really long text that can not be null.',
+            )
+        );
     }
     /**
      * Delete testing data from database
      *
-     * @return void
+     * @return none
      */
     function tearDown()
     {
         parent::tearDown();
+        $this->DB->delete("tarchive", array('PatientName' => 'TestTestTest'));
     }
+    /**
+     * Tests that, when loading the dicom_archive module, some
+     * text appears in the body.
+     *
+     * @return void
+     */
+    function testdicomArchiveDoespageLoad()
+    {
+        $this->safeGet($this->url . "/dicom_archive/");
+        $bodyText = $this->webDriver->findElement(WebDriverBy::cssSelector("body"))
+            ->getText();
+        $this->assertContains("Dicom Archive", $bodyText);
+    }
+
     /**
      * Tests that, when loading the dicom_archive module > viewDetails subtest, some
      * text appears in the body.
@@ -78,20 +116,16 @@ class DicomArchiveTestIntegrationTest extends LorisIntegrationTest
      */
     function testDicomArchivePermission()
     {
-        $this->setupPermissions(array("dicom_archive_view_allsites"));
-        $this->safeGet($this->url . "/dicom_archive/");
-        $bodyText = $this->safeFindElement(
-            WebDriverBy::cssSelector("body")
-        )->getText();
-        $this->assertNotContains(
-            "You do not have access to this page.",
-            $bodyText
-        );
-        $this->assertNotContains(
-            "An error occured while loading the page.",
-            $bodyText
-        );
-        $this->resetPermissions();
+         $this->setupPermissions(array("dicom_archive_view_allsites"));
+         $this->safeGet($this->url . "/dicom_archive/");
+         $bodyText = $this->safeFindElement(
+             WebDriverBy::cssSelector("body")
+         )->getText();
+          $this->assertNotContains(
+              "You do not have access to this page.",
+              $bodyText
+          );
+          $this->resetPermissions();
     }
     /**
      * Tests clear button in the form
@@ -99,121 +133,82 @@ class DicomArchiveTestIntegrationTest extends LorisIntegrationTest
      *
      * @return void
      */
-    function testdicomArchiveFilterClearBtn()
+    function testdicomArchivFilterClearBtn()
     {
-        $this->safeGet($this->url . "/dicom_archive/");
-        //testing data from RBdata.sql
-        //$this-> _testFilter(self::$patientID, self::$table, null, "ibis");
-        $this-> _testFilter(
-            self::$patientName,
-            self::$table,
-            null,
-            "MTL022_300022_V1"
-        );
-        $this-> _testFilter(self::$sex, self::$table, "1", "M");
-        $this-> _testFilter(self::$dateOfBirth, self::$table, null, "1972-10-10");
-        $this-> _testFilter(self::$site, self::$table, "8", "4");
-    }
-    /**
-     * Testing filter funtion and clear button
-     *
-     * @param string $element The input element loaction
-     * @param string $table   The first row location in the table
-     * @param string $records The records number in the table
-     * @param string $value   The test value
-     *
-     * @return void
-     */
-    function _testFilter($element,$table,$records,$value)
-    {
-        // get element from the page
-        if (strpos($element, "select") == false) {
-            $this->webDriver->executescript(
-                "input = document.querySelector('$element');
-                 lastValue = input.value;
-                 input.value = '$value';
-                 event = new Event('input', { bubbles: true });
-                 input._valueTracker.setValue(lastValue);
-                 input.dispatchEvent(event);
-                "
-            );
-            $bodyText = $this->webDriver->executescript(
-                "return document.querySelector('$table').textContent"
-            );
-            $this->assertContains($value, $bodyText);
-        } else {
-            $this->webDriver->executescript(
-                "input = document.querySelector('$element');
-                 input.selectedIndex = '$value';
-                 event = new Event('change', { bubbles: true });
-                 input.dispatchEvent(event);
-                "
-            );
-            $row      = self::$display;
-            $bodyText = $this->webDriver->executescript(
-                "return document.querySelector('$row').textContent"
-            );
-            // 4 means there are 4 records under this site.
-            $this->assertContains($records, $bodyText);
-        }
-        //test clear filter
-        $btn = self::$clearFilter;
+        $this->markTestSkipped("This method isn't working properly on travis.");
 
-        $this->webDriver->executescript(
-            "document.querySelector('$btn').click();"
-        );
-        $inputText = $this->webDriver->executescript(
-            "return document.querySelector('$element').value"
-        );
-        $this->assertEquals("", $inputText);
+        //testing the Patient Name
+        $this->safeGet($this->url . "/dicom_archive/");
+        $nameElement =  $this->safeFindElement(WebDriverBy::Name("PatientName"));
+        $nameElement->sendKeys("TestPatientName");
+        $this->safeClick(WebDriverBy::Name("reset"));
+        $name =  $this->safeFindElement(WebDriverBy::Name("PatientName"))
+            ->getAttribute('value');
+        $this->assertEquals('', $name);
+
+        //testing the Archive Location
+        $locationElement =  $this->safeFindElement(WebDriverBy::Name("Location"));
+        $locationElement->sendKeys("TestLocation");
+        $this->safeClick(WebDriverBy::Name("reset"));
+        $location =  $this->safeFindElement(WebDriverBy::Name("Location"))
+            ->getAttribute('value');
+        $this->assertEquals('', $location);
+
+        //testing the Patient ID
+        $idElement =  $this->safeFindElement(WebDriverBy::Name("PatientID"));
+        $idElement->sendKeys("TestID");
+        $this->safeClick(WebDriverBy::Name("reset"));
+        $idText =  $this->safeFindElement(WebDriverBy::Name("PatientID"))
+            ->getAttribute('value');
+        $this->assertEquals('', $idText);
+
+        //testing the Gender
+        $genderElement =  $this->safeFindElement(WebDriverBy::Name("Gender"));
+        $gender        = new WebDriverSelect($genderElement);
+        $gender->selectByVisibleText("Male");
+        $this->safeClick(WebDriverBy::Name("reset"));
+        $genderElement =  $this->safeFindElement(WebDriverBy::Name("Gender"));
+        $gender        = new WebDriverSelect($genderElement);
+        $value         = $gender->getFirstSelectedOption()->getAttribute('value');
+        $this->assertEquals("", $value);
+
     }
     /**
-     * Tests that the (view-details) link works
+     * Tests that filter with the name
      *
      * @return void
      */
-    function testLinksViewDetails()
+    function testdicomArchiveFileterByName()
     {
-        $this->markTestSkipped(
-            'This test needs work. It is causing failures sometimes for '
-            . 'unkown reasons.'
-        );
+        $this->markTestSkipped("This method isn't working properly on travis.");
+
+        //testing the Patient Name
         $this->safeGet($this->url . "/dicom_archive/");
-        $location = "#dynamictable>tbody>tr:nth-child(1)>td:nth-child(8)>a";
-        $text     = $this->webDriver->executescript(
-            "return document.querySelector('$location').textContent"
-        );
-        $this->assertEquals('View Details', $text);
-        $this->webDriver->executescript(
-            "document.querySelector('$location').click()"
-        );
-        $text = $this->webDriver->getPageSource();
-        $this->assertContains('View Details', $text);
+        $nameElement =  $this->safeFindElement(WebDriverBy::Name("PatientName"));
+        $nameElement->sendKeys("TestTestTest");
+        $this->safeClick(WebDriverBy::Name("filter"));
+        $name =$this->safeFindElement(WebDriverBy::cssSelector("tbody"))->getText();
+        $this->assertContains('TestTestTest', $name);
+
     }
     /**
-     * Tests that the (view-Images) link works
+     * Tests that filter with the date of birth
      *
      * @return void
      */
-    function testLinksViewImages()
+    function testdicomArchiveFileterByDateOfBirth()
     {
-        $this->markTestSkipped(
-            'Imaging is not set'
-        );
+        $this->markTestSkipped("This method isn't working properly on travis.");
+
+        //testing the Patient's date of birth
         $this->safeGet($this->url . "/dicom_archive/");
-        $location = "#dynamictable > tbody > tr:nth-child(1) > td:nth-child(10) > a";
-        $text     = $this->webDriver->executescript(
-            "return document.querySelector('$location').textContent"
-        );
-        $this->assertEquals('View Images', $text);
-        $this->webDriver->executescript(
-            "document.querySelector('$location').click()"
-        );
-        sleep(1);
-        $text = $this->webDriver->getPageSource();
-        $text = $this->webDriver->executescript(
-            "return document.querySelector('#bc2>a:nth-child(3)>div').textContent"
-        );
-        $this->assertEquals('View Session', $text);
+        $DoBElement =  $this->safeFindElement(WebDriverBy::Name("DoB"));
+        $DoBElement->sendKeys("1900-01-01");
+        $this->safeClick(WebDriverBy::Name("filter"));
+        $DoB = $this->safeFindElement(WebDriverBy::cssSelector("tbody"))->getText();
+        $this->assertContains('1900-01-01', $DoB);
     }
+
+
 }
+?>

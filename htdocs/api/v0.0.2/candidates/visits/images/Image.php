@@ -71,7 +71,7 @@ class Image extends \Loris\API\Candidates\Candidate\Visit
     /**
      * Handles a GET request
      *
-     * @return void (but populates $this->JSON)
+     * @return none, but populates $this->JSON
      */
     public function handleGET()
     {
@@ -80,7 +80,7 @@ class Image extends \Loris\API\Candidates\Candidate\Visit
 
         $fp = fopen($fullDir, "r");
         if ($fp === false) {
-            $this->header("HTTP/1.1 500 Internal Server Error");
+            $this->header("HTTP/1.1 500 Internal Server Error", true, 500);
             error_log("Could not open $fullDir to send to client");
             $this->safeExit(1);
         }
@@ -101,7 +101,7 @@ class Image extends \Loris\API\Candidates\Candidate\Visit
         while (!feof($fp)) {
             print fread($fp, 1024);
         }
-        $this->safeExit(0);
+        $this->safeExit();
     }
 
     /**
@@ -168,7 +168,7 @@ class Image extends \Loris\API\Candidates\Candidate\Visit
     {
         $factory = \NDB_Factory::singleton();
         $config  = $factory->Config();
-        return $config->getSetting("imagePath");
+        return $config->getSetting("mincPath");
     }
 
     /**
@@ -206,4 +206,4 @@ if (isset($_REQUEST['PrintImageData'])) {
     );
     print $obj->toJSONString();
 }
-
+?>

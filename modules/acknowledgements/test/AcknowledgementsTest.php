@@ -53,7 +53,7 @@ class AcknowledgementsIntegrationTest extends LorisIntegrationTest
      * Insert testing data into the database
      * author: Wang Shen
      *
-     * @return void
+     * @return none
      */
     function setUp()
     {
@@ -68,7 +68,7 @@ class AcknowledgementsIntegrationTest extends LorisIntegrationTest
      * Delete testing data from database
      * author: Wang Shen
      *
-     * @return void
+     * @return none
      */
     function tearDown()
     {
@@ -114,14 +114,10 @@ class AcknowledgementsIntegrationTest extends LorisIntegrationTest
      */
     function testFilterWithData()
     {
-        $this->markTestSkipped(
-            'Skipping tests until Travis and React get along better.'
-        );
-
-        $this->_testFilter("fullName", self::$testData['full_name']);
-        $this->_testFilter("citatioName", self::$testData['citation_name']);
-        $this->_testFilter("startDate", self::$testData['start_date']);
-        $this->_testFilter("endDate", self::$testData['end_date']);
+        $this->_testFilter("full_name", self::$testData['full_name']);
+        $this->_testFilter("citation_name", self::$testData['citation_name']);
+        $this->_testFilter("start_date", self::$testData['start_date']);
+        $this->_testFilter("end_date", self::$testData['end_date']);
         $this->_testFilter("present", self::$testData['present']);
 
     }
@@ -136,7 +132,7 @@ class AcknowledgementsIntegrationTest extends LorisIntegrationTest
     private function _testFilter($element,$value)
     {
         $this->safeGet($this->url . "/acknowledgements/");
-        if ($element == "startDate" || $element == "endDate") {
+        if ($element == "start_date" || $element == "end_date") {
             $this->webDriver->executescript(
                 "document.getElementsByName('$element')[0].value='$value'"
             );
@@ -164,29 +160,25 @@ class AcknowledgementsIntegrationTest extends LorisIntegrationTest
      */
     function testAddNewRecord()
     {
-        $this->markTestSkipped(
-            'Skipping tests until Travis and React get along better.'
-        );
-
         $this->safeGet($this->url . "/acknowledgements/");
         //insert ordering
         $this->webDriver->findElement(
-            WebDriverBy::Name("addOrdering")
+            WebDriverBy::Name("addordering")
         )->sendKeys(self::$newData['ordering']);
         //insert Full name
         $this->webDriver->findElement(
-            WebDriverBy::Name("addFullName")
+            WebDriverBy::Name("addfull_name")
         )->sendKeys(self::$newData['full_name']);
         //insert Citation name
         $this->webDriver->findElement(
-            WebDriverBy::Name("addCitationName")
+            WebDriverBy::Name("addcitation_name")
         )->sendKeys(self::$newData['citation_name']);
         //expecting to find the value,after clicking save button
         $this->webDriver->findElement(
             WebDriverBy::Name("fire_away")
         )->click();
         //test filter
-        $this->_testFilter("fullName", self::$newData['full_name']);
+        $this->_testFilter("full_name", self::$newData['full_name']);
     }
 }
-
+?>

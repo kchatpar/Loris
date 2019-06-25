@@ -57,20 +57,20 @@ class QC extends \Loris\API\Candidates\Candidate\Visit\Imaging\Image
     /**
      * Handles a GET request
      *
-     * @return void (but populates $this->JSON)
+     * @return none, but populates $this->JSON
      */
     public function handleGET()
     {
         $factory    = \NDB_Factory::singleton();
         $DB         = $factory->Database();
         $QCStatus   = $DB->pselectRow(
-            "SELECT QCStatus, Selected 
-             FROM files_qcstatus
-             WHERE FileID in ( 
-                SELECT FileID
-                FROM files
-                WHERE File LIKE CONCAT('%', :FName)
-            )",
+            "SELECT QCStatus, 
+                pf.Value as Selected FROM files f
+                LEFT JOIN files_qcstatus fqc ON (f.FileID=fqc.FileID)
+                LEFT JOIN parameter_file pf ON (f.FileID=pf.FileID)
+                LEFT JOIN parameter_type pt 
+                    ON (pf.ParameterTypeID=pt.ParameterTypeID AND pt.Name='Selected')
+                WHERE f.File LIKE CONCAT('%', :FName)",
             array('FName' => $this->Filename)
         );
         $this->JSON = [
@@ -97,7 +97,7 @@ class QC extends \Loris\API\Candidates\Candidate\Visit\Imaging\Image
     /**
      * Handles a PUT request for QC data
      *
-     * @return void
+     * @return none
      */
     public function handlePUT()
     {
@@ -188,7 +188,7 @@ class QC extends \Loris\API\Candidates\Candidate\Visit\Imaging\Image
      * @param string $qcval  The Pass/Fail status
      * @param string $selval The value to set the selected field to.
      *
-     * @return void
+     * @return none
      */
     private function _saveFileQC($qcval, $selval)
     {
@@ -234,4 +234,4 @@ if (isset($_REQUEST['PrintImageQC'])) {
     );
     print $obj->toJSONString();
 }
-
+?>

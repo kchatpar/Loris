@@ -21,20 +21,12 @@ $client->makeCommandLine();
 $client->initialize(__DIR__ . "/../../../project/config.xml");
 header("Content-Type: application/json");
 
-$config      = \NDB_Config::singleton();
-$couchConfig = $config->getSetting('CouchDB');
-$cdb         = \NDB_Factory::singleton()->couchDB(
-    $couchConfig['dbName'],
-    $couchConfig['hostname'],
-    intval($couchConfig['port']),
-    $couchConfig['admin'],
-    $couchConfig['adminpass']
-);
-$docID       = urlencode($_REQUEST['DocID']);
+$cdb   = CouchDB::singleton();
+$docID = urlencode($_REQUEST['DocID']);
 
 $results = $cdb->getDoc(
     $docID
 );
 
 print json_encode($results);
-
+?>

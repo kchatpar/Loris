@@ -58,7 +58,7 @@ class Full extends \Loris\API\Candidates\Candidate\Visit\Imaging\Image
     /**
      * Handles a GET request
      *
-     * @return void (but populates $this->JSON)
+     * @return none, but populates $this->JSON
      */
     public function handleGET()
     {
@@ -143,4 +143,4 @@ if (isset($_REQUEST['PrintHeadersFull'])) {
     );
     print $obj->toJSONString();
 }
-
+?>

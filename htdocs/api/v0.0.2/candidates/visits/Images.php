@@ -58,7 +58,7 @@ class Images extends \Loris\API\Candidates\Candidate\Visit
     /**
      * Handles a GET request
      *
-     * @return void (but populates $this->JSON)
+     * @return none, but populates $this->JSON
      */
     public function handleGET()
     {
@@ -109,4 +109,4 @@ if (isset($_REQUEST['PrintImages'])) {
     );
     print $obj->toJSONString();
 }
-
+?>

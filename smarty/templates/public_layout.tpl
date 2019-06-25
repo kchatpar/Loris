@@ -12,13 +12,6 @@
   <link rel="stylesheet" href="{$baseurl}/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="{$baseurl}/css/public_layout.css">
   <link type="image/x-icon" rel="icon" href="{$baseurl}/images/favicon.ico">
-  {section name=jsfile loop=$jsfiles}
-    <script src="{$jsfiles[jsfile]}" type="text/javascript"></script>
-  {/section}
-
-  {section name=cssfile loop=$cssfiles}
-    <link rel="stylesheet" href="{$cssfiles[cssfile]}">
-  {/section}
 </head>
 <body>
   <header class="header">
@@ -33,7 +26,7 @@
           {$study_title}
         </div>
         <div class="github-logo">
-          <a href="https://github.com/aces/Loris" target="_blank" rel="noopener noreferrer">
+          <a href="https://github.com/aces/Loris" target="_blank">
             <img src="{$baseurl}/images/GitHub-Mark-Light-64px.png" alt="Github"/>
           </a>
         </div>
@@ -42,12 +35,21 @@
   </header>
 
   <section class="main-content">
-    {$workspace}
+    {* Load appropriate page content, default to login page *}
+    {if $page == 'password-reset'}
+      {include file='password_reset.tpl'}
+    {elseif $page == 'password-expiry'}
+      {include file='password_expiry.tpl'}
+    {elseif $page == 'request_account'}
+      {include file='request_account.tpl'}
+    {else}
+      {include file='login.tpl'}
+    {/if}
   </section>
 
   <footer class="footer">
     Powered by <a href="http://www.loris.ca/" target="_blank">LORIS</a>
-    | GPL-3.0 &copy; {$currentyear} <br/>
+    {$version} | GPL-3.0 &copy; {$currentyear} <br/>
     Developed at
     <a href="http://www.mni.mcgill.ca" target="_blank">
       Montreal Neurological Institute and Hospital

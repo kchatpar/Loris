@@ -2,11 +2,11 @@
 /**
  * User accounts automated integration tests
  *
- * PHP Version 7
+ * PHP Version 5
  *
  * @category Test
  * @package  Loris
- * @author   Shen Wang <wangshen.mcin@gmail.com>
+ * @author   Nicolas Brossard <nicolasbrossard.mni@gmail.com>
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://github.com/aces/Loris
  */
@@ -17,7 +17,7 @@ require_once __DIR__
  *
  * @category Test
  * @package  Loris
- * @author   Shen Wang <wangshen.mcin@gmail.com>
+ * @author   Nicolas Brossard <nicolasbrossard.mni@gmail.com>
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://github.com/aces/Loris
  */
@@ -39,16 +39,20 @@ class UserAccountsIntegrationTest extends LorisIntegrationTest
                                     'Y',
                                     'N',
                                    );
-    private $_name        = "#userAccounts_filter".
-                                " > div > div > fieldset > div:nth-child(3)".
-                                " > div > div > input";
-    private $_site        = "#userAccounts_filter".
-                                " > div > div > fieldset > div:nth-child(2)".
-                                " > div > div > select";
-    private $_clearFilter = ".col-sm-9 > .btn";
-    private $_table       = "#dynamictable > tbody > tr:nth-child(1)";
-    private $_addUserBtn  = "#default-panel > div > div > div.table-header >".
-                            " div > div > div:nth-child(2) > button:nth-child(1)";
+    /**
+     * Tests that, when loading the User accounts module, some
+     * text appears in the body.
+     *
+     * @return void
+     */
+    function testUserAccountsDoespageLoad()
+    {
+        $this->safeGet($this->url . "/user_accounts/");
+        $bodyText = $this->safeFindElement(
+            WebDriverBy::cssSelector("body")
+        )->getText();
+        $this->assertContains("User Accounts", $bodyText);
+    }
     /**
      * Tests that, when loading the User accounts module > edit_user submodule, some
      * text appears in the body.
@@ -100,68 +104,11 @@ class UserAccountsIntegrationTest extends LorisIntegrationTest
      *
      * @return void
      */
-    function testUserAccountsFilterClearBtn()
+    function testSearchForUsers()
     {
-        $this->safeGet($this->url . "/user_accounts/");
-        //testing data from RBdata.sql
-        $this-> _testFilter($this->_name, $this->_table, null, "UnitTester");
-        $this-> _testFilter($this->_site, $this->_table, "1 rows", "3");
+        $this->_assertSearchBy("userID", "my_nonexistent_user_ID", null);
+        $this->_assertSearchBy("userID", "UnitTester", "UnitTester");
     }
-    /**
-     * Testing filter funtion and clear button
-     *
-     * @param string $element The input element location
-     * @param string $table   The first row location in the table
-     * @param string $records The records number in the table
-     * @param string $value   The test value
-     *
-     * @return void
-     */
-    function _testFilter($element,$table,$records,$value)
-    {
-        // get element from the page
-        if (strpos($element, "select") == false) {
-            $this->webDriver->executescript(
-                "input = document.querySelector('$element');
-                 lastValue = input.value;
-                 input.value = '$value';
-                 event = new Event('input', { bubbles: true });
-                 input._valueTracker.setValue(lastValue);
-                 input.dispatchEvent(event);
-                "
-            );
-            $bodyText = $this->webDriver->executescript(
-                "return document.querySelector('$table').textContent"
-            );
-            $this->assertContains($value, $bodyText);
-        } else {
-            $this->webDriver->executescript(
-                "input = document.querySelector('$element');
-                 input.selectedIndex = '$value';
-                 event = new Event('change', { bubbles: true });
-                 input.dispatchEvent(event);
-                "
-            );
-                    $bodyText = $this->webDriver->executescript(
-                        "return document.querySelector('#default-panel".
-                        " > div > div > div.table-header > div > div >".
-                        " div:nth-child(1)').textContent"
-                    );
-                    // 4 means there are 4 records under this site.
-                    $this->assertContains($records, $bodyText);
-        }
-        //test clear filter
-        $btn = $this->_clearFilter;
-        $this->webDriver->executescript(
-            "document.querySelector('$btn').click();"
-        );
-        $inputText = $this->webDriver->executescript(
-            "return document.querySelector('$element').value"
-        );
-        $this->assertEquals("", $inputText);
-    }
-
-
     /**
      * Tests various user account edit operations.
      *
@@ -233,12 +180,8 @@ class UserAccountsIntegrationTest extends LorisIntegrationTest
      */
     function testAddNewUser()
     {
-        // adding a new user for react test
         $this->safeGet($this->url . "/user_accounts/");
-        $btn = $this->_addUserBtn;
-        $this->webDriver->executescript(
-            "document.querySelector('$btn').click();"
-        );
+        $this->safeClick(WebDriverBy::Name('button'));
         $field = $this->safeFindElement(WebDriverBy::Name('UserID'));
         $field->clear();
         $field->sendKeys('userid');
@@ -328,7 +271,7 @@ class UserAccountsIntegrationTest extends LorisIntegrationTest
                              'user_accounts/my_preferences'
      * @param string $userId ID of the user whose page should be accessed.
      *
-     * @return void
+     * @return void.
      */
     function _accessUser($page, $userId)
     {
@@ -342,6 +285,94 @@ class UserAccountsIntegrationTest extends LorisIntegrationTest
         }
     }
     /**
+     * Performs a candidate search using the specified criteria and verifies
+     * the candidates obtained.
+     *
+     * @param array  $elementName     name of the element.
+     * @param string $testData        the testing data
+     * @param string $expectedResults the result that should be returned.
+     *
+     * @return void.
+     */
+    private function _assertSearchBy($elementName,$testData,$expectedResults)
+    {
+        {
+            $this->safeGet($this->url . "/user_accounts/");
+            $element = $this->safeFindElement(
+                WebDriverBy::Name($elementName)
+            );
+            $element->clear();
+            $element->sendKeys($testData);
+            }
+            $this->safeClick(WebDriverBy::Name("filter"));
+
+            $this->_assertUserReactTableContents($testData, $expectedResults);
+    }
+    /**
+     * Compares the content of the candidate table with an expected content.
+     *
+     * @param string $className    class name of the HTML table.
+     * @param string $expectedRows array of candidates that the table should contain.
+     *
+     * @return void
+     */
+    private function _assertUserTableContents($className, $expectedRows)
+    {
+        $dataTable = $this->safeFindElement(
+            WebDriverBy::ClassName($className)
+        );
+        if (is_null($expectedRows)) {
+            $this->assertContains('No users found', $dataTable->getText());
+        } else {
+            $actualRows = $dataTable->findElements(
+                WebDriverBy::xpath('.//tbody//tr')
+            );
+            $this->assertEquals(
+                count($actualRows),
+                count($expectedRows),
+                "Number of users returned should be "
+                . count($expectedRows) . ", not " . count($actualRows)
+            );
+            for ($i=1; $i<=count($actualRows); $i++) {
+                $elements      = $actualRows[$i-1]->findElements(
+                    WebDriverBy::xpath('.//td')
+                );
+                $actualColumns = array();
+                foreach ($elements as $e) {
+                    $actualColumns[] = $e->getText();
+                }
+                $expectedColumns = $expectedRows[$i-1];
+                array_unshift($expectedColumns, "$i");
+                $this->assertEquals(
+                    $actualColumns,
+                    $expectedColumns,
+                    "Users at row $i differ"
+                );
+            }
+        }
+    }
+    /**
+     * Compares the content of the candidate table with an expected content.
+     *
+     * @param string $testData     the test data
+     * @param string $expectedRows array of candidates that the table
+     *                                                       should contain.
+     *
+     * @return void
+     */
+    private function _assertUserReactTableContents($testData,$expectedRows)
+    {
+        $dataTable =  $this->safeGet($this->url . "/user_accounts/?format=json")
+            ->getPageSource();
+        if (is_null($expectedRows)) {
+            $this->assertContains('"Data":[]', $dataTable);
+        } else {
+
+             $this->assertContains($testData, $dataTable);
+
+        }
+    }
+    /**
      * Performed after every test.
      *
      * @return void
@@ -352,4 +383,4 @@ class UserAccountsIntegrationTest extends LorisIntegrationTest
         parent::tearDown();
     }
 }
-
+?>

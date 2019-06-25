@@ -26,6 +26,7 @@
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://github.com/aces/Loris-Trunk
  */
+
 require_once "Email.class.inc";
 
 //TODO: or split it into two files... :P
@@ -69,11 +70,8 @@ function editIssue()
                              );
 
     foreach ($fields as $field) {
-        // The default is a string "null" because if the front end submits
-        // null, it comes through as a string, so the default is to behave
-        // the same way
-        $value = $_POST[$field] ?? "null";
-        if ($value === "null") {
+        $value = $_POST[$field];
+        if ($_POST[$field] === "null") {
             $value = null;
         }
         if (isset($field)) {
@@ -100,7 +98,7 @@ function editIssue()
     // Get changed values to save in history
     $historyValues = getChangedValues($issueValues, $issueID);
 
-    if (!empty($issueID)) {
+    if (!empty($issueID) || $issueID != 0) {
         $db->update('issues', $issueValues, ['issueID' => $issueID]);
     } else {
         $issueValues['reporter']    = $user->getData('UserID');
@@ -119,9 +117,23 @@ function editIssue()
                         'issueID' => $issueID,
                        );
         $db->replace('issues_watching', $nowWatching);
+    }
 
-        //sending email
-        emailUser($issueID, $issueValues['assignee']);
+    // Adding editor to the watching table unless they don't want to be added.
+    if ($_POST['watching'] == 'Yes') {
+        $nowWatching = array(
+                        'userID'  => $user->getData('UserID'),
+                        'issueID' => $issueID,
+                       );
+        $db->replace('issues_watching', $nowWatching);
+    } else if ($_POST['watching'] == "No") {
+        $db->delete(
+            'issues_watching',
+            array(
+             'issueID' => $issueID,
+             'userID'  => $user->getData('UserID'),
+            )
+        );
     }
 
     // Adding others from multiselect to watching table.
@@ -148,22 +160,9 @@ function editIssue()
         }
     }
 
-    // Add editor to the watching table unless they don't want to be added.
-    if (isset($_POST['watching']) &&  $_POST['watching'] == 'Yes') {
-        $nowWatching = array(
-                        'userID'  => $user->getData('UserID'),
-                        'issueID' => $issueID,
-                       );
-        $db->replace('issues_watching', $nowWatching);
-    } else if (isset($_POST['watching']) && $_POST['watching'] == 'No') {
-        $db->delete(
-            'issues_watching',
-            array(
-             'issueID' => $issueID,
-             'userID'  => $user->getData('UserID'),
-            )
-        );
-    }
+    //sending email
+    emailUser($issueID, $issueValues['assignee']);
+
     return ['issueID' => $issueID];
 }
 
@@ -196,7 +195,7 @@ function validateInput($values)
         $validCenter = $db->pselectOne(
             "
             SELECT
-                RegistrationCenterID = :center_id as CenterID
+                CenterID = :center_id
             FROM
                 candidate
             WHERE
@@ -430,7 +429,8 @@ function getComments($issueID)
         "FROM issues_history where issueID=:issueID " .
         "UNION " .
         "SELECT issueComment, 'comment', dateAdded, addedBy " .
-        "FROM issues_comments where issueID=:issueID ",
+        "FROM issues_comments where issueID=:issueID " .
+        "ORDER BY dateAdded DESC",
         array('issueID' => $issueID)
     );
 
@@ -468,8 +468,8 @@ function getComments($issueID)
             $comment['fieldChanged'] = 'Visit Label';
         }
     }
-
     return $unformattedComments; //now formatted I guess
+
 }
 
 /**
@@ -478,7 +478,7 @@ function getComments($issueID)
  * @param int    $issueID          the issueID
  * @param string $changed_assignee changed assignee
  *
- * @return void
+ * @return array
  * @throws DatabaseException
  */
 function emailUser($issueID, $changed_assignee)
@@ -496,7 +496,7 @@ function emailUser($issueID, $changed_assignee)
     );
 
     $msg_data['url']         = $baseurl .
-        "/issue_tracker/issue/" . $issueID;
+        "/issue_tracker/issue/?backURL=/issue_tracker/&issueID=" . $issueID;
     $msg_data['issueID']     = $issueID;
     $msg_data['currentUser'] = $user->getUsername();
     $msg_data['title']       = $title;
@@ -511,16 +511,13 @@ function emailUser($issueID, $changed_assignee)
              'currentUser' => $user->getUserName(),
             )
         );
+        $msg_data['firstname']     = $issueChangeEmailsAssignee[0]['firstname'];
 
-        if (isset($issueChangeEmailsAssignee[0])) {
-            $msg_data['firstname'] = $issueChangeEmailsAssignee[0]['firstname'];
-
-            Email::send(
-                $issueChangeEmailsAssignee[0]['Email'],
-                'issue_assigned.tpl',
-                $msg_data
-            );
-        }
+        Email::send(
+            $issueChangeEmailsAssignee[0]['Email'],
+            'issue_assigned.tpl',
+            $msg_data
+        );
     } else {
         $changed_assignee = $user->getUsername(); // so query below doesn't break..
     }
@@ -537,7 +534,7 @@ function emailUser($issueID, $changed_assignee)
     );
 
     $msg_data['url']         = $baseurl .
-        "/issue_tracker/issue/?issueID=" . $issueID;
+        "/issue_tracker/issue/?backURL=/issue_tracker/&issueID=" . $issueID;
     $msg_data['issueID']     = $issueID;
     $msg_data['currentUser'] = $user->getUsername();
 
@@ -566,7 +563,13 @@ function getIssueFields()
         $sites = Utility::getAssociativeSiteList();
     } else {
         // allow only to view own site data
-        $sites = $user->getStudySites();
+        $site_arr = $user->getData('CenterIDs');
+        foreach ($site_arr as $key=>$val) {
+            $site_arr[$key] = Site::singleton($val);
+            if ($site_arr[$key]->isStudySite()) {
+                $sites[$val] = $site_arr[$key]->getCenterName();
+            }
+        }
     }
 
     //not yet ideal permissions
@@ -660,18 +663,9 @@ WHERE Parent IS NOT NULL ORDER BY Label ",
 
     //Now get issue values
     $issueData = getIssueData();
-    if (!empty($_GET['issueID'])
-        && $_GET['issueID'] != "new"
-    ) { //if an existing issue
-        $issueID   = $_GET['issueID'];
-        $issueData = getIssueData($issueID);
-
-        $desc       = $db->pselect(
-            "SELECT issueComment
-FROM issues_comments WHERE issueID=:i
-ORDER BY dateAdded LIMIT 1",
-            array('i' => $issueID)
-        );
+    if (!empty($_GET['issueID'])) { //if an existing issue
+        $issueID    = $_GET['issueID'];
+        $issueData  = getIssueData($issueID);
         $isWatching = $db->pselectOne(
             "SELECT userID, issueID FROM issues_watching
             WHERE issueID=:issueID AND userID=:userID",
@@ -680,14 +674,15 @@ ORDER BY dateAdded LIMIT 1",
              'userID'  => $user->getData('UserID'),
             )
         );
-        if ($isWatching === null) {
-            $issueData['watching'] = "No";
-        } else {
-            $issueData['watching'] = "Yes";
-        }
+        $issueData['watching']       = is_array($isWatching) ? "No" : "Yes";
         $issueData['commentHistory'] = getComments($issueID);
         $issueData['othersWatching'] = getWatching($issueID);
-        $issueData['desc']           = $desc[0]['issueComment'];
+        $issueData['desc']           = $db->pSelectOne(
+            "SELECT issueComment
+FROM issues_comments WHERE issueID=:issueID
+ORDER BY dateAdded",
+            array('issueID' => $issueID)
+        );
     }
     $issueData['comment'] = null;
 
@@ -717,7 +712,7 @@ ORDER BY dateAdded LIMIT 1",
 
 /**
  * If issueID is passed retrieves issue data from database,
- * otherwise return empty issue data object
+ * othewise return empty issue data object
  *
  * @param string $issueID the ID of the requested issue
  *
@@ -726,8 +721,8 @@ ORDER BY dateAdded LIMIT 1",
 function getIssueData($issueID=null)
 {
 
-    $user = \User::singleton();
-    $db   = \Database::singleton();
+    $user =& User::singleton();
+    $db   =& Database::singleton();
 
     if (!empty($issueID)) {
         return $db->pselectRow(

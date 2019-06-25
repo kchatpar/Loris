@@ -29,11 +29,9 @@ html, body {
 	font-family: verdana, sans-serif;
 	font-size: 90%;
 }
-
 #page {
-    min-height: 100vh;
+    min-height: 100%;
     position: relative;
-    padding-top: 50px;
 }
 
 
@@ -54,7 +52,7 @@ em {
 
 /* anchor tags */
 a, a:link, a:visited {
-	color: #246EB6; 
+	color: #064785; 
 	text-decoration: none;
  	}
 a:active {
@@ -403,9 +401,9 @@ table.data {
 }
 
 .data tr th {
-    background: #E4EBF2;
+    background: #1C70B6;
     /* color: #CCC; */
-    color: #064785;
+    color: white;
     padding: 3px;
 }
 .data tr td {
@@ -489,13 +487,14 @@ list-style-type: none;
 
 #navlist a:link, #navlist a:visited
 {
-color: #246EB6;
+color: #064785;
 text-decoration: none;
 }
 
 #navlist a:hover
 {
-color: #E89A0C;
+color: #064785;
+/*background-color: #369;*/
 text-decoration: none;
 }
 #navbarspacer{
@@ -529,7 +528,11 @@ td.sidenav {
     text-align: left;
 }
 .navigationButtons a, .controlPanel li a:hover {
-	color: #E89A0C !important;
+	color: #fff !important;
+}
+.navigationButtons.active, .controlPanel li:hover {
+    background: #47F !important; 
+    /* background: green; */
 }
 .navigationButtons {
     float: left !important;
@@ -666,10 +669,7 @@ tr.directentry {
 .help-content {
     max-height: 94%;
     width: 30%;
-    background: #E4EBF2;
-    border-style: solid;
-    border-color: #246EB6;
-    border-width: 0px 0px 1px 1px;
+    background: #064785;
     height: auto;
     position: fixed;
     top: 50px;
@@ -682,29 +682,35 @@ tr.directentry {
 .help-content #help-wrapper {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-size: 14px;
-    color: #064785;
+    color: #FFFFFF;
     padding: 9.5px;
+}
+.help-content pre#help-wrapper {
+    white-space: pre-wrap;
+    word-break: normal;
+    background: #064785;
 }
 #help-seperator {
    margin-top: 50px;
     background: #064785;
 }
 #helpclose {
-   float: right;
-   margin: 10px;
-   margin-left: 0px;
+   position: absolute;
+   right:    0;
+   top:   20px;
+   margin-right : 5px;
 }
 #helpedit {
-   float: right;
-   margin: 10px;
+   position: absolute;
+   right:    0;4, 45, 84
 }
 .help-content h3 {
-    color: #064785;
+    color: #FFFFFF;
 }
 
 .help-content a {
    text-decoration: underline;
-   color: #064785;
+   color: white;
 
 }
 

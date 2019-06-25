@@ -101,7 +101,7 @@ class NDB_BVL_Battery
      *                              for
      * @param string  $stage        Either 'visit' or 'screening'
      * @param string  $visit_label  The visit label to create a battery for.
-     * @param integer $center_ID    The center of the candidate having a battery
+     * @param integer $center_ID    The centre of the candidate having a battery
      *                              created
      * @param boolean $firstVisit   Whether this is a first visit battery.
      *                              true means ONLY first visit
@@ -118,7 +118,7 @@ class NDB_BVL_Battery
         $firstVisit=null
     ) {
         // assert that a battery has already been selected
-        $this->_assertBatterySelected();
+        $error = $this->_assertBatterySelected();
 
         // get the current battery (center id is irrelevant here,
         // as is stage probably)
@@ -128,7 +128,7 @@ class NDB_BVL_Battery
             throw new Exception(
                 "Could not get the current list of instruments, "
                 . "thus unable to assert that the battery is empty",
-                0,
+                null,
                 $e
             );
         }
@@ -153,7 +153,8 @@ class NDB_BVL_Battery
         // loop over the list of instruments
         foreach ($neededTests AS $testName) {
             // add the instrument
-            $this->addInstrument($testName);
+            $success = $this->addInstrument($testName);
+
         } // end looping over the list of instruments
     } // end createBattery()
 
@@ -170,13 +171,10 @@ class NDB_BVL_Battery
     {
         $DB = Database::singleton();
         // assert that a battery has already been selected
-        $this->_assertBatterySelected();
+        $error = $this->_assertBatterySelected();
 
         // assert that the instrument is valid
         $error = $this->_assertValidInstrument($testName);
-        if ($error !== true) {
-            throw new \LorisException("Invalid instrument");
-        }
 
         // get SessionID, UserID
         $query = "SELECT ID as SessionID, UserID FROM session WHERE ID=:SID";
@@ -191,11 +189,8 @@ class NDB_BVL_Battery
         // generate a commentID
         $commentID = $this->_createCommentID($testName);
 
-        // instantiate instrument object to get table name attribute
-        $obj = NDB_BVL_Instrument::factory($testName, '', '');
-
         // insert into the test table
-        $success = $DB->insert($obj->table, array('CommentID' => $commentID));
+        $success = $DB->insert($testName, array('CommentID' => $commentID));
 
         // insert into the flag table
         $success = $DB->insert(
@@ -212,7 +207,7 @@ class NDB_BVL_Battery
         $ddeCommentID = 'DDE_'.$commentID;
 
         // insert the dde into the test table
-        $success = $DB->insert($obj->table, array('CommentID' => $ddeCommentID));
+        $success = $DB->insert($testName, array('CommentID' => $ddeCommentID));
 
         // insert the dde into the flag table
         $success = $DB->insert(
@@ -265,7 +260,7 @@ class NDB_BVL_Battery
     {
         $DB = Database::singleton();
         // assert that a battery has already been selected
-        $this->_assertBatterySelected();
+        $error = $this->_assertBatterySelected();
 
         // craft the select query
         $query   = "SELECT f.Test_name FROM flag f JOIN session s
@@ -302,7 +297,7 @@ class NDB_BVL_Battery
     {
         $DB = Database::singleton();
         // assert that a battery has already been selected
-        $this->_assertBatterySelected();
+        $error = $this->_assertBatterySelected();
 
         // craft the select query
         $query = "SELECT f.Test_name,
@@ -541,11 +536,19 @@ class NDB_BVL_Battery
      */
     function _createCommentID($testName)
     {
+        $DB = Database::singleton();
         // assert that a battery has already been selected
         $error = $this->_assertBatterySelected();
 
         // assert that the instrument is valid
         $error = $this->_assertValidInstrument($testName);
+
+        // create timepoint object
+        $timepoint =& TimePoint::singleton($this->sessionID);
+
+        // create candidate object
+        $candidate =& Candidate::singleton($timepoint->getCandID());
+
         return NDB_BVL_Battery::generateCommentID($this->sessionID, $testName);
     }
 

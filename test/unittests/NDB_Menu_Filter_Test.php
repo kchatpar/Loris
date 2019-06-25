@@ -1,8 +1,8 @@
 <?php
 require_once __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/../../php/libraries/NDB_Menu_Filter.class.inc';
-use PHPUnit\Framework\TestCase;
-class NDB_Menu_Filter_Test extends TestCase
+
+class NDB_Menu_Filter_Test extends PHPUnit_Framework_TestCase
 {
     /**
      * Set up sets a fake $_SESSION object that we can use for
@@ -10,7 +10,8 @@ class NDB_Menu_Filter_Test extends TestCase
      */
     function setUp() {
         global $_SESSION;
-        $this->Session = $this->getMockBuilder(stdClass::class)->setMethods(array('getProperty', 'setProperty', 'getUsername', 'isLoggedIn'))->getMock();
+        $this->Session = $this->getMock('stdClass', array('getProperty', 'setProperty'));
+
         $_SESSION = array(
             'State' => $this->Session
         );
@@ -35,10 +36,7 @@ class NDB_Menu_Filter_Test extends TestCase
     function testResetFilters() {
         $method = array('_resetFilters');
         $allOtherMethods = $this->_getAllMethodsExcept($method);
-        $stub = $this->getMockBuilder('NDB_Menu_Filter')
-            ->setMethods($allOtherMethods)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $stub = $this->getMock('NDB_Menu_Filter', $this->_getAllMethodsExcept($method));
 
         // Reset calls
         $this->Session->expects($this->exactly(2))
@@ -60,10 +58,7 @@ class NDB_Menu_Filter_Test extends TestCase
     function testSetSearchKeyword() {
         $method = array('_setSearchKeyword');
         $allOtherMethods = $this->_getAllMethodsExcept($method);
-        $stub = $this->getMockBuilder('NDB_Menu_Filter')
-            ->setMethods($allOtherMethods)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $stub = $this->getMock('NDB_Menu_Filter', $this->_getAllMethodsExcept($method));
 
         $stub->_setSearchKeyword('abc');
 
@@ -85,12 +80,9 @@ class NDB_Menu_Filter_Test extends TestCase
     function testSetFilters() {
         $method = array('_setFilters');
         $allOtherMethods = $this->_getAllMethodsExcept($method);
-        $stub = $this->getMockBuilder('NDB_Menu_Filter')
-            ->setMethods($allOtherMethods)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $stub = $this->getMock('NDB_Menu_Filter', $this->_getAllMethodsExcept($method));
 
-        $stub->form = new LorisForm();
+        $stub->form = new LorisForm('filter');
         $stub->form->applyFilter('__ALL__', 'trim');
         $submittedValues = array(
                 'FakeField'        => '      I should be put into filter     ',
@@ -140,10 +132,7 @@ class NDB_Menu_Filter_Test extends TestCase
     function testSetFilterSortOrder() {
         $method = array('_setFilterSortOrder');
         $allOtherMethods = $this->_getAllMethodsExcept($method);
-        $stub = $this->getMockBuilder('NDB_Menu_Filter')
-            ->setMethods($allOtherMethods)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $stub = $this->getMock('NDB_Menu_Filter', $this->_getAllMethodsExcept($method));
 
         $stub->headers = array('FakeField', "FakeField2");
         $stub->formToFilter = array(

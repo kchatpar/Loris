@@ -3,9 +3,7 @@
   <tr>
     <th>Acquisition ID</th>
     <td>
-      <a class="dicom_archive" style="cursor: pointer"
-         data-patientname="{$archive.PatientName}">
-         {$archive.DicomArchiveID}
+      <a href="{$baseurl}/mri_violations/?PatientName={$archive.PatientName}&filter=true">{$archive.DicomArchiveID}</a>
       </a>
     </td>
   </tr>
@@ -22,8 +20,8 @@
     <td>{$archive.PatientDoB}</td>
   </tr>
   <tr>
-    <th>Patient Biological Sex</th>
-    <td>{$archive.PatientSex}</td>
+    <th>Patient Gender</th>
+    <td>{$archive.PatientGender}</td>
   </tr>
   <tr>
     <th>Date acquired</th>

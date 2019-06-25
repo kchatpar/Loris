@@ -108,12 +108,12 @@ class TimepointListIntegrationTest extends LorisIntegrationTestWithCandidate
         $this->DB->insert(
             "candidate",
             array(
-             'CandID'               => '900001',
-             'PSCID'                => 'TST0002',
-             'RegistrationCenterID' => 1,
-             'Active'               => 'Y',
-             'UserID'               => 1,
-             'Entity_type'          => 'Human',
+             'CandID'      => '900001',
+             'PSCID'       => 'TST0002',
+             'CenterID'    => 1,
+             'Active'      => 'Y',
+             'UserID'      => 1,
+             'Entity_type' => 'Human',
             )
         );
 
@@ -141,7 +141,7 @@ class TimepointListIntegrationTest extends LorisIntegrationTestWithCandidate
             )
         );
         $this->safeGet(
-            $this->url . "/" .  self::$_TST0001_CANDID . "/"
+            $this->url . "/timepoint_list/?candID=" .  self::$_TST0001_CANDID
         );
         $this->_validateSessionTableContents(array(self::$_TST0001_SESSION));
         $this->DB->delete('session', array('ID' => '999997'));
@@ -149,4 +149,4 @@ class TimepointListIntegrationTest extends LorisIntegrationTestWithCandidate
         $this->DB->delete('candidate', array('CandID' => 900001));
     }
 }
-
+?>

@@ -22,6 +22,7 @@ require_once 'Smarty_hook.class.inc';
 require_once 'NDB_Caller.class.inc';
 require_once 'NDB_Client.class.inc';
 require_once 'NDB_BVL_Instrument.class.inc';
+require_once 'Log.class.inc';
 
 /**
  * Implements the survey page
@@ -37,12 +38,6 @@ class DirectDataEntryMainPage
     var $key;
 
     var $TestName;
-
-    /**
-     * The instrument subpage being accessed
-     *
-     * @var mixed
-     */
     var $Subtest;
 
     var $NumPages;
@@ -56,7 +51,7 @@ class DirectDataEntryMainPage
      * Initialize all of the class variables and things required from the
      * REQUEST.
      *
-     * @return void (but as a side-effect modifies class)
+     * @return none, but as a side-effect modifies class
      */
     function initialize()
     {
@@ -113,9 +108,6 @@ class DirectDataEntryMainPage
                 )
             );
         }
-        if ($this->Subtest === array()) {
-            $this->Subtest = "";
-        }
 
         $totalPages        = $DB->pselectOne(
             "SELECT COUNT(*)+1 from instrument_subtests WHERE Test_name=:TN",
@@ -142,22 +134,21 @@ class DirectDataEntryMainPage
      *
      * @param integer $currentPage The current page number
      *
-     * @return int The page which preceeded this one
+     * @return The page which preceeded this one
      */
-    function getNextPageNum($currentPage): int
+    function getNextPageNum($currentPage)
     {
+        $DB = Database::singleton();
         if ($currentPage === null) {
             return 1;
         }
-        $nextPage = $currentPage+1;
-        return intval(
-            \Database::singleton()->pselectOne(
-                "SELECT Order_number FROM instrument_subtests
-                WHERE Test_name=:TN AND Order_number=:PN",
-                array(
-                 'TN' => $this->TestName,
-                 'PN' => $nextPage,
-                )
+        return $DB->pselectOne(
+            "SELECT Order_number FROM instrument_subtests
+            WHERE Test_name=:TN AND Order_number > :PN 
+            ORDER BY Order_number",
+            array(
+             'TN' => $this->TestName,
+             'PN' => $currentPage,
             )
         );
     }
@@ -167,10 +158,10 @@ class DirectDataEntryMainPage
      *
      * @param integer $currentPage The current page number
      *
-     * @return string|null the previous page number or "top" if the user is on
+     * @return string the previous page number or "top" if the user is on
      *         the top page
      */
-    function getPrevPageNum($currentPage): ?string
+    function getPrevPageNum($currentPage)
     {
         $DB = Database::singleton();
         if ($currentPage === null) {
@@ -191,13 +182,12 @@ class DirectDataEntryMainPage
                 array('TN' => $this->TestName)
             );
         }
-        $prevPage = $currentPage-1;
         return $DB->pselectOne(
             "SELECT Order_number FROM instrument_subtests 
-            WHERE Test_name=:TN AND Order_number=:PN",
+            WHERE Test_name=:TN AND Order_number < :PN ORDER BY Order_number DESC",
             array(
              'TN' => $this->TestName,
-             'PN' => $prevPage,
+             'PN' => $currentPage,
             )
         );
     }
@@ -205,7 +195,7 @@ class DirectDataEntryMainPage
     /**
      * Run the current page, consists of initializing and then displaying the page
      *
-     * @return void
+     * @return none
      */
     function run()
     {
@@ -239,7 +229,7 @@ class DirectDataEntryMainPage
      *
      * @param Exception $e The exception which was thrown by the code
      *
-     * @return void (but as a side-effect changes the HTTP return code)
+     * @return none, but as a side-effect changes the HTTP return code
      */
     function displayError($e)
     {
@@ -266,9 +256,9 @@ class DirectDataEntryMainPage
      *
      * @param string $status The status to be updated to
      *
-     * @return bool True on success, false on failure
+     * @return True on success, false on failure
      */
-    function updateStatus($status): bool
+    function updateStatus($status)
     {
         $DB = Database::singleton();
 
@@ -301,7 +291,7 @@ class DirectDataEntryMainPage
      *                          survey to use
      * @param string  $comments Comments entered by survey user on review page
      *
-     * @return void
+     * @return none
      */
     function updateComments($ease, $comments)
     {
@@ -317,14 +307,36 @@ class DirectDataEntryMainPage
     }
 
     /**
+     * Saves all aspects of current request to a log file so that we ensure
+     * that we never lose user data and can retrieve it in the event of an
+     * emergency
+     *
+     * @return none
+     */
+    function logRequest()
+    {
+        $log    = new Log("direct_entry");
+        $logmsg = $_SERVER['REMOTE_ADDR'];
+        if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $logmsg .= " (" . $_SERVER['HTTP_X_FORWARDED_FOR'] . ")";
+        }
+
+        $logmsg .= substr(print_r($_REQUEST, true), 5);
+        $log->addLog($logmsg);
+
+    }
+
+    /**
      * Loads the correct page and renders it to the user
      *
-     * @return void
+     * @return none
      */
     function display()
     {
         $DB           = Database::singleton();
             $nextpage = null;
+
+        $this->logRequest();
 
         if (isset($_REQUEST['nextpage'])) {
             $nextpage = "survey.php?key=$_REQUEST[key]&pageNum=$_REQUEST[nextpage]";
@@ -341,7 +353,7 @@ class DirectDataEntryMainPage
 
         $workspace = $this->caller->load(
             $this->TestName,
-            $this->Subtest ?? '',
+            $this->Subtest,
             $this->CommentID,
             $nextpage
         );
@@ -349,7 +361,7 @@ class DirectDataEntryMainPage
         // Caller calls instrument's save function and might have errors,
         // so we still need to call it. But if nextpage is 'complete',
         // then after that override with a "Thank you" message
-        if (isset($_REQUEST['pageNum']) && $_REQUEST['pageNum'] === 'finalpage') {
+        if ($_REQUEST['pageNum'] === 'finalpage') {
             if (isset($_POST['FinalPageSubmission'])
                 && $_POST['FinalPageSubmission'] == "Yes"
             ) {
@@ -365,9 +377,7 @@ class DirectDataEntryMainPage
             }
             $this->tpl_data['lastpage']  = "survey.php?key=$_REQUEST[key]";
             $this->tpl_data['finalpage'] = true;
-        } else if (isset($_REQUEST['pageNum'])
-            && $_REQUEST['pageNum'] === 'complete'
-        ) {
+        } else if ($_REQUEST['pageNum'] === 'complete') {
             $this->tpl_data['workspace'] = "Thank you for completing this survey.";
             $this->tpl_data['complete']  = true;
 
@@ -406,4 +416,4 @@ if (!class_exists('UnitTestCase')) {
     $Runner = new DirectDataEntryMainPage();
     $Runner->run();
 }
-
+?>

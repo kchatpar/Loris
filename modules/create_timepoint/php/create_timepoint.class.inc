@@ -26,13 +26,6 @@ namespace LORIS\create_timepoint;
 class Create_Timepoint extends \NDB_Form
 {
     /**
-     * This timepoint's candidate
-     *
-     * @var \Candidate
-     */
-    protected $candidate;
-
-    /**
      * The subprojectID being created
      */
     var $subprojectID;
@@ -40,23 +33,34 @@ class Create_Timepoint extends \NDB_Form
     /**
      * Check user permissions
      *
-     * @param \User $user The user whose access is being checked
-     *
      * @return bool
+     * @throws ConfigurationException
      */
-    function _hasAccess(\User $user) : bool
+    function _hasAccess()
     {
+        // create user object
+        $user =& \User::singleton();
+
         $candidate =& \Candidate::singleton($this->identifier);
 
         // check user permissions
         return (
             $user->hasPermission('data_entry') &&
-            (in_array(
-                $candidate->getData('RegistrationCenterID'),
-                $user->getData('CenterIDs')
-            )
-            )
+            (in_array($candidate->getData('CenterID'), $user->getData('CenterIDs')))
         );
+    }
+
+    /**
+     * Returns the form-specific defaults
+     *
+     * @return array
+     */
+    function _getDefaults()
+    {
+        $candidate =& \Candidate::singleton($this->identifier);
+
+        $defaults['visitLabel'] = $candidate->getNextVisitLabel();
+        return $defaults;
     }
 
     /**
@@ -69,23 +73,11 @@ class Create_Timepoint extends \NDB_Form
      */
     function _process($values)
     {
-        // convert site entered to a \Site object
-        $user = \User::singleton();
-
-        $user_list_of_sites = $user->getCenterIDs();
-        $num_sites          = count($user_list_of_sites);
-        if ($num_sites == 1) {
-            $site = \Site::singleton($user_list_of_sites[0]);
-        } else if ($num_sites > 1) {
-            $site = \Site::singleton(intval($values['psc']));
-        }
-
-        assert(isset($site) && $site !== null);
-        \TimePoint::createNew(
-            \Candidate::singleton($this->identifier),
+        $success = \TimePoint::createNew(
+            $this->identifier,
             $values['subprojectID'],
-            $values['visitLabel'] ?? null,
-            $site
+            $values['visitLabel'],
+            $values['psc']
         );
 
         $this->tpl_data['success'] = true;
@@ -98,13 +90,17 @@ class Create_Timepoint extends \NDB_Form
      * Does the setup required for this page.
      * Particularly creates all the form elements.
      *
-     * @return void
+     * @param string $name       The test name being accessed
+     * @param string $page       The subtest being accessed (may be null)
+     * @param string $identifier The identifier for the data to load on this page
+     * @param string $commentID  The CommentID to load the data for
+     * @param string $formname   The name to give this form
+     *
+     * @return none
      */
-    function setup()
+    function _setupPage($name, $page, $identifier, $commentID, $formname)
     {
-        parent::setup();
-
-        $this->candidate = \Candidate::singleton($this->identifier);
+        parent::_setupPage($name, $page, $identifier, $commentID, $formname);
 
         $config =& \NDB_Config::singleton();
         if (!empty($_GET['subprojectID']) && is_numeric($_GET['subprojectID'])) {
@@ -112,44 +108,38 @@ class Create_Timepoint extends \NDB_Form
         }
 
         // cand ID
-        $sanitizedIdentifier      = htmlentities(
-            $this->identifier,
-            ENT_QUOTES,
-            'UTF-8'
-        );
-        $this->tpl_data['candID'] = $sanitizedIdentifier;
+        $this->tpl_data['candID'] = $this->identifier;
 
-        $this->addHidden('candID', $sanitizedIdentifier);
+        $this->addHidden('candID', $this->identifier);
 
-        $candidate =& \Candidate::singleton($this->identifier);
-        // List of all subprojects from config file
-        $allSubprojects = \Utility::getSubprojectList();
-        if (empty($allSubprojects)) {
-            $this->form->errors['subprojectID'] = "No subprojects have been defined 
-            for this study. If you are an administrator, please use the 
-            Configuration module to add new subprojects.";
-        }
-        $sp_labelOptions = array(null => '');
-        $subprojList     = null;
+        $candidate   =& \Candidate::singleton($this->identifier);
+        $subprojList = null;
         //List of valid subprojects for a given project
-        $subprojList = $candidate->getValidSubprojects();
-        if (empty($subprojList)) {
-            $this->form->errors['subprojectID'] = "No subprojects have been 
-            defined for the project this candidate is affiliated with. 
-            If you are an administrator, please use the Configuration module to 
-            add new subprojects and associate them with projects.";
+        if ($config->getSetting('useProjects') === 'true') {
+            $subprojList = $candidate->getValidSubprojects();
         }
+        // List of all subprojects from config file
+
+        // Loop through the subprojects to get an id out and to create
+        // the subproject drop down.
+        $allSubprojects  = \Utility::getSubprojectList();
+        $sp_labelOptions = array(null => '');
+
         foreach ($allSubprojects as $subprojectID => $title) {
-            if (in_array($subprojectID, $subprojList)) {
+            if (! empty($subprojList)) {
+                if (in_array($subprojectID, $subprojList)) {
+                    $sp_labelOptions[$subprojectID] = $title;
+                }
+            } else {
                 $sp_labelOptions[$subprojectID] = $title;
             }
         }
 
         $attributes = array(
                        "onchange" => "location.href='?test_name=create_timepoint" .
-                "&candID=" . $this->identifier .
-                "&identifier=" . $this->identifier .
-                "&subprojectID='+this[this.selectedIndex].value;",
+                        "&candID=" . $this->identifier .
+                        "&identifier=" . $this->identifier .
+                        "&subprojectID='+this[this.selectedIndex].value;",
                       );
         $this->addSelect(
             'subprojectID',
@@ -164,29 +154,35 @@ class Create_Timepoint extends \NDB_Form
         $visitLabelSettings = $config->getSetting('visitLabel');
         $visitLabelAdded    = false;
 
-        foreach (
-            \Utility::associativeToNumericArray($visitLabelSettings)
-            as $visitLabel
-        ) {
-            $visitLabel = \Utility::asArray($visitLabel);
-            if ($visitLabel['@']['subprojectID'] == $this->subprojectID) {
-                if (isset($visitLabel['generation'])
-                    && $visitLabel['generation'] !== 'sequence'
-                ) {
-                    throw new \DeprecatedException(
-                        "User generated Visit Labels are no ".
-                        "longer supported in Loris."
+        foreach (\Utility::toArray($visitLabelSettings) as $visitLabel) {
+            if ($visitLabel['@']['subprojectID']==$this->subprojectID) {
+                if ($visitLabel['generation'] == 'user') {
+                    error_log(
+                        "DEPRECATION WARNING: User generated visit labels will ".
+                        "no longer be supported in the next release of Loris. ".
+                        "Please add the necessary entries to the config.xml file ".
+                        "and set the generation to 'sequence'"
                     );
+                    $this->addBasicText(
+                        'visitLabel',
+                        'Visit label',
+                        array(
+                         'size'      => $visitLabel['length'] + 1,
+                         'maxlength' => $visitLabel['length'],
+                        )
+                    );
+                    $visitLabelAdded = true;
+                } elseif ($visitLabel['generation'] == 'sequence') {
+                    $labelOptions[''] = null;
+                    $items            = \Utility::toArray(
+                        $visitLabel['labelSet']['item']
+                    );
+                    foreach ($items as $item) {
+                        $labelOptions[$item['@']['value']] = $item['#'];
+                    }
+                    $this->addSelect('visitLabel', 'Visit label', $labelOptions);
+                    $visitLabelAdded = true;
                 }
-                $labelOptions[''] = null;
-                $items            = \Utility::associativeToNumericArray(
-                    $visitLabel['labelSet']['item']
-                );
-                foreach ($items as $item) {
-                    $labelOptions[$item['@']['value']] = $item['#'];
-                }
-                $this->addSelect('visitLabel', 'Visit label', $labelOptions);
-                $visitLabelAdded = true;
             }
         }
 
@@ -198,8 +194,8 @@ class Create_Timepoint extends \NDB_Form
             $DB   = \Database::singleton();
             $user_list_of_sites = $user->getData('CenterIDs');
             $num_sites          = count($user_list_of_sites);
-            $psc_labelOptions   = array();
             if ($num_sites >1) {
+                $pscLabelAdded =true;
                 $this->tpl_data['pscLabelAdded'] = true;
                 $psc_labelOptions = array(null => '');
                 foreach ($user_list_of_sites as $key => $siteID) {
@@ -233,19 +229,16 @@ class Create_Timepoint extends \NDB_Form
         $errors = array();
 
         // validate site entered
-        $site = $val['psc'] ?? '';
-        $user_list_of_sites = $user->getStudySites();
+        $site = $val['psc'];
+        $user_list_of_sites = $user->getData('CenterIDs');
         $num_sites          = count($user_list_of_sites);
-        if ($num_sites == 0) {
-            $errors['psc']
-                = "You must be affiliated with a site to create a timepoint.";
-        } else if ($num_sites > 1 && (empty($site) || !$user->hasCenter($site))) {
+        if ($num_sites > 1 && (empty($site) || !$user->hasCenter($site))) {
             $errors['psc'] = "Site must be selected from the available dropdown.";
         }
 
         $candid       = $this->identifier;
         $subprojectID = $val['subprojectID'];
-        $visitLabel   = $val['visitLabel'] ?? '';
+        $visitLabel   = $val['visitLabel'];
 
         try {
             \TimePoint::isValidVisitLabel($candid, $subprojectID, $visitLabel);
@@ -255,31 +248,5 @@ class Create_Timepoint extends \NDB_Form
 
         return $errors;
     }
-
-    /**
-     * Generate a breadcrumb trail for this page.
-     *
-     * @return \LORIS\BreadcrumbTrail
-     */
-    public function getBreadcrumbs(): \LORIS\BreadcrumbTrail
-    {
-        $candid = $this->candidate->getCandID();
-        $pscid  = $this->candidate->getPSCID();
-
-        return new \LORIS\BreadcrumbTrail(
-            new \LORIS\Breadcrumb(
-                'Access Profile',
-                '/candidate_list'
-            ),
-            new \LORIS\Breadcrumb(
-                "Candidate Profile $candid / $pscid",
-                "/$candid"
-            ),
-            new \LORIS\Breadcrumb(
-                'Create Time Point',
-                "/create_timepoint/?candID=$candid&identifier=$candid"
-            )
-        );
-    }
 }
-
+?>

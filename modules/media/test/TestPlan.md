@@ -16,16 +16,17 @@ In order to use the media module the user might need one or both of the followin
 ### 💯 Features
 
 1. **Browse** a list of uploaded files and related information
-2. **Upload** new files associated to a specific timepoint
+2. **Edit** meta information about media files (except timepoint related data such as PSCID, Visit Label, Instrument and Site)
+3. **Upload** new files associated to a specific timepoint
   - PSCID, Visit Label and Instrument are required fields for all uploaded files
   - File name should always start with [PSCID]\_[Visit Label]\_[Instrument]
-3. **Delete** files. Deleting a file hides it from the frontend, but preserves a copy in the database.
+4. **Delete** files. Deleting a file hides it from the frontend, but preserves a copy in the database.
 
 ---
 
 ### 💻 Testing Procedure
 
-**Install Module** -- [Automation Testing] 
+**Install Module** 
   1. Run associated SQL patch to create a "media" table and add "Media" module under _Clinical_ section in Loris.
 
 
@@ -49,8 +50,8 @@ In order to use the media module the user might need one or both of the followin
   2. Select PSCID and click on the 👉  **Upload file** button again
     - A popup should prompt you to select a **Visit Label** as it is a required field ❌
   3. Select Visit Label and click on the 👉  **Upload file** again
-    - A popup should prompt you to select a **Site** as it is a required field ❌
-  4. Select Site and click on the 👉  **Upload file** again
+    - A popup should prompt you to select a **Instrument** as it is a required field ❌
+  4. Select Instrument and click on the 👉  **Upload file** again
     - A popup should prompt you to select a **File to upload** as it is a required field ❌
   5. Click on the 👉 **Browse** button and a select a file from your file system
     - Note: it is suggested to try different file types and sizes (e.g pdf, mp4, mov, jpg, doc, etc)
@@ -60,7 +61,7 @@ In order to use the media module the user might need one or both of the followin
   8. Once the file finished uploading a success message should appear on top of the page and fade away in a couple of seconds
   9. Click on browse tab and make sure the file you just uploaded is shown in data table
 
-**Test file browsing** 
+**Test file browsing**
   1. After a couple of files are uploaded, make sure they are properly displayed in the data table
   2. Make sure that information in the data table corresponds to the information in the database (media table)
   3. Click on 👉  **column headers** to make sure sorting functionality is working as expected (Ascending/Descending)
@@ -69,20 +70,20 @@ In order to use the media module the user might need one or both of the followin
     - After downloading the file to your computer make sure it is playable/viewable and works exactly like the copy you uploaded (also make sure they are of the same size)
   5. Click on 👉 **visit label** in data table to go to associated timepoint (make sure it links to the proper timepoint)
   6. Click on 👉 **Edit** in order to edit an existing file
-    - This will open a modal window in which you can edit the file
+    - This will bring you to a new page ```$LORISURL/media/edit/?id=$fileID```
 
 **Test file edit**
   1. Make sure that PSCID, Visit Label, Instrument and Site display proper information and are greyed-out (unchangeable by the user)
   2. Verify that information (if any) is displayed accordingly in _Date of Administration_, _Comments_ and 'Uploaded File'
-  3. Change the _Date of Administration_ and click 👉 **Update File**.
-    - After the success message is shown, **refresh the page** and make sure the data is still correct.
+  3. Select a site from the dropdown and click 👉 **Update File**.
+    - After the success message is shown, **refresh the page** and make sure the site is still selected.
     - Verify that the database field updated accordingly
-  4. Repeat **Step 3** for _Comments_ field.
+  4. Repeat **Step 3** for _Date of Administration_ and _Comments_ fields
   5. Select YES in **Hide File** dropdown in order to delete/hide the file
-    - Click 👉 **Update File** and go back to **Browse** tab under ```$LORISURL/media/```. The file should no longer be displayed in the data table (unless the user has superuser permissions).
+    - Click 👉 **Update File** and go back to **Browse** tab under ```$LORISURL/media/```. The file should no longer be displayed in the data table.
     - _Note: only a person with direct database access could revert the hide file action._
 
-**Test filters** [Automation Testing]
+**Test filters**
   1. Under **Browse** tab, a selection filter should be present on top of the page containing the following fields: PSCID, Visit Label, Instrument, File name, For Site, File type and Uploaded by.
     - PSCID, File name and Uploaded by are text fields, whereas other fields are dropdowns with options pre-filled based on the current project.
     - Default option of dropdown should be blank.

@@ -10,8 +10,6 @@
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
-use \Psr\Http\Message\ServerRequestInterface;
-use \Psr\Http\Message\ResponseInterface;
 /**
  * Base Form class that is overwritten by specific form pages
  *
@@ -54,7 +52,7 @@ class NDB_Form extends NDB_Page
      * @param string $page       Identifies the page to show
      * @param string $identifier Variables passed to form
      *
-     * @return \NDB_Form
+     * @return void
      */
     static function &factory($name, $page, $identifier)
     {
@@ -65,20 +63,11 @@ class NDB_Form extends NDB_Page
             throw new Exception("The form class ($name) is not defined.");
         }
 
-        // create a new menu object
-        try {
-            if (isset($_REQUEST['test_name'])) {
-                $module = \Module::factory($_REQUEST['test_name']);
-            } else {
-                $module = \Module::factory($name);
-            }
-        } catch(\LorisModuleMissingException $e) {
-            $module = new Module($name, "");
-        }
-
         // create a form instance
-        $obj = new $class($module, $page, $identifier, '', 'test_form');
+        $obj = new $class;
 
+        // set the local variables
+        $obj->_setupPage($name, $page, $identifier, null, 'test_form');
         $obj->registerDefaultFilter();
 
         $access = $obj->_hasAccess();
@@ -130,7 +119,7 @@ class NDB_Form extends NDB_Page
     function save()
     {
         if ($this->form->validate()) {
-            $this->form->process(array(&$this, "_save"));
+            $success = $this->form->process(array(&$this, "_save"), false);
         }
     }
 
@@ -159,7 +148,7 @@ class NDB_Form extends NDB_Page
             }
         }
 
-        $this->_process($values);
+        $success = $this->_process($values);
     }
 
 
@@ -177,46 +166,18 @@ class NDB_Form extends NDB_Page
     }
 
     /**
-     * A form extends the basic page handler to call save() on a POST request.
+     * Resets the form
      *
-     * @param ServerRequestInterface $request The incoming PSR7 request
+     * Usage: Call this function if you do not want to display the frozen form
+     * after saving but just want to dump a message and maybe some links
      *
-     * @return ResponseInterface The PSR15 response to the request.
+     * @return void
+     * @access private
      */
-    public function handle(ServerRequestInterface $request) : ResponseInterface
+    function _resetForm()
     {
-        $this->setup();
-        if ($request->getMethod() === "POST") {
-            $this->save();
-        }
-
-        return (new \LORIS\Http\Response())
-            ->withBody(new \LORIS\Http\StringStream($this->display() ?? ""));
-    }
-
-    /**
-     * Converts this form to an array with field options for the form
-     *
-     * Suitable for serializing to JSON, CSV, etc..
-     *
-     * @return array
-     */
-    function toArray(): array
-    {
-        return array(
-                'fieldOptions' => $this->fieldOptions,
-               );
-    }
-
-    /**
-     * Converts the results of this form to a JSON format to be retrieved
-     * with ?format=json
-     *
-     * @return string a json encoded string of the options to send to the form
-     */
-    function toJSON(): string
-    {
-        return json_encode($this->toArray());
+        $this->_setupPage($name, $page, $identifier, null, 'test_form');
+        // $this->form = new HTML_QuickForm('test_form');
     }
 }
-
+?>

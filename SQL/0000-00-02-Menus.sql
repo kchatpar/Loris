@@ -2,6 +2,11 @@
 -- Table Definition
 --
 
+DROP TABLE IF EXISTS `LorisMenuPermissions`;
+
+
+DROP TABLE IF EXISTS `LorisMenu`;
+
 
 CREATE TABLE `LorisMenu` (
   `ID` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -46,21 +51,24 @@ INSERT INTO LorisMenu (Label, Link, Parent, OrderNumber) VALUES
 
 
 INSERT INTO LorisMenu (Label, Link, Parent, OrderNumber) VALUES
+    ('Reliability', 'reliability/', (SELECT ID FROM LorisMenu as L WHERE Label='Clinical'), 1),
     ('Conflict Resolver', 'conflict_resolver/', (SELECT ID FROM LorisMenu as L WHERE Label='Clinical'), 2),
     ('Examiner', 'examiner/', (SELECT ID FROM LorisMenu as L WHERE Label='Clinical'), 3),
-    ('Media', 'media/', (SELECT ID FROM LorisMenu as L WHERE Label='Clinical'), 4);
+    ('Training', 'training/', (SELECT ID FROM LorisMenu as L WHERE Label='Clinical'), 4),
+    ('Media', 'media/', (SELECT ID FROM LorisMenu as L WHERE Label='Clinical'), 5);
 
 
 INSERT INTO LorisMenu (Label, Link, Parent, OrderNumber) VALUES
-    ('DICOM Archive', 'dicom_archive/', (SELECT ID FROM LorisMenu as L WHERE Label='Imaging'), 1),
-    ('Imaging Browser', 'imaging_browser/', (SELECT ID FROM LorisMenu as L WHERE Label='Imaging'), 2),
-    ('MRI Violated Scans', 'mri_violations/', (SELECT ID FROM LorisMenu as L WHERE Label='Imaging'), 3),
-    ('Imaging Uploader', 'imaging_uploader/', (SELECT ID FROM LorisMenu as L WHERE Label='Imaging'), 4);
+    ('Radiological Reviews', 'final_radiological_review/', (SELECT ID FROM LorisMenu as L WHERE Label='Imaging'), 1),
+    ('DICOM Archive', 'dicom_archive/', (SELECT ID FROM LorisMenu as L WHERE Label='Imaging'), 2),
+    ('Imaging Browser', 'imaging_browser/', (SELECT ID FROM LorisMenu as L WHERE Label='Imaging'), 3),
+    ('MRI Violated Scans', 'mri_violations/', (SELECT ID FROM LorisMenu as L WHERE Label='Imaging'), 4),
+    ('Imaging Uploader', 'imaging_uploader/', (SELECT ID FROM LorisMenu as L WHERE Label='Imaging'), 5);
+
 
 INSERT INTO LorisMenu (Label, Link, Parent, OrderNumber) VALUES
     ('Statistics', 'statistics/', (SELECT ID FROM LorisMenu as L WHERE Label='Reports'), 1),
-    ('Data Query Tool', 'dataquery/', (SELECT ID FROM LorisMenu as L WHERE Label='Reports'), 2),
-    ('Publications', 'publication/', (SELECT ID FROM LorisMenu as L WHERE Label='Reports'), 3);
+    ('Data Query Tool', 'dataquery/', (SELECT ID FROM LorisMenu as L WHERE Label='Reports'), 2);
 
 
 INSERT INTO LorisMenu (Label, Link, Parent, OrderNumber) VALUES
@@ -72,8 +80,7 @@ INSERT INTO LorisMenu (Label, Link, Parent, OrderNumber) VALUES
     ('Genomic Browser', 'genomic_browser/', (SELECT ID FROM LorisMenu as L WHERE Label='Tools'), 6),
     ('Data Release', 'data_release/', (SELECT ID FROM LorisMenu as L WHERE Label='Tools'), 7),
     ('Acknowledgements', 'acknowledgements/', (SELECT ID FROM LorisMenu as L WHERE Label='Tools'), 8),
-    ('Issue Tracker', 'issue_tracker/', (SELECT ID FROM LorisMenu as L WHERE Label='Tools'), 9),
-    ('Quality Control', 'quality_control/', (SELECT ID FROM LorisMenu as L Where Label='Tools'), 10);
+    ('Issue Tracker', 'issue_tracker/', (SELECT ID FROM LorisMenu as L WHERE Label='Tools'), 9);
 
 
 INSERT INTO LorisMenu (Label, Link, Parent, OrderNumber) VALUES
@@ -99,17 +106,31 @@ INSERT INTO LorisMenuPermissions (MenuID, PermID)
 
 
 INSERT INTO LorisMenuPermissions (MenuID, PermID)
+    SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='user_accounts' AND m.Label='Reliability';
+INSERT INTO LorisMenuPermissions (MenuID, PermID)
+    SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='reliability_edit_all' AND m.Label='Reliability';
+INSERT INTO LorisMenuPermissions (MenuID, PermID)
+    SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='access_all_profiles' AND m.Label='Reliability';
+
+
+INSERT INTO LorisMenuPermissions (MenuID, PermID)
     SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='conflict_resolver' AND m.Label='Conflict Resolver';
 
 
 INSERT INTO LorisMenuPermissions (MenuID, PermID)
-    SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='examiner_view' AND m.Label='Examiner';
+    SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='examiner_site' AND m.Label='Examiner';
 INSERT INTO LorisMenuPermissions (MenuID, PermID)
     SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='examiner_multisite' AND m.Label='Examiner';
 
 
 INSERT INTO LorisMenuPermissions (MenuID, PermID)
     SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='training' AND m.Label='Training';
+
+
+INSERT INTO LorisMenuPermissions (MenuID, PermID)
+    SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='edit_final_radiological_review' AND m.Label='Radiological Reviews';
+INSERT INTO LorisMenuPermissions (MenuID, PermID)
+    SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='view_final_radiological_review' AND m.Label='Radiological Reviews';
 
 
 INSERT INTO LorisMenuPermissions (MenuID, PermID)
@@ -145,8 +166,6 @@ INSERT INTO LorisMenuPermissions (MenuID, PermID)
 INSERT INTO LorisMenuPermissions (MenuID, PermID)
     SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='data_dict_view' AND m.Label='Data Dictionary';
 
-INSERT INTO LorisMenuPermissions (MenuID, PermID)
-    SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='data_dict_edit' AND m.Label='Data Dictionary';
 
 INSERT INTO LorisMenuPermissions (MenuID, PermID)
     SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='document_repository_view' AND m.Label='Document Repository';
@@ -183,9 +202,7 @@ INSERT INTO LorisMenuPermissions (MenuID, PermID)
 
 
 INSERT INTO LorisMenuPermissions (MenuID, PermID)
-   SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='instrument_manager_read' AND m.Label='Instrument Manager';
-INSERT INTO LorisMenuPermissions (MenuID, PermID)
-   SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='instrument_manager_write' AND m.Label='Instrument Manager';
+    SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='superuser' AND m.Label='Instrument Manager';
 
 
 INSERT INTO LorisMenuPermissions (MenuID, PermID)
@@ -208,16 +225,7 @@ INSERT INTO LorisMenuPermissions (MenuID, PermID)
 
 INSERT INTO LorisMenuPermissions (MenuID, PermID)
     SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='issue_tracker_reporter' AND m.Label='Issue Tracker';
-INSERT INTO LorisMenuPermissions (MenuID, PermID)
-    SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='issue_tracker_developer' AND m.Label='Issue Tracker';
 
-INSERT INTO LorisMenuPermissions (MenuID, PermID)
-    SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='data_release_upload' AND m.Label='Data Release';
-INSERT INTO LorisMenuPermissions (MenuID, PermID)
-    SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='data_release_edit_file_access' AND m.Label='Data Release';
-
-INSERT INTO LorisMenuPermissions (MenuID, PermID)
-    SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='data_team_helper' AND m.Label='Quality Control';
 
 INSERT INTO LorisMenuPermissions (MenuID, PermID)
    SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='media_read' AND m.Label='Media';
@@ -225,9 +233,3 @@ INSERT INTO LorisMenuPermissions (MenuID, PermID)
    SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='media_write' AND m.Label='Media';
 
 
-INSERT INTO LorisMenuPermissions (MenuID, PermID)
-   SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='publication_view' AND m.Label='Publications';
-INSERT INTO LorisMenuPermissions (MenuID, PermID)
-   SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='publication_propose' AND m.Label='Publications';
-INSERT INTO LorisMenuPermissions (MenuID, PermID)
-   SELECT m.ID, p.PermID FROM permissions p CROSS JOIN LorisMenu m WHERE p.code='publication_approve' AND m.Label='Publications';

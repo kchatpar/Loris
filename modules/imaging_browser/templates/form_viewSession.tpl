@@ -6,7 +6,7 @@
 </br>
 {/if}
 </tr>
-<div>
+<div class="row">
 {$headerTable}
 </div>
 

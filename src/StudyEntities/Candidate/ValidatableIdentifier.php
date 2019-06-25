@@ -13,7 +13,7 @@
  * @link     https://www.github.com/aces/Loris/
  */
 namespace LORIS\StudyEntities\Candidate;
-
+require_once(__DIR__."/Identifier.php");
 /**
  * ValidatableIdentifier with the default constructor that call validate
  *

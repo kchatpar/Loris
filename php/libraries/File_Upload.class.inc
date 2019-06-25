@@ -148,7 +148,7 @@ class File_Upload
     function preProcessFile()
     {
         if (!$this->isCLImport) {
-            $this->file = $this->form->getElement($this->fieldName);
+            $this->file =& $this->form->getElement($this->fieldName);
             if (!method_exists($this->file, "isUploadedFile")) {
                 return false;
             }
@@ -215,8 +215,7 @@ class File_Upload
             if (!$this->file->moveUploadedFile(
                 $this->destinationDirectory,
                 $this->destinationFilename
-            )
-            ) {
+            )) {
                 $this->setError(
                     $this->fieldName,
                     "Could not move file to "
@@ -397,7 +396,7 @@ class File_Upload
     * @return boolean true
     * @see    File_Upload::processFiles()
     */
-    function setFileHandler($fieldName, $className, $methods=array())
+    function setFileHandler($fieldName, $className, $methods="")
     {
         $default_methods =array(
                            "verify" => "isValid",
@@ -488,17 +487,17 @@ class File_Upload
      * incrementing by one for each additional file.
      *
      * @param string $dir  The target directory for the file.
-     * @param string $name The proposed name for the file.
+     * @param int    $name The proposed name for the file.
      *
      * @return string New filename
      * @see    File_Upload::moveFile()
      */
-    function nameToIncremental(string $dir, string $name): string
+    function nameToIncremental($dir, $name)
     {
-        $done = false;
-        $i    = 0;
+        $done =false;
+        $i    =0;
         while ($done==false) {
-            $ext      =str_pad((string) $i, 3, "0", STR_PAD_LEFT);
+            $ext      =str_pad($i, 3, "0", STR_PAD_LEFT);
             $filename =$this->getSplitFilename($name);
             $new_name =$filename['name']."-".$ext.$filename['ext'];
             if (!file_exists($dir.$new_name)) {
@@ -522,10 +521,10 @@ class File_Upload
     {
         $filename =$this->getSplitFilename($name);
         if (! $this->_seeded) {
-            srand((int) microtime() * 1000000);
+            srand((double) microtime() * 1000000);
             $this->_seeded = 1;
         }
-        $name =$filename['name']."-".uniqid((string) rand()).$filename['ext'];
+        $name =$filename['name']."-".uniqid(rand()).$filename['ext'];
         return $name;
     }
 
@@ -613,7 +612,7 @@ class File_Upload
     *
     * @param boolean $mode The desired mode.
     *
-    * @return void
+    * @return boolean true
     * @see    File_Upload::moveFile()
     */
     function setFileVerify($mode)
@@ -767,4 +766,4 @@ class File_Upload
     }
 }
 
-
+?>

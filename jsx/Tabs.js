@@ -6,9 +6,6 @@
  *
  */
 
-import React, {Component} from 'react';
-import PropTypes from 'prop-types';
-
 /**
  * Tabs Component.
  * React wrapper for Bootstrap tabs. Allows to dynamically render tabs
@@ -32,12 +29,13 @@ import PropTypes from 'prop-types';
  * =================================================
  *
  */
-class Tabs extends Component {
+class Tabs extends React.Component {
+
   constructor(props) {
     super(props);
 
     const hash = window.location.hash;
-    let activeTab = '';
+    let activeTab = "";
 
     /**
      * Determine the initial active tab in this order
@@ -54,7 +52,7 @@ class Tabs extends Component {
     }
 
     this.state = {
-      activeTab: activeTab,
+      activeTab: activeTab
     };
 
     this.handleClick = this.handleClick.bind(this);
@@ -77,8 +75,8 @@ class Tabs extends Component {
   getTabs() {
     let tabs = (this.props.tabs).map(function(tab) {
       let tabClass = this.state.activeTab === tab.id ? 'active' : null;
-      let href = '#' + tab.id;
-      let tabID = 'tab-' + tab.id;
+      let href = "#" + tab.id;
+      let tabID = "tab-" + tab.id;
       return (
         <li
           role="presentation"
@@ -105,7 +103,7 @@ class Tabs extends Component {
       if (child) {
         return React.cloneElement(child, {
           activeTab: this.state.activeTab,
-          key: key,
+          key: key
         });
       }
     }.bind(this));
@@ -118,7 +116,7 @@ class Tabs extends Component {
     let tabPanes = this.getTabPanes();
     let tabStyle = {
       marginLeft: 0,
-      marginBottom: '5px',
+      marginBottom: '5px'
     };
 
     return (
@@ -134,147 +132,26 @@ class Tabs extends Component {
   }
 }
 Tabs.propTypes = {
-  tabs: PropTypes.array.isRequired,
-  defaultTab: PropTypes.string,
-  updateURL: PropTypes.bool,
+  tabs: React.PropTypes.array.isRequired,
+  defaultTab: React.PropTypes.string,
+  updateURL: React.PropTypes.bool
 };
 Tabs.defaultProps = {
   onTabChange: function() {},
-  // Set updateURL to default to true but allow for change
-  // Nested tabs should set this variable to false
-  updateURL: true,
-};
-
-/**
- * Allows to dynamically render vertical tabs corresponding to tab panes.
- */
-
-class VerticalTabs extends Component {
-  constructor(props) {
-    super(props);
-
-    const hash = window.location.hash;
-    let activeTab = '';
-
-    /**
-     * Determine the initial active tab in this order
-     * 1. Try to infer from the URL, otherwise
-     * 2. Try to infer from the defaultTab prop, otherwise
-     * 3. Set to be the first tab of the list
-     */
-    if (this.props.updateURL && hash) {
-      activeTab = hash.substr(1);
-    } else if (this.props.defaultTab) {
-      activeTab = this.props.defaultTab;
-    } else if (this.props.tabs.length > 0) {
-      activeTab = this.props.tabs[0].id;
-    }
-
-    this.state = {
-      activeTab: activeTab,
-    };
-
-    this.handleClick = this.handleClick.bind(this);
-    this.getTabs = this.getTabs.bind(this);
-    this.getTabPanes = this.getTabPanes.bind(this);
-  }
-
-  handleClick(tabId, e) {
-    this.setState({activeTab: tabId});
-    this.props.onTabChange(tabId);
-
-    // Add tab href to URL querystring and scroll the page to top
-    if (this.props.updateURL) {
-      const scrollDistance = $('body').scrollTop() || $('html').scrollTop();
-      window.location.hash = e.target.hash;
-      $('html,body').scrollTop(scrollDistance);
-    }
-  }
-
-  getTabs() {
-    let tabs = (this.props.tabs).map(function(tab) {
-      let tabClass = this.state.activeTab === tab.id ? 'active' : null;
-      let href = '#' + tab.id;
-      let tabID = 'tab-' + tab.id;
-      return (
-        <li
-          role="presentation"
-          className={tabClass}
-          key={tab.id}
-        >
-          <a id={tabID}
-             href={href}
-             role="tab"
-             data-toggle="tab"
-             onClick={this.handleClick.bind(null, tab.id)}
-          >
-            {tab.label}
-          </a>
-        </li>
-      );
-    }.bind(this));
-
-    return tabs;
-  }
-
-  getTabPanes() {
-    let tabPanes = React.Children.map(this.props.children, function(child, key) {
-      if (child) {
-        return React.cloneElement(child, {
-          activeTab: this.state.activeTab,
-          key: key,
-        });
-      }
-    }.bind(this));
-
-    return tabPanes;
-  }
-
-  render() {
-    let tabs = this.getTabs();
-    let tabPanes = this.getTabPanes();
-    let tabStyle = {
-      marginLeft: 0,
-      marginBottom: '5px',
-    };
-
-    return (
-      <div>
-        <div className="tabbable col-md-3 col-sm-3">
-          <ul className="nav nav-pills nav-stacked" role="tablist" style={tabStyle}>
-            {tabs}
-          </ul>
-        </div>
-        <div className="tab-content col-md-9 col-sm-9">
-          {tabPanes}
-        </div>
-      </div>
-    );
-  }
-}
-VerticalTabs.propTypes = {
-  tabs: PropTypes.array.isRequired,
-  defaultTab: PropTypes.string,
-  updateURL: PropTypes.bool,
-};
-VerticalTabs.defaultProps = {
-  onTabChange: function() {},
-  // Set updateURL to default to true but allow for change
-  // Nested tabs should set this variable to false
-  updateURL: true,
+  updateURL: false
 };
 
 /*
  * TabPane component.
  * Used to wrap content for every tab.
  */
-class TabPane extends Component {
+class TabPane extends React.Component {
   render() {
-    let classList = 'tab-pane';
+    let classList = "tab-pane";
     let title;
 
     if (this.props.TabId === this.props.activeTab) {
-      classList += ' active';
+      classList += " active";
     }
     if (this.props.Title) {
       title = <h1>{this.props.Title}</h1>;
@@ -289,13 +166,12 @@ class TabPane extends Component {
   }
 }
 TabPane.propTypes = {
-  TabId: PropTypes.string.isRequired,
-  Title: PropTypes.string,
-  activeTab: PropTypes.string,
+  TabId: React.PropTypes.string.isRequired,
+  Title: React.PropTypes.string,
+  activeTab: React.PropTypes.string
 };
 
 export {
   Tabs,
-  VerticalTabs,
-  TabPane,
+  TabPane
 };

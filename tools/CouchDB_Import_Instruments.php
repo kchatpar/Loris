@@ -12,17 +12,8 @@ class CouchDBInstrumentImporter
 
     function __construct()
     {
-        $factory       = \NDB_Factory::singleton();
-        $config        = \NDB_Config::singleton();
-        $couchConfig   = $config->getSetting('CouchDB');
-        $this->SQLDB   = $factory->Database();
-        $this->CouchDB = $factory->couchDB(
-            $couchConfig['dbName'],
-            $couchConfig['hostname'],
-            intval($couchConfig['port']),
-            $couchConfig['admin'],
-            $couchConfig['adminpass']
-        );
+        $this->SQLDB   = Database::singleton();
+        $this->CouchDB = CouchDB::singleton();
     }
 
     function UpdateDataDicts($Instruments)
@@ -85,39 +76,9 @@ class CouchDBInstrumentImporter
         }
     }
 
-    function generateDocumentSQL(string $tablename) : string
+    function generateDocumentSQL($instrument)
     {
-        $select = "SELECT 
-                        c.PSCID, 
-                        s.Visit_label, 
-                        f.Administration, 
-                        f.Data_entry, 
-                        f.Validity,
-                        f.CommentID, 
-                        CASE WHEN EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE f.CommentID=cu.CommentId1 OR f.CommentID=cu.CommentId2) THEN 'Y' ELSE 'N' END AS Conflicts_Exist, 
-                        CASE ddef.Data_entry='Complete' WHEN 1 THEN 'Y' WHEN NULL THEN 'Y' ELSE 'N' END AS DDE_Complete ";
-        $from = "FROM 
-                        flag f 
-                        JOIN session s ON (s.ID=f.SessionID) 
-                        JOIN candidate c ON (c.CandID=s.CandID) 
-                        LEFT JOIN flag ddef ON (ddef.CommentID=CONCAT('DDE_', f.CommentID)) ";
-        $where = "WHERE 
-                        f.CommentID NOT LIKE 'DDE%' 
-                        AND f.Test_name=:inst
-                        AND s.Active='Y' AND c.Active='Y'";
-
-        if ($tablename === "") {
-            // the data is in the flag table, add the data column to the query and
-            // do not join the table.
-            $extraSelect = ", f.Data ";
-
-            return $select . $extraSelect . $from . $where;
-        }
-
-        // add the SQL table to the query
-        $extraSelect = ", i.* ";
-        $extraJoin = "JOIN " . $this->SQLDB->escape($tablename) . " i ON (i.CommentID=f.CommentID) ";
-        return $select . $extraSelect . $from . $extraJoin . $where;
+        return "SELECT c.PSCID, s.Visit_label, f.Administration, f.Data_entry, f.Validity, CASE WHEN EXISTS (SELECT 'x' FROM conflicts_unresolved cu WHERE i.CommentID=cu.CommentId1 OR i.CommentID=cu.CommentId2) THEN 'Y' ELSE 'N' END AS Conflicts_Exist, CASE ddef.Data_entry='Complete' WHEN 1 THEN 'Y' WHEN NULL THEN 'Y' ELSE 'N' END AS DDE_Complete, i.* FROM $instrument i JOIN flag f USING (CommentID) JOIN session s ON (s.ID=f.SessionID) JOIN candidate c ON (c.CandID=s.CandID) LEFT JOIN flag ddef ON (ddef.CommentID=CONCAT('DDE_', f.CommentID)) WHERE f.CommentID NOT LIKE 'DDE%' AND s.Active='Y' AND c.Active='Y'";
     }
     function UpdateCandidateDocs($Instruments)
     {
@@ -127,35 +88,12 @@ class CouchDBInstrumentImporter
                     'unchanged' => 0,
                    );
         foreach ($Instruments as $instrument => $name) {
-            // Since the testname does not always match the table name in the database
-            // we need to instantiate the object to get the table name
-            // we need to check if it is a JSONData instrument or SQL data
-            $instrumentObj = \NDB_BVL_Instrument::factory(
-                $instrument,
-                '',
-                ''
-            );
-            $JSONData = $instrumentObj->usesJSONData();
-            $tableName = "";
-            if ($JSONData === false) {
-                $tableName = $instrumentObj->table;
-            }
-
             $this->CouchDB->beginBulkTransaction();
-            $preparedStatement = $this->SQLDB->prepare($this->generateDocumentSQL($tableName));
-            $preparedStatement->execute(array('inst' => $instrument));
+            $preparedStatement = $this->SQLDB->prepare($this->generateDocumentSQL($instrument), array('inst' => $instrument));
+            $preparedStatement->execute();
             while ($row = $preparedStatement->fetch(PDO::FETCH_ASSOC)) {
                 $CommentID = $row['CommentID'];
-
-                if ($JSONData) {
-                    //Transform JSON object into an array and add treat it the same as SQL
-                    $instrumentData = json_decode($row['Data'], true) ?? array();
-                    unset($row['Data']);
-                    $docdata = $row + $instrumentData;
-                } else {
-                    $docdata   = $row;
-                }
-
+                $docdata   = $row;
                 unset($docdata['CommentID']);
                 unset($docdata['PSCID']);
                 unset($docdata['Visit_label']);
@@ -163,8 +101,8 @@ class CouchDBInstrumentImporter
                 unset($docdata['city_of_birth']);
                 unset($docdata['city_of_birth_status']);
 
-                if (isset($docdata['Examiner']) && is_numeric($docdata['Examiner'])) {
-                    $docdata['Examiner'] = $this->SQLDB->pselectOne("SELECT full_name FROM examiners WHERE examinerID=:eid", array("eid" => $docdata['Examiner']));
+                if (is_numeric($docdata['Examiner'])) {
+                    $docdata['Examiner'] = $this->SQLDB->pselectOne("SELECT full_name FROM examiners WHERE examinerID=:eid", array("eid" => $row['Examiner']));
                 }
                 $doc     = array(
                             'Meta' => array(
@@ -195,7 +133,7 @@ class CouchDBInstrumentImporter
 
     function GetInstruments()
     {
-        return \Utility::getAllInstruments();
+        return Utility::getAllInstruments();
     }
 
     function createRunLog($results)

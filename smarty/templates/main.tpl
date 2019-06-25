@@ -3,7 +3,6 @@
     {if $dynamictabs neq "dynamictabs"}
     <head>
         <link rel="stylesheet" href="{$baseurl}/{$css}" type="text/css" />
-        <link rel="stylesheet" href="{$baseurl}/fontawesome/css/all.css" type="text/css" />
         <link type="image/x-icon" rel="icon" href="/images/favicon.ico">
 
         {*
@@ -12,7 +11,7 @@
            and can access them through the loris global (ie. loris.BaseURL) *}
         <script src="{$baseurl}/js/loris.js" type="text/javascript"></script>
         <script language="javascript" type="text/javascript">
-        let loris = new LorisHelper({$jsonParams}, {$userPerms|json_encode}, {$studyParams|json_encode});
+        var loris = new LorisHelper({$jsonParams}, {$userPerms|json_encode}, {$studyParams|json_encode});
         </script>
         {section name=jsfile loop=$jsfiles}
             <script src="{$jsfiles[jsfile]}" type="text/javascript"></script>
@@ -24,22 +23,22 @@
 
         <title>
             {$study_title}
+            {if $crumbs != ""}
+                {section name=crumb loop=$crumbs}
+                    - {$crumbs[crumb].text}
+                {/section}
+            {/if}
         </title>
         <script type="text/javascript">
           $(document).ready(function() {
-            {if $breadcrumbs != "" && empty($error_message)}
-              const breadcrumbs = [{$breadcrumbs}];
-
-              ReactDOM.render(
-                RBreadcrumbs({
-                  breadcrumbs: breadcrumbs,
-                  baseURL: loris.BaseURL
-                }),
-                document.getElementById("breadcrumbs")
-              );
-              document.title = document.title.concat(breadcrumbs.reduce(function (carry, item) {
-                return carry.concat(' - ', item.text);
-              }, ''));
+            {if $crumbs != "" && empty($error_message)}
+              var crumbs = {$crumbs|@json_encode},
+                      baseurl = "{$baseurl}",
+                      breadcrumbs = RBreadcrumbs({
+                        breadcrumbs: crumbs,
+                        baseURL: baseurl
+                      });
+              ReactDOM.render(breadcrumbs, document.getElementById("breadcrumbs"));
             {/if}
 
             // Initialize bootstrap tooltip for site affiliations
@@ -96,7 +95,7 @@
                    <!-- toggle feedback in mobile view -->
 
 
-                    <a class="navbar-brand" href="{$baseurl}/">LORIS{if $sandbox}: DEV{/if}</a>
+                    <a class="navbar-brand" href="{$baseurl}/">Intake Form{if $sandbox}: DEV{/if}</a>
                </div>
                <div class="collapse navbar-collapse" id="example-navbar-collapse">
                     <ul class="nav navbar-nav">
@@ -159,12 +158,12 @@
                             </a>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <a href="{$baseurl}/user_accounts/my_preferences/">
+                                    <a href="{$baseurl}/preferences/">
                                         My Preferences
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{$baseurl}/?logout=true">
+                                    <a href="{$baseurl}/main.php?logout=true">
                                         Log Out
                                     </a>
                                 </li>
@@ -206,6 +205,8 @@
 
             {/if}
             {if $dynamictabs neq "dynamictabs"}
+            {* Add enough spacing to get below the menu *}
+                <br><br><br>
             <div class="page-content inset">
 
                 {if $console}
@@ -217,13 +218,13 @@
                     </div>
 
                 {/if}
-                {if $breadcrumbs != "" && empty($error_message)}
+                {if $crumbs != "" && empty($error_message)}
                     <div id="breadcrumbs"></div>
                 {/if}
                         <div>
                             {if $error_message != ""}
                                 <p>
-                                    The following errors occurred while attempting to display this page:
+                                    The following errors occured while attempting to display this page:
                                     <ul>
                                         {section name=error loop=$error_message}
                                             <li>
@@ -235,7 +236,7 @@
                                     </ul>
 
                                     If this error persists, please
-                                    <a target="issue_tracker_url" href="{$issue_tracker_url}">
+                                    <a target="mantis" href="{$mantis_url}">
                                         report a bug to your administrator
                                     </a>.
                                 </p>
@@ -244,13 +245,211 @@
                                         Please click here to go back
                                     </a>.
                                 </p>
-                            {/if}
+                            {elseif $test_name == ""}
+                                <h1 style="align:center" class="text-primary">
+                                    Welcome to the LORIS Database!
+                                </h1>
+                                <div style="max-width:700px">
+                                    This database provides an on-line mechanism to store both MRI and behavioral data collected from various locations. Within this framework, there are several tools that will make this process as efficient and simple as possible. For more detailed information regarding any aspect of the database, please click on the Help icon at the top right. Otherwise, feel free to contact us at the DCC. We strive to make data collection almost fun.
+                                </div>
+                            {else}
+                                {if $candID != ""}
+                                    <!-- table with candidate profile info -->
+                                        <table cellpadding="2" class="table table-info table-bordered dynamictable" style="max-width:auto">
+                                            <!-- column headings -->
+                                            <thead>
+                                                <tr class="info">
+                                                        <th>
+                                                            DOB
+                                                        </th>
+                                                        {if $candidate.EDC!=""}
+                                                            <th>
+                                                                EDC
+                                                            </th>
+                                                        {/if}
+                                                        <th>
+                                                            Gender
+                                                        </th>
+                                                        {if $candidate.ProjectTitle != ""}
+                                                            <th>
+                                                                Project
+                                                            </th>
+                                                        {/if}
+                                                        {foreach from=$candidate.DisplayParameters item=value key=name}
+                                                            <th>
+                                                                {$name}
+                                                            </th>
+                                                        {/foreach}
+                                                        {if $sessionID != ""}
+                                                            <th>
+                                                                Visit Label
+                                                            </th>
+                                                            <th>
+                                                                Visit to Site
+                                                            </th>
+                                                            <th>
+                                                                Subproject
+                                                            </th>
+                                                            <th>
+                                                                MR Scan Done
+                                                            </th>
+                                                            {*
+                                                                <th>
+                                                                    Age During Visit
+                                                                </th>
+                                                            *}
+                                                            {*
+                                                            <th>
+                                                                Within Optimal
+                                                            </th>
+                                                            <th>
+                                                                Within Permitted
+                                                            </th>
+                                                            *}
+                                                            {if $SupplementalSessionStatuses }
+                                                                {foreach from=$timePoint.status item=status key=name}
+                                                                    <th>
+                                                                        {$name}
+                                                                    </th>
+                                                                {/foreach}
+                                                            {/if}
+                                                        {/if}
+                                                </tr>
+                                            </thead>
+                                            <!-- candidate data -->
+                                            <tbody>
+                                                    <tr>
+                                                        <td>
+                                                            {$candidate.DoB}
+                                                        </td>
+                                                        {if $candidate.EDC!=""}
+                                                            <td>
+                                                                {$candidate.EDC}
+                                                            </td>
+                                                        {/if}
+                                                        <td>
+                                                            {$candidate.Gender}
+                                                        </td>
+                                                        {if $candidate.ProjectTitle != ""}
+                                                            <td>
+                                                                {$candidate.ProjectTitle}
+                                                            </td>
+                                                        {/if}
+                                                        {foreach from=$candidate.DisplayParameters item=value key=name}
+                                                            <td>
+                                                                {$value}
+                                                            </td>
+                                                        {/foreach}
 
-                          <div id="lorisworkspace">
-                            {$workspace}
-                          </div>
+                                                        {if $sessionID != ""}
+                                                            <!-- timepoint data -->
+                                                            <td>
+                                                                {$timePoint.Visit_label}
+                                                            </td>
+                                                            <td>
+                                                                {$timePoint.PSC}
+                                                            </td>
+                                                            <td>
+                                                                {$timePoint.SubprojectTitle}
+                                                            </td>
+                                                            <td>
+                                                                {$timePoint.Scan_done|default:"<img alt=\"Data Missing\" src=\"$baseurl/images/help2.gif\" width=\"12\" height=\"12\" />"}
+                                                            </td>
+                                                            {*
+                                                                <td>
+                                                                    {$timePoint.WindowInfo.AgeDays}
+                                                                </td>
+                                                            *}
+                                                            {*
+                                                            <td>
+                                                                {if $timePoint.WindowInfo.Optimum}
+                                                                    Yes
+                                                                {else}
+                                                                    No
+                                                                {/if}
+                                                            </td>
+                                                            <td {if not $timePoint.WindowInfo.Optimum}class="error"{/if}>
+                                                                {if $timePoint.WindowInfo.Permitted}
+                                                                    Yes
+                                                                {else}
+                                                                    No
+                                                                {/if}
+                                                            </td>
+                                                            *}
+                                                            {if $SupplementalSessionStatuses }
+                                                                {foreach from=$timePoint.status item=status}
+                                                                    <td>
+                                                                        {$status}
+                                                                    </td>
+                                                                {/foreach}
+                                                            {/if}
+                                                        {/if}
+                                                    </tr>
+                                            </tbody>
+                                        </table>
+
+                                    {if $sessionID != ""}
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered">
+                                                <!-- visit statuses -->
+                                                <thead>
+                                                    <tr class="info">
+                                                        <th nowrap="nowrap" colspan="3">
+                                                            Stage
+                                                        </th>
+                                                        <th nowrap="nowrap" colspan="3">
+                                                            Status
+                                                        </th>
+                                                        <th nowrap="nowrap" colspan="2">
+                                                            Date
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td nowrap="nowrap" colspan="3">
+                                                            Screening
+                                                        </td>
+                                                        <td nowrap="nowrap" colspan="3">
+                                                            {$timePoint.Screening}
+                                                        </td>
+                                                        <td nowrap="nowrap" colspan="2">
+                                                            {$timePoint.Date_screening}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td nowrap="nowrap" colspan="3">
+                                                            Visit
+                                                        </td>
+                                                        <td nowrap="nowrap" colspan="3">
+                                                            {$timePoint.Visit}
+                                                        </td>
+                                                        <td nowrap="nowrap" colspan="2">
+                                                            {$timePoint.Date_visit}
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td nowrap="nowrap" colspan="3">
+                                                            Approval
+                                                        </td>
+                                                        <td nowrap="nowrap" colspan="3">
+                                                            {$timePoint.Approval}
+                                                        </td>
+                                                        <td nowrap="nowrap" colspan="2">
+                                                            {$timePoint.Date_approval}
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {/if}
+                                {/if}
+                                <div id="lorisworkspace">
+                                    {$workspace}
+                                </div>
+                            {/if}
                         </div>
-            </div>
+                    </div>
 
 
             <!-- </div> -->
@@ -280,7 +479,7 @@
                         </li>
                         {foreach from=$links item=link}
                                 <li>
-                                    <a href="{$link.url}" target="{$link.windowName}" rel="noopener noreferrer">
+                                    <a href="{$link.url}" target="{$link.windowName}">
                                         {$link.label}
                                     </a>
                                     |
@@ -289,7 +488,7 @@
                     </ul>
                 </center>
                 <div align="center" colspan="1">
-                    Powered by LORIS &copy; {$currentyear}. All rights reserved.
+                    Powered by LORIS version {$version} &copy; {$currentyear}. All rights reserved.
                 </div>
       		<div align="center" colspan="1">
                     Created by <a href="http://mcin-cnim.ca/" target="_blank">

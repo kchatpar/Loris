@@ -11,6 +11,10 @@
  * @link     https://www.github.com/aces/Loris/
  */
 use \LORIS\StudyEntities\Candidate\CandID;
+require_once(__DIR__."/IdentifierGenerator.php");
+#require_once(__DIR__."/../../src/StudyEntities/Candidate/CandID.php");
+#require_once(__DIR__."/../../src/StudyEntities/Candidate/Identifier.php");
+#require_once(__DIR__."/../../src/StudyEntities/Candidate/ValidatableIdentifier.php");
 /**
  * This class defines functions used to generate valid Candidate identifiers in
  * LORIS. It leverages the CandID study entity for validation.

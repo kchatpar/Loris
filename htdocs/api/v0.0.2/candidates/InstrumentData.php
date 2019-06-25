@@ -95,7 +95,7 @@ class InstrumentData extends \Loris\API\Candidates\Candidate\Instruments
             $this->Instrument = \NDB_BVL_Instrument::factory(
                 $Instrument,
                 $CommentID,
-                '',
+                null,
                 true
             );
         } catch(\Exception $e) {
@@ -111,7 +111,7 @@ class InstrumentData extends \Loris\API\Candidates\Candidate\Instruments
     /**
      * Handle a GET request
      *
-     * @return void (but populate $this->JSON)
+     * @return none, but populate $this->JSON
      */
     function handleGET()
     {
@@ -150,20 +150,20 @@ class InstrumentData extends \Loris\API\Candidates\Candidate\Instruments
     /**
      * Handle an OPTIONS request
      *
-     * @return void (but modifies HTTP headers sent)
+     * @return none, but modifies HTTP headers sent
      */
     function handleOPTIONS()
     {
         $this->Header(
             "Access-Control-Allow-Methods: ".
-            join(",", $this->AllowedMethods)
+            join($this->AllowedMethods, ",")
         );
     }
 
     /**
      * Handle a PUT request
      *
-     * @return void (but populates $this->JSON and writes to database)
+     * @return none, but populates $this->JSON and writes to database
      */
     function handlePUT()
     {
@@ -197,7 +197,7 @@ class InstrumentData extends \Loris\API\Candidates\Candidate\Instruments
     /**
      * Handle a PUT request
      *
-     * @return void (but populates $this->JSON and writes to database)
+     * @return none, but populates $this->JSON and writes to database
      */
     function handlePATCH()
     {
@@ -240,4 +240,4 @@ if (isset($_REQUEST['PrintInstrumentData'])) {
     );
     print $obj->toJSONString();
 }
-
+?>

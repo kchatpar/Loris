@@ -35,7 +35,7 @@ $scanEndDate        = $DB->pselectOne(
     array()
 );
 $scanData['labels']
-    = createLineChartLabels($scanStartDate, $scanEndDate);
+    = createChartLabels($scanStartDate, $scanEndDate);
 $list_of_sites      = Utility::getAssociativeSiteList(true, false);
 foreach ($list_of_sites as $siteID => $siteName) {
     $scanData['datasets'][] = array(
@@ -51,12 +51,12 @@ return 0;
 /**
  * Create chart labels (dates)
  *
- * @param string $startDate start date of scans
- * @param string $endDate   end date of scans
+ * @param date $startDate start date of scans
+ * @param date $endDate   end date of scans
  *
  * @return array
  */
-function createLineChartLabels($startDate, $endDate)
+function createChartLabels($startDate, $endDate)
 {
     $startDateYear  = substr($startDate, 0, 4);
     $endDateYear    = substr($endDate, 0, 4);
@@ -107,4 +107,4 @@ function getScanData($siteID, $labels)
     return $data;
 }
 
-
+?>

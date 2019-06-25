@@ -84,9 +84,7 @@ else
     echo ""
     echo "PHP Composer does not appear to be installed. Please install it before running this script."
     echo ""
-    echo "(e.g. wget https://getcomposer.org/installer"
-    echo "php installer --install-dir=/usr/local/bin --filename=composer)"
-    echo "while having root permission)";
+    echo "(e.g. curl -sS https://getcomposer.org/installer | php)"
     exit 2;
 fi
 
@@ -141,53 +139,50 @@ if [ -f ../project/config.xml ]; then
 fi
 
 # Create some subdirectories, if needed.
-./create-project.sh ../project
+mkdir -p ../project ../project/data ../project/libraries ../project/instruments ../project/templates ../project/tables_sql ../project/modules ../smarty/templates_c
 
-mkdir -p ../smarty/templates_c
 # Setting 770 permissions for templates_c
 chmod 770 ../smarty/templates_c
 
 # Changing group to 'www-data' or 'apache' to give permission to create directories in Document Repository module
 # Detecting distribution
-os_distro=$(hostnamectl |awk -F: '/Operating System:/{print $2}'|cut -f2 -d ' ')
+if type "lsb_release" > /dev/null 2>&1; then
+    os_distro=$(lsb_release -si)
+elif type "facter" > /dev/null 2>&1; then
+    os_distro=$(facter operatingsystem)
+else
+    os_distro="unknown"
+fi
 
-debian=("Debian" "Ubuntu")
-redhat=("Red" "CentOS" "Fedora" "Oracle") 
-
-if [[ " ${debian[*]} " =~ " $os_distro " ]]; then
-    mkdir ../modules/document_repository/user_uploads
-    mkdir ../modules/data_release/user_uploads
+if [ $os_distro = "Ubuntu" ]; then
     sudo chown www-data.www-data ../modules/document_repository/user_uploads
-    sudo chown www-data.www-data ../modules/data_release/user_uploads
     sudo chown www-data.www-data ../smarty/templates_c
     # Make Apache the group for project directory, so that the web based install
     # can write the config.xml file.
     sudo chgrp www-data ../project
     sudo chmod 770 ../project
-elif [[ " ${redhat[*]} " =~ " $os_distro " ]]; then
-    mkdir ../modules/document_repository/user_uploads
-    mkdir ../modules/data_release/user_uploads
+elif [ $os_distro = "CentOS" ]; then
     sudo chown apache.apache ../modules/document_repository/user_uploads
-    sudo chown apache.apache ../modules/data_release/user_uploads
     sudo chown apache.apache ../smarty/templates_c
     # Make Apache the group for project directory, so that the web based install
     # can write the config.xml file.
     sudo chgrp apache ../project
     sudo chmod 770 ../project
 else
-    echo "$os_distro Linux distribution detected. We currently do not support this. Please manually chown/chgrp to the web server user in: the user_uploads directory in ../modules/data_release/ and ../modules/document_repository/, as well as ../smarty/templates_c/"
+    echo "$os_distro Linux distribution detected. We currently do not support this. Please manually chown/chgrp the user_uploads directory in ../modules/document_repository to the web server and ../smarty/templates_c"
 fi
+
 
 # Set the proper permission for the tools/logs directory:
 if [ -d logs ]; then
     chmod 770 logs
     # Set the group to 'www-data' or 'apache' for tools/logs directory:
-    if [[ " ${debian[*]} " =~ " $os_distro " ]]; then
+    if [ $os_distro = "Ubuntu" ]; then
         sudo chgrp www-data logs
-    elif [[ " ${redhat[*]} " =~ " $os_distro " ]]; then
+    elif [ $os_distro = "CentOS" ]; then
         sudo chgrp apache logs
     else
-        echo "$os_distro Linux distribution detected. We currently do not support this. Please manually set the permissions for the directory tools/logs/"
+        echo "$os_distro Linux distribution detected. We currently do not support this. Please manually set the permissions for user_uploads directory in ../modules/document_repository"
     fi
 fi
 
@@ -198,12 +193,12 @@ eval $composer_scr
 cd tools
 
 
-if [[ " ${debian[*]} " =~ " $os_distro " ]]; then
+if [ $os_distro = "Ubuntu" ]; then
 echo "Ubuntu distribution detected."
     # for CentOS, the log directory is called httpd
     logdirectory=/var/log/apache2
     while true; do
-        read -p "Would you like to automatically create/install apache config files? (Works for Ubuntu 14.04 or later default Apache installations) [yn] " yn
+        read -p "Would you like to automatically create/install apache config files? (Works for Ubuntu 14.04 default Apache installations) [yn] " yn
         echo $yn | tee -a $LOGFILE > /dev/null
         case $yn in
             [Yy]* )
@@ -228,7 +223,7 @@ echo "Ubuntu distribution detected."
             * ) echo "Please enter 'y' or 'n'."
         esac
     done;
-elif [[ " ${redhat[*]} " =~ " $os_distro " ]]; then
+elif [ $os_distro = "CentOS" ]; then
 echo "CentOS distribution detected."
 # for CentOS, the log directory is called httpd
 logdirectory=/var/log/httpd

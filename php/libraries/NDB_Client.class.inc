@@ -25,28 +25,28 @@
 class NDB_Client
 {
     /**
-     * Defines whether session management and user authentication is performed
-     */
+    * Defines whether session management and user authentication is performed
+    */
     var $_isWebClient = true;
 
     /**
-     * Defines that the client is a command line client
-     *
-     * @return void
-     */
-    function makeCommandLine(): void
+    * Defines that the client is a command line client
+    *
+    * @return none
+    */
+    function makeCommandLine()
     {
         $this->_isWebClient = false;
     }
 
     /**
-     * Initializes the environment
-     *
-     * @param string|null $configFile Path on filesystem to config.xml file
-     *
-     * @return true on success
-     */
-    function initialize(?string $configFile = null)
+    * Initializes the environment
+    *
+    * @param string $configFile Path on filesystem to config.xml file to use
+    *
+    * @return true on success
+    */
+    function initialize($configFile = null)
     {
         // Load the config file.
         $factory = NDB_Factory::singleton();
@@ -89,29 +89,21 @@ class NDB_Client
         if (!$this->_isWebClient) {
             // Set user as unix username.
             // Requires Loris to have user with this username
-            User::singleton(getenv('USER'));
+            $user =& User::singleton(getenv('USER'));
             return true;
         }
 
         $config_additions = $DB->pselectOne(
-            "SELECT c.Value
-            FROM Config c
-            JOIN ConfigSettings cs ON (c.ConfigID=cs.ID)
-            WHERE cs.Name=:nm",
+            "
+		SELECT c.Value
+		FROM Config c
+			JOIN ConfigSettings cs ON (c.ConfigID=cs.ID)
+		WHERE cs.Name=:nm",
             array("nm" => "CSPAdditionalHeaders")
         );
         if (empty($config_additions)) {
             $config_additions = "";
         }
-        $CaptchaDomains ="";
-        // Get reCATPCHA keys
-        $reCAPTCHAPrivate = $config->getSetting('reCAPTCHAPrivate');
-        $reCAPTCHAPublic  = $config->getSetting('reCAPTCHAPublic');
-        // Display reCAPTCHA if both private and public keys are set
-        if ($reCAPTCHAPrivate && $reCAPTCHAPublic) {
-            $CaptchaDomains ="www.google.com  www.gstatic.com";
-        }
-
         // Content-Security policy for LORIS
         // 1. By default, only allow things that are self-hosted
         // 2. Allow inline CSS and JS (inline JS is required for
@@ -121,40 +113,22 @@ class NDB_Client
         //    See: https://github.com/jquery/jquery/issues/2012
         // 4. Allow data URLs for fonts, because our bootstrap theme
         //    seems to load a font that way.
-        // 5. Allow reCAPTCHA domains iff the CAPTCHA keys were set
-        //    up by the project
         header(
             "Content-Security-Policy: "
             . "default-src 'self' 'unsafe-inline'; "
-            . "script-src 'self' 'unsafe-inline' 'unsafe-eval' $CaptchaDomains; "
+            . "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
             . "font-src 'self' data:; "
             . "img-src 'self' data:; "
             . $config_additions
         );
         // start php session
-        $sessionOptions = array('cookie_httponly' => true);
-        // TODO remove this if statement when 7.3 is the minimum required LORIS
-        // version. All session from then onward should have Same Site enabled.
-        if (PHP_MAJOR_VERSION === 7 && PHP_MINOR_VERSION >= 3) {
-            $sessionOptions['cookie_samesite'] = true;
-        }
+        session_start();
 
-        // API Detect
-        if (strpos(
-            $_SERVER['REDIRECT_URL'] ?? $_SERVER['REQUEST_URI'] ?? '',
-            '/api/v0.0.3-dev/'
-        ) !== false
-        ) {
-            session_cache_limiter('private');
-        }
-
-        session_start($sessionOptions);
         // if exiting, destroy the php session
         if (isset($_REQUEST['logout']) && $_REQUEST['logout']) {
             session_destroy();
-            header("HTTP/1.1 303 See Other");
-            header("Location: /");
-            session_start($sessionOptions);
+            setcookie("FeedbackButtonBoolean", "");
+            session_start();
         }
 
         /**
@@ -170,12 +144,7 @@ class NDB_Client
         if (!$login->isLoggedIn()) {
             $auth = $login->authenticate();
             if ($auth === true) {
-                if ($login->passwordExpired()) {
-                    header("HTTP/1.1 302 Found");
-                    header("Location: /login/password-expiry");
-
-                }
-                $login->setState();
+                $error = $login->setState();
             } elseif ($auth === false) {
                 // only send a 403 error if they were attempting to log in,
                 // otherwise the login page returns a 403 when first accessing
@@ -193,10 +162,18 @@ class NDB_Client
             }
         }
         if (!$login->isLoggedIn()) {
+            // display login window
+            //ob_end_clean();
+            // Check to see if passwordExpired flag is set
+            if (!$login->passwordExpired()) {
+                // If not show login page
+                header("HTTP/1.1 401 Unauthorized");
+            }
+            //terminate script
             return false;
         }
 
-        User::singleton($_SESSION['State']->getUsername());
+        $user =& User::singleton($_SESSION['State']->getUsername());
 
         // finished initializing
         return true;
@@ -220,4 +197,4 @@ class NDB_Client
         return $login->isLoggedIn();
     }
 }
-
+?>

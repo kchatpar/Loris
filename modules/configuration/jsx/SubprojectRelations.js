@@ -1,15 +1,15 @@
 /* exported RSubprojectRelations */
 
-let SubprojectRelations = React.createClass({
+var SubprojectRelations = React.createClass({
   getDefaultProps: function() {
     return {
-      Relations: { },
+      Relations: { }
     };
   },
   render: function() {
-    let subprojectIDs = Object.keys(this.props.Relations);
-    let that = this;
-    let subprojectList = subprojectIDs.map(function(key) {
+    var subprojectIDs = Object.keys(this.props.Relations);
+    var that = this;
+    var subprojectList = subprojectIDs.map(function(key) {
       return <li>{that.props.Relations[key]}</li>;
     });
 
@@ -21,9 +21,9 @@ let SubprojectRelations = React.createClass({
                 </ul>
             </div>
         );
-  },
+  }
 });
-let RSubprojectRelations = React.createFactory(SubprojectRelations);
+var RSubprojectRelations = React.createFactory(SubprojectRelations);
 
 window.SubprojectRelations = SubprojectRelations;
 window.RSubprojectRelations = RSubprojectRelations;

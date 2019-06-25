@@ -1,6 +1,5 @@
 $(document).ready(function() {
     "use strict";
-    $('div').tooltip();
     $(".saveproject").click(function(e) {
         var form = $(e.currentTarget).closest('form');
 
@@ -18,15 +17,9 @@ $(document).ready(function() {
         }
         
         var errorClosure = function(i, form) {
-          if (isNaN(recruitmentTarget)) {
-            return function () {
-              $(form.find(".saveStatus")).text("Failed to save, recruitment target must be an integer!").css({'color': 'red'}).fadeIn(500).delay(1000).fadeOut(500);
+            return function() {
+                $(form.find(".saveStatus")).text("Failed to save, same name already exist!").css({ 'color': 'red'}).fadeIn(500).delay(1000).fadeOut(500);
             }
-          } else {
-            return function () {
-              $(form.find(".saveStatus")).text("Failed to save, same name already exist!").css({'color': 'red'}).fadeIn(500).delay(1000).fadeOut(500);
-            }
-          }
         }
 
         jQuery.ajax(

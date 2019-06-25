@@ -29,7 +29,7 @@ class HelpEditorTestIntegrationTest extends LorisIntegrationTest
     /**
      * Insert testing data into the database
      *
-     * @return void
+     * @return none
      */
     function setUp()
     {
@@ -52,7 +52,7 @@ class HelpEditorTestIntegrationTest extends LorisIntegrationTest
     /**
      * Delete testing data from database
      *
-     * @return void
+     * @return none
      */
     function tearDown()
     {
@@ -134,16 +134,13 @@ class HelpEditorTestIntegrationTest extends LorisIntegrationTest
      */
     function testHelpEditorSearchByTopic()
     {
-         $this->markTestSkipped(
-             'Modifications needed to adapt to layout changes'
-         );
          $this->safeGet($this->url . "/help_editor/");
          $this->safeFindElement(
              WebDriverBy::Name("topic")
          )->sendKeys("Test Topic");
          //click the [show data] button
          $this->safeFindElement(
-             WebDriverBy::Name("topic")
+             WebDriverBy::Name("filter")
          )->click();
          $this->safeGet($this->url . "/help_editor/?format=json");
          $bodyText = $this->webDriver->getPageSource();
@@ -156,16 +153,13 @@ class HelpEditorTestIntegrationTest extends LorisIntegrationTest
      */
     function testHelpEditorSearchByKeyword()
     {
-         $this->markTestSkipped(
-             'Modifications needed to adapt to layout changes'
-         );
          $this->safeGet($this->url . "/help_editor/");
          $this->safeFindElement(
              WebDriverBy::Name("keyword")
          )->sendKeys("test content");
          //click the [show data] button
          $this->safeFindElement(
-             WebDriverBy::Name("keyword")
+             WebDriverBy::Name("filter")
          )->click();
          $this->safeGet($this->url . "/help_editor/?format=json");
          $bodyText = $this->webDriver->getPageSource();
@@ -173,4 +167,4 @@ class HelpEditorTestIntegrationTest extends LorisIntegrationTest
     }
 
 }
-
+?>

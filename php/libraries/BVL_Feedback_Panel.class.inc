@@ -1,11 +1,11 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * General behavioural feedback panel class.
  *
  * This class provides the behavioural feedback gui for the timepoint list,
  * instrument list and individual instruments.
  *
- * PHP version 7
+ * PHP version 5
  *
  * @category Behavioural
  * @package  Main
@@ -29,30 +29,23 @@
  */
 class BVL_Feedback_Panel
 {
-    /**
-     * The feedback thread that this panel is for
-     *
-     * @var NDB_BVL_Feedback
-     */
-    var $_feedbackThread;
+    var $_feedbackThread = '';
 
     /**
      * Creates the feedback thread for the given combination of candID,
      * sessionID and commentID.
      *
-     * @param int         $candID    The candidate ID.
-     * @param int|null    $sessionID The session ID for a given visit.
-     * @param string|null $commentID The comment ID for a given instrument.
+     * @param int  $candID    The candidate ID.
+     * @param null $sessionID The session ID for a given visit. Optional.
+     * @param null $commentID The comment ID for a given instrument. Optional.
      */
-    function __construct(
-        int $candID,
-        ?int $sessionID=null,
-        ?string $commentID=null
-    ) {
-
+    function __construct($candID, $sessionID=null, $commentID=null)
+    {
+        $user     =& User::singleton();
+        $username = $user->getUsername();
         $this->_feedbackThread
-            = \NDB_BVL_Feedback::singleton(
-                \User::singleton()->getUsername(),
+            =& NDB_BVL_Feedback::Singleton(
+                $username,
                 $candID,
                 $sessionID,
                 $commentID
@@ -67,14 +60,14 @@ class BVL_Feedback_Panel
      * @throws Exception
      * @throws SmartyException
      */
-    function display(): string
+    function display()
     {
         $feedbackProfile = $this->_feedbackThread->_feedbackCandidateProfileInfo;
         $candidateID     = $feedbackProfile["CandID"];
 
         $this->tpl_data['candID'] = $candidateID;
 
-        $candidateObject         = Candidate::singleton(intval($candidateID));
+        $candidateObject         = Candidate::singleton($candidateID);
         $this->tpl_data['pscid'] = $candidateObject->getPSCID();
 
         $this->tpl_data['sessionID'] = $feedbackProfile["SessionID"] ?? null;
@@ -85,13 +78,13 @@ class BVL_Feedback_Panel
         $this->tpl_data['thread_list']    = $this->_feedbackThread->getThreadList();
         $this->tpl_data['feedback_level'] = $this->_feedbackThread->_feedbackLevel;
         $this->tpl_data['feedback_types']
-            = NDB_BVL_Feedback::getFeedbackTypes();
+            = $this->_feedbackThread->getFeedbackTypes();
         $this->tpl_data['feedbacktypes']  = NDB_BVL_Feedback::getFeedbackTypes();
 
         $summary = $this->_feedbackThread->getSummaryOfThreads();
         $this->tpl_data['thread_summary_headers'] = json_encode($summary);
 
-        $field_names = Utility::getSourcefields($_REQUEST['test_name'] ?? '');
+        $field_names = Utility::getSourcefields($_REQUEST['test_name']);
         $Fields['Across All Fields'] = 'Across All Fields';
         foreach ($field_names as $field_name) {
             $Fields[$field_name['SourceField']] = $field_name['SourceField'];

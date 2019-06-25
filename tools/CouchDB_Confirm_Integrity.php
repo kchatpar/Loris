@@ -48,17 +48,8 @@ class CouchDBIntegrityChecker
      */
     function __construct()
     {
-        $factory       = \NDB_Factory::singleton();
-        $config        = \NDB_Config::singleton();
-        $couchConfig   = $config->getSetting('CouchDB');
-        $this->SQLDB   = $factory->Database();
-        $this->CouchDB = $factory->couchDB(
-            $couchConfig['dbName'],
-            $couchConfig['hostname'],
-            intval($couchConfig['port']),
-            $couchConfig['admin'],
-            $couchConfig['adminpass']
-        );
+        $this->SQLDB = Database::singleton();
+        $this->CouchDB = CouchDB::singleton();
     }
 
     /**
@@ -102,11 +93,11 @@ class CouchDBIntegrityChecker
             } else if (!empty($sqlDB) && $sqlDB['Active'] != 'Y') {
                 $numActive = $this->SQLDB->execute(
                     $activeExists, array(
-                    'PID' => $pscid,
+                    'PID' => $pscid, 
                     'VL' => $vl)
                 );
 
-                if (!array_key_exists('count', $numActive[0])
+                if (!array_key_exists('count', $numActive[0]) 
                     || $numActive[0]['count'] == '0'
                 ) {
                     print "PSCID $pscid VL $vl is cancelled and has no active "

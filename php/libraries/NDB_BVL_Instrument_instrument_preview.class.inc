@@ -29,12 +29,12 @@ class NDB_BVL_Instrument_Instrument_Preview
      * Loads a LINST file and rules from the data posted to it in order
      * to preview how Loris would render that file.
      *
-     * @param string|null $commentID The CommentID being loaded
-     * @param string|null $page      The page being loaded
+     * @param string $commentID The CommentID being loaded
+     * @param string $page      The page being loaded
      *
-     * @return void
+     * @return none
      */
-    function setup(?string $commentID = null, ?string $page = null): void
+    function setup($commentID, $page)
     {
         $this->commentID = $commentID;
         $this->page      = $page;
@@ -69,9 +69,9 @@ class NDB_BVL_Instrument_Instrument_Preview
     /**
      * Overwrites the save function to not save data since this is only a preview.
      *
-     * @return bool
+     * @return none
      */
-    function save(): bool
+    function save()
     {
         if ($this->form->validate()) {
             ; // don't save the data
@@ -92,7 +92,7 @@ class NDB_BVL_Instrument_Instrument_Preview
                 }
             }
         }
-        return false;
+        return;
     }
 
     /**
@@ -101,9 +101,9 @@ class NDB_BVL_Instrument_Instrument_Preview
      * @param array $values Unused, but required so that function as same signature
      *                      as base class
      *
-     * @return void
+     * @return none
      */
-    function _save(array $values): void
+    function _save($values)
     {
         return;
     }
@@ -113,11 +113,11 @@ class NDB_BVL_Instrument_Instrument_Preview
      *
      * @param string $status ignored
      *
-     * @return void
+     * @return none
      */
-    function _setDataEntryCompletionStatus(string $status): void
+    function _setDataEntryCompletionStatus($status)
     {
         return;
     }
 }
-
+?>

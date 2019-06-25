@@ -10,9 +10,7 @@
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
-
-
-ini_set("max_input_vars", '10000');
+ini_set("max_input_vars", 10000);
 $user =& User::singleton();
 if (!$user->hasPermission('dataquery_view')) {
     header("HTTP/1.1 403 Forbidden");
@@ -22,18 +20,10 @@ require_once __DIR__ . '/../../../vendor/autoload.php';
 $client = new NDB_Client();
 $client->makeCommandLine();
 $client->initialize(__DIR__ . "/../../../project/config.xml");
-$config      = \NDB_Config::singleton();
-$couchConfig = $config->getSetting('CouchDB');
-$cdb         = \NDB_Factory::singleton()->couchDB(
-    $couchConfig['dbName'],
-    $couchConfig['hostname'],
-    intval($couchConfig['port']),
-    $couchConfig['admin'],
-    $couchConfig['adminpass']
-);
-$category    = $_REQUEST['DocType'];
-$sessions    = json_decode($_REQUEST['Sessions']);
-$keys        = array_map(
+$cdb      = CouchDB::singleton();
+$category = $_REQUEST['DocType'];
+$sessions = json_decode($_REQUEST['Sessions']);
+$keys     = array_map(
     function ($row) use ($category) {
         return array_merge(array($category), $row);
     },
@@ -60,4 +50,4 @@ $justTheDocs = array_map(function($row) {
 $results);
 print json_encode($justTheDocs);
  */
-
+?>

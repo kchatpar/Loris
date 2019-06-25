@@ -37,7 +37,7 @@ no further authentication is required. Requests will be evaluated as requests fr
 so that standard Loris modules can simply use the API.
 
 If a user is not logged in to Loris (for instance, in a third party app or a CORS application),
-they can be authenticated using [JSON Web Tokens](https://jwt.io).
+they can be be authenticated using [JSON Web Tokens](https://jwt.io).
 
 The client should POST a request to /login with a payload of the form
 
@@ -281,15 +281,7 @@ A response code of 201 Created will be returned on success, 409 Conflict if
 the PSCID already exists, and a 400 Bad Request if any data provided is invalid
 (PSCID format, date format, gender something other than Male|Female, invalid project
 name, etc). A successful POST request will return the CandID for the newly
-created candidate in a JSON object of the form: 
-
-```js
-{
-    "Meta":{
-        "CandID":123456
-    }
-}
-```
+created candidate.
 
 PUT / PATCH methods are not supported on /candidate in this
 version of the Loris API.
@@ -369,7 +361,7 @@ It will return a 404 Not Found if the visit label does not exist for this candid
 
 Any of the Stages may not be present in the returned result if the stage has not
 started yet or is not enabled for this project (ie. if useScreening is false in
-Loris, or Approval has not occurred)
+Loris, or Approval has not occured)
 
 ### 3.3 Candidate Instruments
 ```
@@ -475,7 +467,7 @@ The format of the JSON object for these URLS is:
 # 4.0 Imaging Data
 
 The imaging data mostly lives in the `/candidates/$CandID/$Visit` portion of the REST API
-namespace, but is defined in a separate section of this document for clarity purposes.
+namespaces, but is defined in a separate section of this document for clarity purposes.
 
 ## 4.1 Candidate Images
 ```

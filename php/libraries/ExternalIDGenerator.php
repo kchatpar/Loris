@@ -10,6 +10,8 @@
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://www.github.com/aces/Loris/
  */
+
+require_once(__DIR__."/SiteIDGenerator.php");
 /**
  * This class is a simple extension of SiteIDGenerator and is used by calling
  * code to generate PSCIDs.

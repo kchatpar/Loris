@@ -39,6 +39,7 @@ class ConfigurationTest extends LorisIntegrationTest
         $window = new WebDriverWindow($this->webDriver);
         $size   = new WebDriverDimension(1280, 1024);
         $window->setSize($size);
+        $this->setUpConfigSetting("useProjects", "false");
     }
 
     /**
@@ -64,13 +65,10 @@ class ConfigurationTest extends LorisIntegrationTest
     public function testConfigurationPageLoads()
     {
         $this->safeGet($this->url . "/configuration/");
-        $bodyText = $this->webDriver->findElement(
-            WebDriverBy::cssSelector("body")
-        )->getText();
-        $this->assertRegexp(
-            "/Please enter the various configuration variables/",
-            $bodyText
-        );
+
+        $bodyText = $this->webDriver
+            ->findElement(WebDriverBy::cssSelector("body"))->getText();
+        $this->assertContains("Configuration", $bodyText);
     }
     /**
      * Tests that configuration loads with the permission
@@ -126,7 +124,8 @@ class ConfigurationTest extends LorisIntegrationTest
          $webElement = $this->safeFindElement(
              WebDriverBy::Xpath("//*[@id='bc2']/a[2]/div")
          )->click();
-         $bodyText   = $this->webDriver->findElement(
+         sleep(2);
+         $bodyText = $this->webDriver->findElement(
              WebDriverBy::cssSelector("body")
          )->getText();
 
@@ -166,12 +165,13 @@ class ConfigurationTest extends LorisIntegrationTest
       */
     private function _linkTest($text)
     {
-        $this->safeClick(WebDriverBy::linkText($text));
+        $webElement = $this->safeFindElement(WebDriverBy::linkText($text))->click();
         $webActives = $this->webDriver->findElements(
             WebDriverBy::cssSelector(".active")
         );
         $bodyText   = $webActives[1]->getText();
         $this->assertContains($text, $bodyText);
+
     }
 
     /**
@@ -187,18 +187,28 @@ class ConfigurationTest extends LorisIntegrationTest
         if ($sandbox == '1') {
 
             $this->_testSubprojectBreadcrumbs();
-            $this->_testProjectsLink();
-        } else {
-            $this->assertEquals(true, 1);
+            $this->_testUseProjects();
+
         }
     }
     /**
-      * Test project link appears
+      * Test setting useProjects , if useProjects =
       *
       *  @return void
       */
-    private function _testProjectsLink()
+    private function _testUseProjects()
     {
+        $this->safeGet($this->url . "/configuration/");
+        $bodyText = $this->webDriver->findElement(
+            WebDriverBy::cssSelector("body")
+        )->getText();
+        $this->assertNotContains(
+            "To configure study projects click here.",
+            $bodyText
+        );
+
+        $this->setUpConfigSetting("useProjects", "true");
+        sleep(5);
         $this->safeGet($this->url . "/configuration/");
         $bodyText = $this->webDriver->findElement(
             WebDriverBy::cssSelector("body")
@@ -207,7 +217,8 @@ class ConfigurationTest extends LorisIntegrationTest
             "To configure study projects click here.",
             $bodyText
         );
+        $this->setUpConfigSetting("useProjects", "false");
     }
 
 }
-
+?>

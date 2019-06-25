@@ -20,16 +20,7 @@ $client = new NDB_Client();
 $client->makeCommandLine();
 $client->initialize(__DIR__ . "/../../../project/config.xml");
 
-$config      = \NDB_Config::singleton();
-$couchConfig = $config->getSetting('CouchDB');
-$cdb         = \NDB_Factory::singleton()->couchDB(
-    $couchConfig['dbName'],
-    $couchConfig['hostname'],
-    intval($couchConfig['port']),
-    $couchConfig['admin'],
-    $couchConfig['adminpass']
-);
-
+$cdb = CouchDB::singleton();
 if ($_REQUEST['category']) {
     $category = urlencode($_REQUEST['category']);
 
@@ -55,5 +46,6 @@ if ($_REQUEST['category']) {
     );
 }
 
-print json_encode($results);
 
+print json_encode($results);
+?>

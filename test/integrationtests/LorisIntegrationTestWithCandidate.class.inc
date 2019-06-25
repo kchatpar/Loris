@@ -37,28 +37,27 @@ abstract class LorisIntegrationTestWithCandidate extends LorisIntegrationTest
      * to user for the tests, and logging in, and creating a candidate
      * with a session
      *
-     * @return void
+     * @return none
      */
     public function setUp()
     {
         parent::setUp();
 
         $this->DB->insert("candidate", array(
-            'CandID'               => '900000',
-            'PSCID'                => 'TST0001',
-            'RegistrationCenterID' => 1,
-            'ProjectID'            => 1,
-            'Active'               => 'Y',
-            'UserID'               => 1,
-            'Entity_type'          => 'Human'
+            'CandID' => '900000',
+            'PSCID'  => 'TST0001',
+            'CenterID' => 1,
+            'Active' => 'Y',
+            'UserID' => 1,
+            'Entity_type' => 'Human'
         ));
 
         $this->DB->insert('session', array(
-            'ID'            => '999999',
-            'CandID'        => '900000',
-            'Visit_label'   => 'Test',
-            'CenterID'      => 1,
-            'Current_stage' => 'Not Started',
+            'ID' => '999999',
+            'CandID' => '900000',
+            'Visit_label' => 'Test',
+            'CenterID' => 1,
+            'Current_stage'   => 'Not Started',
         ));
         // Set up database wrapper and config
     }

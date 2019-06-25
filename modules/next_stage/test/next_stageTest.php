@@ -93,6 +93,7 @@ class NextStageTestIntegrationTest extends LorisIntegrationTestWithCandidate
     function testNextStageDoesNotPageLoadWithDifferentStudySite()
     {
         // Reset any leftover study site from a previous test.
+
         $this->resetStudySite();
         // Change users CenterID
         $this->changeStudySite();
@@ -181,7 +182,7 @@ class NextStageTestIntegrationTest extends LorisIntegrationTestWithCandidate
             $this->url .
             "/next_stage/?candID=900000&sessionID=999999&identifier=999999"
         );
-        sleep(5);
+
         $this->webDriver->executescript(
             "document.getElementsByClassName('input-date')[0].value='2015-01-01'"
         );
@@ -196,7 +197,7 @@ class NextStageTestIntegrationTest extends LorisIntegrationTestWithCandidate
         $Subproject = $this->webDriver->findElement(
             WebDriverBy::Name("SubprojectID")
         );
-        $Subproject->sendKeys("Fresh");
+        $Subproject->sendKeys("Control");
 
         $startVisit = $this->webDriver->findElement(
             WebDriverBy::Name("fire_away")
@@ -209,4 +210,4 @@ class NextStageTestIntegrationTest extends LorisIntegrationTestWithCandidate
         $this->assertContains("Next stage started.", $bodyText);
     }
 }
-
+?>

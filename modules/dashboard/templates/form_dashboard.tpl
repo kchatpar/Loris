@@ -37,7 +37,9 @@
                         <ul class="dropdown-menu pull-right" role="menu">
                             <li class="active"><a data-target="overall-recruitment">View overall recruitment</a></li>
                             <li><a data-target="recruitment-site-breakdown">View site breakdown</a></li>
-                            <li><a data-target="recruitment-project-breakdown">View project breakdown</a></li>
+                            {if $useProjects eq "true"}
+                                <li><a data-target="recruitment-project-breakdown">View project breakdown</a></li>
+                            {/if}
                         </ul>
                     </div>
                 </div>
@@ -56,7 +58,7 @@
                         </div>
                         <div class="col-lg-8 col-md-8 col-sm-8">
                             <div>
-                                <h5 class="chart-title">Biological sex breakdown by site</h5>
+                                <h5 class="chart-title">Gender breakdown by site</h5>
                                 <div id="recruitmentBarChart"></div>
                             </div>
                         </div>
@@ -64,13 +66,15 @@
                         <p>There have been no candidates registered yet.</p>
                     {/if}
                 </div>
-                  <div class="recruitment-panel hidden" id="recruitment-project-breakdown">
-                      {foreach from=$recruitment key=ID item=project}
-                          {if $ID != "overall"}
-                              {include file='progress_bar.tpl' project=$project}
-                          {/if}
-                      {/foreach}
-                  </div>
+                {if $useProjects eq "true"}
+                    <div class="recruitment-panel hidden" id="recruitment-project-breakdown">
+                        {foreach from=$recruitment key=ID item=project}
+                            {if $ID != "overall"}
+                                {include file='progress_bar.tpl' project=$project}
+                            {/if}
+                        {/foreach}
+                    </div>
+                {/if}
             </div>
         </div>
 
@@ -142,7 +146,7 @@
                             {/if}
                             {if $incomplete_forms neq "" and $incomplete_forms neq 0}
                                 {if $incomplete_forms_site eq "Sites: all"}
-                                     <a href="{$baseURL}/statistics/statistics_site" class="list-group-item statistics">
+                                     <a href="{$baseURL}/statistics/?submenu=statistics_site" class="list-group-item statistics">
                                         <div class="row">
                                             <div class="col-xs-8 text-left">
                                                 <div class="huge">{$incomplete_forms}</div>
@@ -163,7 +167,7 @@
                                             </div>
                                             <div class="col-xs-4 text-right alert-chevron">
                                                 {foreach from=$user_site key=ind item=centerID}
-                                                    <a href="{$baseURL}/statistics/statistics_site/?CenterID={$centerID}">
+                                                    <a href="{$baseURL}/statistics/?submenu=statistics_site&CenterID={$centerID}">
                                                         <p style="color:#555" class="small task-site">{$incomplete_forms_site.$ind}
                                                             <span class="glyphicon glyphicon-chevron-right small"></span>
                                                         </p>
@@ -175,7 +179,7 @@
                                 {/if}
                             {/if}
                                 {if $new_scans neq "" and $new_scans neq 0}
-                                    <a href="{$baseURL}/imaging_browser/?pendingNew=N&pendingNew=P" class="list-group-item new-scans">
+                                    <a href="{$baseURL}/imaging_browser/" class="list-group-item new-scans">
                                         <div class="row">
                                             <div class="col-xs-8 text-left">
                                                 <div class="huge">{$new_scans}</div>
@@ -202,8 +206,23 @@
                                         </div>
                                     </a>
                                 {/if}
+                                {if $radiology_review neq "" and $radiology_review neq 0}
+                                    <a href="{$baseURL}/final_radiological_review/"
+                                       class="list-group-item radiological-review">
+                                        <div class="row">
+                                            <div class="col-xs-8 text-left">
+                                                <div class="huge">{$radiology_review}</div>
+                                                Final radiological review{if $radiology_review neq 1}s{/if}
+                                            </div>
+                                            <div class="col-xs-4 text-right alert-chevron">
+                                                <span class="glyphicon glyphicon-chevron-right medium"></span>
+                                                <p class="small task-site">{$radiology_review_site}</p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                {/if}
                                 {if $pending_users neq "" and $pending_users neq 0}
-                                    <a href="{$baseURL}/user_accounts/?pendingApproval=Y" class="list-group-item pending-accounts">
+                                    <a href="{$baseURL}/user_accounts/" class="list-group-item pending-accounts">
                                         <div class="row">
                                             <div class="col-xs-8 text-left">
                                                 <div class="huge">{$pending_users}</div>
@@ -218,7 +237,7 @@
                                 {/if}
                                 {if $issues_assigned neq "" and $issues_assigned neq 0}
                                     {*submit a post request here so its already filtered?*}
-                                    <a href="{$baseURL}/issue_tracker/?#My%20Issues" class="list-group-item issue_tracker">
+                                    <a href="{$baseURL}/issue_tracker/?submenu=my_issue_tracker" class="list-group-item issue_tracker">
                                         <div class="row">
                                             <div class="col-xs-8 text-left">
                                                 <div class="huge">{$issues_assigned}</div>
@@ -250,7 +269,7 @@
                     <div class="panel-body">
                         <div class="list-group document-repository-item">
                             {foreach from=$document_repository_notifications item=link}
-                                <a href="/document_repository/Files/{$link.Data_dir}"
+                                <a href="AjaxHelper.php?Module=document_repository&script=GetFile.php&File={$link.Data_dir}"
                                    download="{$link.File_name}" class="list-group-item">
                                     {if $link.new eq 1}
                                         <span class="pull-left new-flag">NEW</span>

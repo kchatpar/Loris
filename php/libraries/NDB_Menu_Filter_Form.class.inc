@@ -11,8 +11,6 @@
  * @license  http://www.gnu.org/licenses/gpl-3.0.txt GPLv3
  * @link     https://github.com/aces/Loris-Trunk
  */
-use \Psr\Http\Message\ServerRequestInterface;
-use \Psr\Http\Message\ResponseInterface;
 
 /**
  * Menu_Filter_Form Class
@@ -47,7 +45,7 @@ class NDB_Menu_Filter_Form extends NDB_Menu_Filter
             || !empty($_REQUEST['fire_away'])
         ) {
             if ($this->form->validate()) {
-                $this->form->process(array(&$this, "_save"));
+                $success = $this->form->process(array(&$this, "_save"), false);
             }
         }
     }
@@ -79,7 +77,7 @@ class NDB_Menu_Filter_Form extends NDB_Menu_Filter
             }
         }
 
-        $this->_process($values);
+        $success = $this->_process($values);
     }
 
 
@@ -88,7 +86,8 @@ class NDB_Menu_Filter_Form extends NDB_Menu_Filter
      *
      * @param array $values form values
      *
-     * @return bool true if successful
+     * @return void
+     * @access private
      */
     function _process($values)
     {
@@ -96,21 +95,17 @@ class NDB_Menu_Filter_Form extends NDB_Menu_Filter
     }
 
     /**
-     * An NDB_Menu_Filter_Form, like an NDB_Form extends the basic page
-     * handler to call save() on a POST request.
+     * Resets the form
      *
-     * @param ServerRequestInterface $request The incoming PSR7 request
+     * Usage: Call this function if you do not want to display the frozen form
+     * after saving but just want to dump a message and maybe some links
      *
-     * @return ResponseInterface The PSR15 response to the request.
+     * @return void
+     * @access private
      */
-    public function handle(ServerRequestInterface $request) : ResponseInterface
+    function _resetForm()
     {
-        $this->setup();
-        if ($request->getMethod() === "POST") {
-            $this->save();
-        }
-        return parent::handle($request);
+        $this->form = new LorisForm('test_form');
     }
-
 }
-
+?>

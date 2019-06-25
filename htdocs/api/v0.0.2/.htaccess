@@ -7,11 +7,15 @@ Options -Indexes
 RewriteCond %{ENV:REDIRECT_STATUS} 200
 RewriteRule ^ - [L]
 
-# Login
-RewriteRule ^login[/]?$ /index.php [QSA,END]
-
+RewriteRule ^login Login.php?PrintLogin=true [L]
 # Projects API rewrite rules
-RewriteRule ^projects/? /index.php [QSA,END]
+RewriteRule ^projects/([a-zA-Z0-9_\w\s.]+)/instruments/([a-zA-Z0-9_.]+)$ projects/InstrumentForm.php?Instrument=$2&PrintInstrumentForm=true [L]
+RewriteRule ^projects/([a-zA-Z0-9_\w\s.]+)/visits(/*)$ projects/Project.php?Project=$1&Visits=true&PrintProjectJSON=true [L]
+RewriteRule ^projects/([a-zA-Z0-9_\w\s.]+)/candidates(/*)$ projects/Project.php?Project=$1&Candidates=true&PrintProjectJSON=true [L]
+RewriteRule ^projects/([a-zA-Z0-9_\w\s.]+)/instruments(/*)$ projects/Project.php?Project=$1&Instruments=true&PrintProjectJSON=true&InstrumentDetails=true [L]
+RewriteRule ^projects/([a-zA-Z0-9_\w\s.]+)(/*)$ projects/Project.php?Project=$1&Instruments=true&Visits=true&Candidates=true&PrintProjectJSON=true [L]
+
+RewriteRule ^projects(/*)$ Projects.php?PrintProjects=true [L]
 
 # Candidates API rewrite rules
 
@@ -27,8 +31,7 @@ RewriteRule ^candidates/([0-9]+)/([a-zA-Z0-9_.]+)/instruments/([a-zA-Z0-9_.]+)/d
 ## Imaging API related URLs
 RewriteRule ^candidates/([0-9]+)/([a-zA-Z0-9_.]+)/images$ candidates/visits/Images.php?CandID=$1&VisitLabel=$2&PrintImages=true [L]
 RewriteRule ^candidates/([0-9]+)/([a-zA-Z0-9_.]+)/qc/imaging$ candidates/visits/qc/Imaging.php?CandID=$1&VisitLabel=$2&PrintQC=true [L]
-RewriteRule ^candidates/([0-9]+)/([a-zA-Z0-9_.]+)/images/([a-zA-Z0-9_.]+)/qc$ candidates/visits/images/qc/QC.php?CandID=$1&VisitLabel=$2&Filename=$3&PrintImageQC=true [L]
-RewriteRule ^candidates/([0-9]+)/([a-zA-Z0-9_.]+)/images/([a-zA-Z0-9_.]+)/format/brainbrowser$ candidates/visits/images/format/BrainBrowser.php?CandID=$1&VisitLabel=$2&Filename=$3&PrintBBFormat=true [L]
+RewriteRule ^candidates/([0-9]+)/([a-zA-Z0-9_.]+)/images/([a-zA-Z0-9_.]+)/qc$ candidates/visits/images/qc/Qc.php?CandID=$1&VisitLabel=$2&Filename=$3&PrintImageQC=true [L]
 RewriteRule ^candidates/([0-9]+)/([a-zA-Z0-9_.]+)/images/([a-zA-Z0-9_.]+)/format/raw$ candidates/visits/images/format/Raw.php?CandID=$1&VisitLabel=$2&Filename=$3&PrintRawFormat=true [L]
 RewriteRule ^candidates/([0-9]+)/([a-zA-Z0-9_.]+)/images/([a-zA-Z0-9_.]+)/format/thumbnail$ candidates/visits/images/format/Thumbnail.php?CandID=$1&VisitLabel=$2&Filename=$3&PrintThumbnailFormat=true [L]
 RewriteRule ^candidates/([0-9]+)/([a-zA-Z0-9_.]+)/images/([a-zA-Z0-9_.]+)$ candidates/visits/images/Image.php?CandID=$1&VisitLabel=$2&Filename=$3&PrintImageData=true [L]
@@ -36,4 +39,3 @@ RewriteRule ^candidates/([0-9]+)/([a-zA-Z0-9_.]+)/images/([a-zA-Z0-9_.]+)/header
 RewriteRule ^candidates/([0-9]+)/([a-zA-Z0-9_.]+)/images/([a-zA-Z0-9_.]+)/headers/full$ candidates/visits/images/headers/Full.php?CandID=$1&VisitLabel=$2&Filename=$3&PrintHeadersFull=true [L]
 RewriteRule ^candidates/([0-9]+)/([a-zA-Z0-9_.]+)/images/([a-zA-Z0-9_.]+)/headers/(.*)$ candidates/visits/images/headers/Specific.php?CandID=$1&VisitLabel=$2&Filename=$3&Header=$4&PrintSpecificHeader=true [L]
 RewriteRule ^candidates/([0-9]+)/([a-zA-Z0-9_.]+)/images/([a-zA-Z0-9_.]+)$ candidates/visits/images/Image.php?CandID=$1&VisitLabel=$2&Filename=$3&PrintImageData=true [L]
-

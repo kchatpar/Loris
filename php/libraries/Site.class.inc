@@ -2,7 +2,7 @@
 /**
  * This file contains the class for the Site object
  *
- * PHP Version 7
+ * PHP Version 5
  *
  * @category Main
  * @package  Main
@@ -23,6 +23,7 @@
  */
 class Site
 {
+
     var $_siteInfo;
 
     /**
@@ -38,11 +39,11 @@ class Site
         if (!isset($siteList[$centerID])) {
             try {
                 $siteList[$centerID] = new Site();
-                $siteList[$centerID]->select($centerID);
+                $error = $siteList[$centerID]->select($centerID);
             } catch(Exception $e) {
                 $message = $e->getMessage();
                 unset($siteList[$centerID]);
-                throw new Exception("Could not select site ($message)", 0, $e);
+                throw new Exception("Could not select site ($message)", null, $e);
 
             }
         }
@@ -53,11 +54,11 @@ class Site
     /**
      * Select basic Site information and stores it into the object property
      *
-     * @param int $centerID The CenterID to load data for
+     * @param int $centerID The CentreID to load data for
      *
-     * @return void
+     * @return none
      */
-    function select(int $centerID): void
+    function select($centerID)
     {
         $this->_siteInfo['CenterID'] = $centerID;
 
@@ -84,7 +85,7 @@ class Site
      *
      * @return string The full name of site
      */
-    function getCenterName(): string
+    function getCenterName()
     {
         return $this->_siteInfo['Name'];
     }
@@ -94,7 +95,7 @@ class Site
      *
      * @return integer ID of this site
      */
-    function getCenterID(): int
+    function getCenterID()
     {
         return $this->_siteInfo['CenterID'];
     }
@@ -104,7 +105,7 @@ class Site
      *
      * @return string alias representing this site
      */
-    function getSiteAlias(): string
+    function getSiteAlias()
     {
         return $this->_siteInfo['Alias'];
     }
@@ -114,7 +115,7 @@ class Site
      *
      * @return string alias representing this site
      */
-    function getSiteMRIAlias(): string
+    function getSiteMRIAlias()
     {
         return $this->_siteInfo['MRI_alias'];
     }
@@ -124,7 +125,7 @@ class Site
      *
      * @return string account name for this site
      */
-    function getSiteAccount(): string
+    function getSiteAccount()
     {
         return $this->_siteInfo['Account'];
     }
@@ -134,9 +135,11 @@ class Site
      *
      * @return boolean true if a study site
      */
-    function isStudySite(): bool
+    function isStudySite()
     {
         return ($this->_siteInfo['Study_site'] == 'Y');
     }
-}
 
+
+}
+?>
