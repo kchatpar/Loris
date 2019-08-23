@@ -44,6 +44,38 @@ class New_Profile extends \NDB_Form
      */
     function _hasAccess(\User $user) : bool
     {
+        //########################### CBIGR OVERRIDE Start ###########################
+
+        // $candidate = json_encode(array(
+        //     'Candidate' => array(
+        //      'Project' => 'Pumpernickel',
+        //     'DoB' =>"2015-09-11",
+        //     'EDC' =>"2015-09-10",
+        //     'Sex'=>"Female",
+        //     'Site'=>'Ottawa',
+        //     'PSCID'=>'OTT7555'
+        //     )
+        // )
+
+        $url = 'https://cbigr-dev.loris.ca/';
+        $urlAPI = 'https://cbigr-dev.loris.ca/api/v0.0.2/login';
+        $token = 'from Login';
+        $headers = array('Authentication' =>"Bearer: $token");
+        // $apiRequest = new \LORIS\Http\Request\('POST',$apiURL);
+        // $apiResponse (new\LORIS\Http\Client($urlAPI))->sendRequest($apiRequest);
+        // echo $apiResponse;
+
+
+
+
+
+
+
+
+
+
+        //########################### CBIGR OVERRIDE END ###########################
+
         $site_arr      = $user->getData('CenterIDs');
         $userInDCCSite = in_array("1", $site_arr);
         if ($user->hasStudySite() or $userInDCCSite) {
