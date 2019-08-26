@@ -43,7 +43,22 @@ class New_Profile extends \NDB_Form
      * @return bool true if they have access to this page
      */
     function _hasAccess(\User $user) : bool
-    {
+    { 
+        $tokenURL = 'https://cbigr-dev.loris.ca/api/v0.0.3/login';
+        $token = 'from login';
+        $loginCreds ={
+          "username" : krishna,
+          "password" : demo20!9
+        }
+
+
+
+
+        $variable = "hello world";
+        echo "<script>console.log('$variable');</script>";
+        // $error->"hellow");
+
+
         //########################### CBIGR OVERRIDE Start ###########################
 
         // $candidate = json_encode(array(
@@ -58,12 +73,12 @@ class New_Profile extends \NDB_Form
         // )
 
         $url = 'https://cbigr-dev.loris.ca/';
-        $urlAPI = 'https://cbigr-dev.loris.ca/api/v0.0.2/login';
+        $urlAPI = 'https://cbigr-dev.loris.ca/api/v0.0.3/login';
         $token = 'from Login';
         $headers = array('Authentication' =>"Bearer: $token");
-        // $apiRequest = new \LORIS\Http\Request\('POST',$apiURL);
-        // $apiResponse (new\LORIS\Http\Client($urlAPI))->sendRequest($apiRequest);
-        // echo $apiResponse;
+        // $apiRequest = new (\LORIS\Http\Request\ 'POST',$urlAPI,$headers);
+        // $apiResponse =  (new\LORIS\Http\Client($urlAPI))->sendRequest($apiRequest);
+        // print_r($apiResponse);
 
 
 
