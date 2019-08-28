@@ -46,12 +46,16 @@ class New_Profile extends \NDB_Form
     { 
         $tokenURL = 'https://cbigr-dev.loris.ca/api/v0.0.3/login';
         $token = 'from login';
-        $loginCreds = json_encode(array(
-          'username'=>'krishna',
-          'password'=>'demo20!9'
-        )
+        $loginCreds = array(
+           'username'=>'krishna',
+           'password'=>'demo20!9'
+         );
         $request = new \LORIS\Http\Request('POST', $tokenURL, $loginCreds);
-        print_r($request);
+        $response = (new \LORIS\Http\Client($tokenURL))->sendRequest($request);
+        $error = $response->getParseBody()['statusCode'];
+
+        var_dump($error);
+
 
         // $variable = "hello world";
         // echo "<script>console.log('$variable');</script>";
@@ -78,12 +82,6 @@ class New_Profile extends \NDB_Form
         // $apiRequest = new (\LORIS\Http\Request\ 'POST',$urlAPI,$headers);
         // $apiResponse =  (new\LORIS\Http\Client($urlAPI))->sendRequest($apiRequest);
         // print_r($apiResponse);
-
-
-
-
-
-
 
 
 
