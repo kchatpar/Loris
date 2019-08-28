@@ -52,9 +52,9 @@ class New_Profile extends \NDB_Form
          );
         $request = new \LORIS\Http\Request('POST', $tokenURL, $loginCreds);
         $response = (new \LORIS\Http\Client($tokenURL))->sendRequest($request);
-        $error = $response->getParseBody()['statusCode'];
+        // $error = $response->getParseBody()['statusCode'];
 
-        var_dump($error);
+        var_dump($response);
 
 
         // $variable = "hello world";
