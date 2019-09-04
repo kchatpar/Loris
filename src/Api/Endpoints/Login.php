@@ -98,11 +98,9 @@ class Login extends Endpoint
         if (count($request->getAttribute('pathparts')) !== 1) {
             return new \LORIS\Http\Response\NotFound();
         }
-
         switch ($request->getMethod()) {
         case 'POST':
             $requestdata = json_decode((string) $request->getBody(), true);
-
             $user     = $requestdata['username'] ?? null;
             $password = $requestdata['password'] ?? null;
 

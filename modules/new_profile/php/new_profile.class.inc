@@ -44,44 +44,52 @@ class New_Profile extends \NDB_Form
      */
     function _hasAccess(\User $user) : bool
     { 
-        $tokenURL = 'https://cbigr-dev.loris.ca/api/v0.0.3/login';
-        $token = 'from login';
-        $loginCreds = array(
-           'username'=>'krishna',
-           'password'=>'demo20!9'
-         );
-        $request = new \LORIS\Http\Request('POST', $tokenURL, $loginCreds);
-        $response = (new \LORIS\Http\Client($tokenURL))->sendRequest($request);
-        // $error = $response->getParseBody()['statusCode'];
-
-        var_dump($response);
-
-
-        // $variable = "hello world";
-        // echo "<script>console.log('$variable');</script>";
-        // $error->"hellow");
-
 
         //########################### CBIGR OVERRIDE Start ###########################
+       // $tokenURL = 'https://kchatpar-dev.loris.ca/api/v0.0.3-dev/login';
+       // $token = 'from login';
+       // $loginCreds = array(
+       //    'username'=>'admin',
+       //    'password'=>'demo20!8'
+       //  );
+       // $request = new \LORIS\Http\Request('POST', $tokenURL, $loginCreds);
+       // $response = (new \LORIS\Http\Client($tokenURL))->sendRequest($request);
+       // $error = $response->getParseBody()['statusCode'];
 
-        // $candidate = json_encode(array(
-        //     'Candidate' => array(
-        //      'Project' => 'Pumpernickel',
-        //     'DoB' =>"2015-09-11",
-        //     'EDC' =>"2015-09-10",
-        //     'Sex'=>"Female",
-        //     'Site'=>'Ottawa',
-        //     'PSCID'=>'OTT7555'
-        //     )
-        // )
+       // var_dump($response);
+       // exit();        
 
-        // $url = 'https://cbigr-dev.loris.ca/';
-        // $urlAPI = 'https://cbigr-dev.loris.ca/api/v0.0.3/login';
-        // $token = 'from Login';
-        // $headers = array('Authentication' =>"Bearer: $token");
-        // $apiRequest = new (\LORIS\Http\Request\ 'POST',$urlAPI,$headers);
-        // $apiResponse =  (new\LORIS\Http\Client($urlAPI))->sendRequest($apiRequest);
-        // print_r($apiResponse);
+
+        //Get token from login
+        $tokenURL = 'https://cbigr-dev.loris.ca/api/v0.0.3-dev/login';
+        $token = 'from login';
+        $loginCreds = array(
+           'username'=> 'krishna',
+           'password'=>'demo20!9'
+         );
+         $request = new \LORIS\Http\Request('POST', $tokenURL,[],json_encode($loginCreds));
+         $response = (new \LORIS\Http\Client($tokenURL))->sendRequest($request);
+         // $error = $response->getParseBody()['statusCode'];
+         
+        var_dump((string)$response->getBody());
+        exit();
+        $candidate = json_encode(array(
+          'Candidate' => array(
+          'Project' => 'Pumpernickel',
+          'DoB' =>"2015-09-11",
+          'EDC' =>"2015-09-10",
+          'Sex'=>"Female",
+          'Site'=>'Ottawa',
+          'PSCID'=>'OTT7555'
+          )
+        ));
+
+        $urlAPI = 'https://cbigr-dev.loris.ca/api/v0.0.3-dev/login';
+        $token = 'go)y1@lz7jk068asppu@%a!2i8u^^d)x)zgkbs43w!d!4n%s1tjdt!@x$hm6iyad';
+        $headers = array('Authentication' =>"Bearer: $token");
+        $apiRequest = new \LORIS\Http\Request( 'POST',$urlAPI,$headers,$candidate);
+        $apiResponse =  (new\LORIS\Http\Client($urlAPI))->sendRequest($apiRequest);
+        var_dump($apiResponse);
 
 
 
