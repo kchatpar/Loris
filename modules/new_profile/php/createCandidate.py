@@ -23,11 +23,17 @@ token = data['token']
 # Get candidate arguments
 dob = sys.argv[1]
 sex = sys.argv[2]
-# site = sys.argv[4]
 site = "Clinical Research Unit"
 edc = sys.argv[3]
 project = sys.argv[4]
 pscid = sys.argv[5]
+
+print(dob)
+print(sex)
+print(site)
+print(edc)
+print(project)
+print(pscid)
 
 # Prepare TOSI CBIGR Candidate JSON
 pscid = 'CRU0001'
@@ -42,6 +48,7 @@ json_data = {
     }
 }
 
+print(json_data)
 
 r = requests.post(
     url ='https://cbigr-dev.loris.ca/api/v0.0.3-dev/candidates/',
@@ -49,7 +56,6 @@ r = requests.post(
     verify = False,
     headers = {'Authorization': 'Bearer %s' % token}
 )
-
 
 json.loads(r.content.decode("ascii"))
 
