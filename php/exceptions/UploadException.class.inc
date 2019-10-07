@@ -1,12 +1,7 @@
 <?php declare(strict_types=1);
 /**
-<<<<<<< 755b392e69eb2483822dfb6a65ed9a2a6c441697
  * This class is a wrapper that takes an upload error code
  * and adds the appropriate message to the exception.
-=======
- * This class is a wrapper that takes a upload error code
- * an adds the approcpriate message to the exception.
->>>>>>> making this branch functional again
  *
  * PHP Version 7
  *
