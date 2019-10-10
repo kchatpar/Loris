@@ -442,11 +442,7 @@
                 "client",
                 "http"
             ],
-<<<<<<< 497058990495fc8070c4a757cf5a8243a61e222e
             "time": "2018-10-31T09:14:44+00:00"
-=======
-            "time": "2018-10-31 09:14:44"
->>>>>>> updating Biobank
         },
         {
             "name": "php-http/promise",
@@ -496,11 +492,7 @@
             "keywords": [
                 "promise"
             ],
-<<<<<<< 497058990495fc8070c4a757cf5a8243a61e222e
             "time": "2016-01-26T13:27:02+00:00"
-=======
-            "time": "2016-01-26 13:27:02"
->>>>>>> updating Biobank
         },
         {
             "name": "psr/http-client",
@@ -549,11 +541,7 @@
                 "psr",
                 "psr-18"
             ],
-<<<<<<< 497058990495fc8070c4a757cf5a8243a61e222e
             "time": "2018-10-30T23:29:13+00:00"
-=======
-            "time": "2018-10-30 23:29:13"
->>>>>>> updating Biobank
         },
         {
             "name": "psr/http-message",
@@ -603,11 +591,7 @@
                 "request",
                 "response"
             ],
-<<<<<<< 497058990495fc8070c4a757cf5a8243a61e222e
             "time": "2016-08-06T14:39:51+00:00"
-=======
-            "time": "2016-08-06 14:39:51"
->>>>>>> updating Biobank
         },
         {
             "name": "psr/http-server-handler",
@@ -660,11 +644,7 @@
                 "response",
                 "server"
             ],
-<<<<<<< 497058990495fc8070c4a757cf5a8243a61e222e
             "time": "2018-10-30T16:46:14+00:00"
-=======
-            "time": "2018-10-30 16:46:14"
->>>>>>> updating Biobank
         },
         {
             "name": "psr/http-server-middleware",
@@ -717,11 +697,7 @@
                 "request",
                 "response"
             ],
-<<<<<<< 497058990495fc8070c4a757cf5a8243a61e222e
             "time": "2018-10-30T17:12:04+00:00"
-=======
-            "time": "2018-10-30 17:12:04"
->>>>>>> updating Biobank
         },
         {
             "name": "ralouphie/getallheaders",
@@ -761,11 +737,7 @@
                 }
             ],
             "description": "A polyfill for getallheaders.",
-<<<<<<< 497058990495fc8070c4a757cf5a8243a61e222e
             "time": "2016-02-11T07:05:27+00:00"
-=======
-            "time": "2016-02-11 07:05:27"
->>>>>>> updating Biobank
         },
         {
             "name": "smarty/smarty",
@@ -818,11 +790,7 @@
             "keywords": [
                 "templating"
             ],
-<<<<<<< 497058990495fc8070c4a757cf5a8243a61e222e
             "time": "2018-09-12T20:54:16+00:00"
-=======
-            "time": "2018-09-12 20:54:16"
->>>>>>> updating Biobank
         },
         {
             "name": "zendframework/zend-diactoros",
@@ -886,17 +854,12 @@
                 "psr",
                 "psr-7"
             ],
-<<<<<<< 497058990495fc8070c4a757cf5a8243a61e222e
             "time": "2018-09-05T19:29:37+00:00"
-=======
-            "time": "2018-09-05 19:29:37"
->>>>>>> updating Biobank
         }
     ],
     "packages-dev": [
         {
             "name": "composer/semver",
-<<<<<<< 497058990495fc8070c4a757cf5a8243a61e222e
             "version": "1.5.0",
             "source": {
                 "type": "git",
@@ -907,18 +870,6 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/composer/semver/zipball/46d9139568ccb8d9e7cdd4539cab7347568a5e2e",
                 "reference": "46d9139568ccb8d9e7cdd4539cab7347568a5e2e",
-=======
-            "version": "1.4.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/composer/semver.git",
-                "reference": "c7cb9a2095a074d131b65a8a0cd294479d785573"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/composer/semver/zipball/c7cb9a2095a074d131b65a8a0cd294479d785573",
-                "reference": "c7cb9a2095a074d131b65a8a0cd294479d785573",
->>>>>>> updating Biobank
                 "shasum": ""
             },
             "require": {
@@ -967,11 +918,7 @@
                 "validation",
                 "versioning"
             ],
-<<<<<<< 497058990495fc8070c4a757cf5a8243a61e222e
             "time": "2019-03-19T17:25:45+00:00"
-=======
-            "time": "2016-08-30 16:08:34"
->>>>>>> updating Biobank
         },
         {
             "name": "composer/xdebug-handler",
@@ -1015,7 +962,6 @@
                 "Xdebug",
                 "performance"
             ],
-<<<<<<< 497058990495fc8070c4a757cf5a8243a61e222e
             "time": "2019-01-28T20:25:53+00:00"
         },
         {
@@ -1030,29 +976,12 @@
                 "type": "zip",
                 "url": "https://api.github.com/repos/doctrine/instantiator/zipball/a2c590166b2133a4633738648b6b064edae0814a",
                 "reference": "a2c590166b2133a4633738648b6b064edae0814a",
-=======
-            "time": "2019-01-28 20:25:53"
-        },
-        {
-            "name": "doctrine/instantiator",
-            "version": "1.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/doctrine/instantiator.git",
-                "reference": "185b8868aa9bf7159f5f953ed5afb2d7fcdc3bda"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/instantiator/zipball/185b8868aa9bf7159f5f953ed5afb2d7fcdc3bda",
-                "reference": "185b8868aa9bf7159f5f953ed5afb2d7fcdc3bda",
->>>>>>> updating Biobank
                 "shasum": ""
             },
             "require": {
                 "php": "^7.1"
             },
             "require-dev": {
-<<<<<<< 497058990495fc8070c4a757cf5a8243a61e222e
                 "doctrine/coding-standard": "^6.0",
                 "ext-pdo": "*",
                 "ext-phar": "*",
@@ -1060,13 +989,6 @@
                 "phpstan/phpstan-phpunit": "^0.11",
                 "phpstan/phpstan-shim": "^0.11",
                 "phpunit/phpunit": "^7.0"
-=======
-                "athletic/athletic": "~0.1.8",
-                "ext-pdo": "*",
-                "ext-phar": "*",
-                "phpunit/phpunit": "^6.2.3",
-                "squizlabs/php_codesniffer": "^3.0.2"
->>>>>>> updating Biobank
             },
             "type": "library",
             "extra": {
