@@ -71,9 +71,9 @@ class Candidates extends APIBase
      */
     public function handleGET()
     {
-        $candidates = $this->DB->pselect(
+        $result = $this->DB->pselect(
             "SELECT c.CandID, ProjectID, PSCID, s.Name as Site,
-                    EDC, DoB, Sex, ExtStudyID, ses.ID
+                    EDC, DoB, Sex, ExtStudyID, ses.ID as SessionID
              FROM candidate c JOIN psc s on (s.CenterID=c.RegistrationCenterID)
                  LEFT JOIN candidate_project_extid_rel cpe ON (cpe.CandID = c.CandID) 
                  LEFT JOIN Project_external pe ON (cpe.ProjectExternalID= pe.ProjectExternalID)
@@ -82,6 +82,15 @@ class Candidates extends APIBase
                 ",
             ["name"=>"QPN"]
         );
+
+        $candidates = []; 
+        foreach ($result as $row) { 
+           if (empty($candidates[$row['CandID']])) {
+               $candidates[$row['CandID']] = $row; 
+           }
+           $candidates[$row['CandID']]['SessionIDs'][] = $row['SessionID']; 
+           unset($candidates[$row['CandID']]['SessionID']);
+        }
 
         $projects   = \Utility::getProjectList();
         $candValues = array_map(
