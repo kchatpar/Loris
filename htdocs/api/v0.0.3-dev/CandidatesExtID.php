@@ -72,12 +72,13 @@ class Candidates extends APIBase
     public function handleGET()
     {
         $candidates = $this->DB->pselect(
-            "SELECT c.CandID, ProjectID, PSCID, s.Alias as Site,
-                    EDC, DoB, Sex, ExtStudyID
+            "SELECT c.CandID, ProjectID, PSCID, s.Name as Site,
+                    EDC, DoB, Sex, ExtStudyID, ses.ID
              FROM candidate c JOIN psc s on (s.CenterID=c.RegistrationCenterID)
                  LEFT JOIN candidate_project_extid_rel cpe ON (cpe.CandID = c.CandID) 
                  LEFT JOIN Project_external pe ON (cpe.ProjectExternalID= pe.ProjectExternalID)
-             WHERE Active='Y' AND pe.Name=:name
+                 LEFT JOIN session ses ON (cpe.CandID = ses.CandID)
+             WHERE c.Active='Y' AND pe.Name=:name
                 ",
             ["name"=>"QPN"]
         );
