@@ -269,7 +269,23 @@
                 </div>
             </div>
         {/if}
-
+        
+       <!-- Candidates -->
+       <div class="col-lg-12 col-md-6 col-sm-6 col-xs-12">
+           <div class="panel panel-default">
+               <div class="panel-heading">
+                   <h3 class="panel-title">Patients</h3>
+                   <span class="pull-right clickable glyphicon glyphicon-chevron-up"></span>
+               </div>
+               <!-- /.panel-heading -->
+               <div class="panel-body">
+                   <a href="{$baseURL}/biobank/" class="btn btn-default btn-block">View All Patients
+                       <span class="glyphicon glyphicon-chevron-right"></span></a>
+               </div>
+               <!-- /.panel-body -->
+           </div>
+       </div>
+        
        <!-- Behavioural Feedback -->
         {if $bvl_feedback_notifications neq ""}
             <div class="col-lg-12 col-md-6 col-sm-6 col-xs-12">
