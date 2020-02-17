@@ -279,8 +279,7 @@
                </div>
                <!-- /.panel-heading -->
                <div class="panel-body">
-                   <a href="{$baseURL}/biobank/" class="btn btn-default btn-block">View All Patients
-                       <span class="glyphicon glyphicon-chevron-right"></span></a>
+                   <a href="{$baseURL}/candidate_list/" class="btn btn-default btn-block">View All Patients<span class="glyphicon glyphicon-chevron-right"></span></a>
                </div>
                <!-- /.panel-body -->
            </div>
